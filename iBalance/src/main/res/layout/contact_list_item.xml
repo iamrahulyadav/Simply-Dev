@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/list_row_selector"
+    android:padding="8dp"
+    android:id="@+id/contact_list" >
+ 
+    <!-- contact_picture -->
+    <ImageView
+        android:id="@+id/contact_picture"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="8dp"
+        android:contentDescription="contact"
+        android:src="@drawable/default_contact_picture" />
+ 
+    <!-- contact_name -->
+    <TextView
+        android:id="@+id/contact_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/contact_picture"
+        android:layout_toRightOf="@+id/contact_picture"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/contact_name" />
+ 
+    <!-- contact_number -->
+
+    <TextView
+        android:id="@+id/contact_number"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/contact_name"
+        android:layout_marginTop="5dip"
+        android:layout_toLeftOf="@+id/toatal_duration"
+        android:layout_toRightOf="@+id/contact_picture"
+        android:textSize="@dimen/contact_number"
+        android:textColor="@android:color/darker_gray" />
+     
+    <!-- Circleand state -->
+
+    <TextView
+        android:id="@+id/circle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/contact_picture"
+        android:layout_below="@id/contact_number"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_toRightOf="@+id/contact_picture"
+        android:textColor="@android:color/darker_gray" 
+        android:textSize="@dimen/circle"
+         />
+    
+ <!-- Duration in HH::MM::SS format -->
+
+    <TextView
+        android:id="@+id/cost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:textColor="@android:color/black" 
+        android:text="Rs:0.0"  />
+ <!-- Cost -->
+    <TextView
+        android:id="@+id/toatal_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:textColor="@android:color/darker_gray" 
+        android:text="00:00:00"
+        />
+ 
+</RelativeLayout>

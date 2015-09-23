@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/list_row_selector"
+    android:padding="8dp"
+    android:id="@+id/contact_list" >
+ 
+    <!-- contact_picture   -->
+
+    <ImageView
+        android:id="@+id/contact_picture"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
+        android:layout_marginRight="5dp"
+        android:layout_alignParentLeft="true"
+        android:contentDescription="contact"
+        android:src="@drawable/type_call" />
+ 
+    <!-- contact_name -->
+
+    <TextView
+        android:id="@+id/contact_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/contact_picture"
+        android:layout_toRightOf="@+id/contact_picture"
+        android:textSize="@dimen/contact_name" />
+ 
+    <!-- contact_number -->
+
+    <TextView
+        android:id="@+id/contact_number"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/contact_name"
+        android:layout_marginTop="5dip"
+        android:layout_toLeftOf="@+id/toatal_duration"
+        android:layout_toRightOf="@+id/contact_picture"
+        android:textColor = "@color/dark_grey"
+        android:textSize="@dimen/contact_number" />
+     
+    <!-- Circleand state -->
+
+    <TextView
+        android:id="@+id/circle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textColor = "@color/dark_grey"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_toRightOf="@+id/contact_picture"
+        android:textSize="@dimen/circle" />
+    
+ <!-- Duration in HH::MM::SS format -->
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:textColor = "@color/dark_grey"
+        android:text="00:00 pm" />
+ <!-- Cost -->
+
+    <TextView
+        android:id="@+id/call_rate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/contact_picture"
+        android:layout_alignLeft="@+id/contact_number"
+        android:textColor = "@color/dark_grey"
+        android:layout_below="@+id/call_cost"
+        android:text="Call Rate: " />
+
+    <TextView
+        android:id="@+id/call_cost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/contact_number"
+        android:layout_alignLeft="@+id/contact_name"
+        android:textColor = "@color/dark_grey"
+        android:text="Cost: " />
+
+    <TextView
+        android:id="@+id/days_ago"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/time"
+        android:textColor = "@color/dark_grey"
+        android:text="5 Days ago" />
+ 
+</RelativeLayout>

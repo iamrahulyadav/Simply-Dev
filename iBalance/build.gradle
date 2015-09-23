@@ -1,0 +1,57 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
+apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+    jcenter()
+    mavenCentral()
+}
+
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        applicationId "com.builder.ibalance"
+        minSdkVersion 15
+        targetSdkVersion 21
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_7
+            targetCompatibility JavaVersion.VERSION_1_7
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles 'proguard-project.txt'
+        }
+    }
+}
+
+dependencies {
+
+    compile 'com.apptentive:apptentive-android:1.7.3@aar'
+    compile 'com.facebook.android:facebook-android-sdk:4.1.0'
+    compile "com.android.support:support-v13:20.0.+"
+    compile files('libs/AF-Android-SDK-v2.3.1.17.jar')
+    compile files('libs/FlurryAnalytics-5.3.0.jar')
+    compile files('libs/Kahuna.jar')
+    compile files('libs/mpandroidchartlibrary-2-0-9.jar')
+    compile files('libs/Parse-1.8.2.jar')
+    compile files('libs/picasso-2.5.0.jar')
+    compile('com.crashlytics.sdk.android:crashlytics:2.4.0@aar') {
+        transitive = true;
+        compile 'com.google.android.gms:play-services:+'
+    }
+}

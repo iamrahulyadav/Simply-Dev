@@ -1,0 +1,159 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.builders.powerpack.Wizard" 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" 
+    android:background="#1AD3A2">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="Welcome"
+        android:textAllCaps="true"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+    
+     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="0dp"
+        android:gravity="center"
+        android:text="We tried automatically find your carrier and circle, if incorrect, please rectify."
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"/>
+
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:orientation="horizontal"
+         android:layout_marginTop="30dp" 
+         android:layout_marginBottom="20dp">
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:orientation="vertical" 
+             android:layout_weight="0.6">
+
+             <TextView
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:paddingBottom="10dp"
+                 android:gravity="center"
+                 android:text="Carrier"
+                 android:textColor="#FFFFFF"
+                 android:textSize="18sp" />
+
+         </LinearLayout>
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_weight="0.4"
+             android:orientation="vertical"
+              >
+
+             <Spinner
+                 android:id="@+id/carrier_spinner"
+                 android:layout_weight="1"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content" />
+
+         </LinearLayout>
+         
+     </LinearLayout>
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:orientation="horizontal" 
+         android:layout_marginBottom="20dp">
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:orientation="vertical" 
+             android:layout_weight="0.6">
+
+             <TextView
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:paddingBottom="10dp"
+                 android:gravity="center"
+                 android:text="Circle"
+                 android:textColor="#FFFFFF"
+                 android:textSize="18sp" />
+
+         </LinearLayout>
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_weight="0.4"
+             android:orientation="vertical" >
+
+             <Spinner
+                 android:id="@+id/circle_spinner"
+                 android:layout_weight="1"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content" />
+
+         </LinearLayout>
+         
+     </LinearLayout>
+          <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:orientation="horizontal" 
+         android:layout_marginBottom="20dp">
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:orientation="vertical" 
+             android:layout_weight="0.6">
+
+             <TextView
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:paddingBottom="10dp"
+                 android:gravity="center"
+                 android:text="Dual-Sim"
+                 android:textColor="#FFFFFF"
+                 android:textSize="18sp" />
+
+         </LinearLayout>
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_weight="0.4"
+             android:orientation="vertical" >
+
+             <Spinner
+                 android:id="@+id/noof_sims_spinner"
+                 android:layout_weight="1"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content" />
+
+         </LinearLayout>
+         
+     </LinearLayout>
+
+     <Button
+         android:id="@+id/okay_button"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:textColor="#FFFFFF"
+         android:text="OK" />
+
+</LinearLayout>
+

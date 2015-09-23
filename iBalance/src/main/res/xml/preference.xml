@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <ListPreference     android:title="Carrier"
+                      android:summary="Select your carrier"
+                      android:key="CARRIER"
+                      android:entries="@array/carriers"
+                      android:entryValues="@array/carriers" />
+    <ListPreference     android:title="Circle"
+                      android:summary="Select your Circle"
+                      android:key="CIRCLE"
+                      android:entries="@array/circles"
+                      android:entryValues="@array/circles" />
+
+</PreferenceScreen>

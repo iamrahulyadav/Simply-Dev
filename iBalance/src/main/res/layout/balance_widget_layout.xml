@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dip"
+    
+    >
+
+    <TextView
+        
+        android:id="@+id/widget_balance"
+        style="@android:style/TextAppearance.Medium"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:gravity="center_horizontal|center_vertical"
+        android:padding="3dp"
+        android:layout_marginRight="2dp"
+        android:textColor="@android:color/white"
+        android:background="#1AD3A2"
+        android:text="@string/rupee_symbol" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/widget_prediction"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal|center_vertical"
+        android:background="#90a4ae"
+        android:textColor="@android:color/white"
+        android:text="Keep Track of your Balance with Simply" />
+
+</LinearLayout> 

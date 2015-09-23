@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Base application theme, dependent on API level. This theme is replaced
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+    -->
+    <style name="AppBaseTheme" parent="@android:style/Theme.Holo.Light">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+    </style>
+
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <!-- All customizations that are NOT specific to a particular API-level can go here.-->
+        
+        <!-- <item name="android:textViewStyle">@style/RobotoTextViewStyle</item> -->
+        <item name="android:actionBarStyle">@style/ActionBarColor</item>
+     <!-- <item name="android:actionBarTabBarStyle">@style/MyActionBar</item> -->
+   	<item name="android:actionBarTabStyle">@style/MyActionBar</item>
+     <item name="android:actionBarTabTextStyle">@style/TabText</item> 
+     
+    </style>
+<!-- 	<style name="RobotoTextViewStyle" parent="android:Widget.TextView">
+    <item name="android:fontFamily">sans-serif</item>
+</style> -->
+    <style name="ActionBarColor" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">#1AD3A2</item>
+         <item name="android:titleTextStyle">@style/BarTextColor</item>
+       		
+    </style>
+    <style name="BarTextColor" parent="@android:style/Widget.Holo.Light.ActionBar.TabView">
+         <item name="android:textColor">#FFFFFF</item>
+         <item name="android:textSize">20sp</item>
+    </style>
+    <style name="MyActionBar" parent="android:style/Widget.Holo.Light.ActionBar.TabView">
+        <item name="android:background">@drawable/tab_bar_background</item>
+    </style>
+    <style name ="TabView" parent="android:style/Widget.Holo.Light.ActionBar.TabView">
+	    <item name="android:background">#FFFFFF</item>
+	</style>
+    <style name = "TabText" parent="android:style/Widget.Holo.Light.ActionBar.TabText">
+        <item name="android:textColor">@drawable/tab_text_color</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="FullscreenTheme" parent="android:Theme.NoTitleBar">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="metaButtonBarStyle">@style/ButtonBar</item>
+        <item name="metaButtonBarButtonStyle">@style/ButtonBarButton</item>
+    </style>
+
+    <style name="ButtonBar">
+        <item name="android:paddingLeft">2dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingRight">2dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:background">@android:drawable/bottom_bar</item>
+    </style>
+
+    <style name="ButtonBarButton" />
+   <style name="ussd_popup_button" parent="android:Widget.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">31dp</item>
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingLeft">21dp</item>
+        <item name="android:paddingRight">21dp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+</resources>

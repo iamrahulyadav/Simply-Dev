@@ -1,0 +1,33 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.ibalance.MainActivity" >
+    <item
+        android:id="@+id/rate"
+        android:orderInCategory="100"
+        android:title="Rate Us!"/>
+    <item
+        android:id="@+id/set_bal"
+        android:orderInCategory="100"
+        android:title="Balance Reminder"/>
+  <!--   <item
+        android:id="@+id/help"
+        android:orderInCategory="100"
+        android:title="Help"/>-->
+    <item 
+       
+    android:id="@+id/menu_spinner"
+    android:showAsAction="never"
+    android:visible="false"
+    android:actionViewClass="android.widget.Spinner"
+    android:title="Date" />
+    <item
+        android:id="@+id/preferences"
+        android:orderInCategory="100"
+        android:title="Preferences"/>
+    <item
+        android:id="@+id/contact_us"
+        android:orderInCategory="100"
+        android:title="Contact-Us"/>
+    
+
+</menu>

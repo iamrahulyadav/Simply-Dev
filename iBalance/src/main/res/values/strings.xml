@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Simply</string>
+    <string name="facebook_appid">682786371826329</string>
+    <string name="title_section1">Balance</string>
+    <string name="title_section2">Call Pattern</string>
+    <string name="title_section3">Contacts</string>
+    <string name="title_section4">Recharge</string>
+    <string name="service_description">This service is used to track the Balance from USSD responses  </string>
+    <string name="service_label">\u25FC\u25FCSimply Recorder\u25FC\u25FC</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="toast_guide">Tap on \u25FC\u25FCSimply Recorder\u25FC\u25FC \n and switch ON the Service</string>
+    <string name="title_activity_splashscreen">SplashscreenActivity</string>
+    <string name="rupee_symbol">₹</string>
+
+    <string-array name="analytics_period">
+
+        <!-- <item>Today</item> -->
+        <item>Last Week</item>
+        <item>Last Month</item>
+        <item>All Time</item>
+    </string-array>
+    <string-array name="carriers">
+        <item>Airtel</item>
+        <item>Vodafone</item>
+        <item>TATA DOCOMO</item>
+        <item>IDEA</item>
+        <item>AIRCEL</item>
+        <item>Reliance</item>
+        <item>BSNL</item>
+        <item>MTNL</item>
+        <item>MTS</item>
+        <item>Spice</item>
+        <item>Uninor</item>
+        <item>Virgin</item>
+        <item>Videocon</item>
+        <item>T24</item>
+        <item>Loop</item>
+        <item>Tata Indicom</item>
+        <item>S Tel</item>
+        <item>Etisalat</item>
+        <item>PING CDMA</item>
+    </string-array>
+    <string-array name="circles">
+        <item>Andhra Pradesh</item>
+        <item>Assam</item>
+        <item>Bihar</item>
+        <item>Chennai</item>
+        <item>Delhi</item>
+        <item>Gujarat</item>
+        <item>Himachal Pradesh</item>
+        <item>Haryana</item>
+        <item>Jammu and Kashmir</item>
+        <item>Kerala</item>
+        <item>Karnataka</item>
+        <item>Kolkata</item>
+        <item>Maharashtra</item>
+        <item>Madhya Pradesh</item>
+        <item>Mumbai</item>
+        <item>Arunachal Pradesh (North East India)</item>
+        <item>Odisha</item>
+        <item>Punjab</item>
+        <item>Rajasthan</item>
+        <item>Tamil Nadu</item>
+        <item>Uttar Pradesh (East)</item>
+        <item>Uttar Pradesh (West)</item>
+        <item>West Bengal</item>
+    </string-array>
+    <string-array name="sims">
+        <item>YES</item>
+        <item>NO</item>
+    </string-array>
+
+    <string name="title_activity_deduction_history">DeductionHistoryActivity</string>
+    <string name="title_activity_chat">ChatActivity</string>
+    <string name="title_activity_service_enable">ServiceEnableActivity</string>
+    <string name="title_activity_contact_us">ContactUs</string>
+    <string name="title_activity_tutorial">Tutorial</string>
+
+</resources>
