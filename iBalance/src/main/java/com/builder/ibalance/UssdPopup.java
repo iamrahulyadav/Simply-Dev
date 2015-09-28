@@ -1,15 +1,9 @@
 package com.builder.ibalance;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -20,9 +14,7 @@ import android.widget.Toast;
 
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
-import com.builder.ibalance.database.MappingHelper;
-import com.builder.ibalance.database.MySQLiteHelper;
-import com.builder.ibalance.datainitializers.DataInitializer;
+import com.builder.ibalance.services.CallDetailsModel;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -30,8 +22,6 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.KahunaAnalytics;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
 
 public class UssdPopup extends Activity {
 	TextView field1,field2,field3,field4,head1,head2,head3,head4;
@@ -51,116 +41,7 @@ public class UssdPopup extends Activity {
 	        // Your Code Here
 	    }
 
-    public static ArrayList<String> getContactNamePicture( String number) {
-        String name="Unkown",photo_uri=null;
-        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
 
-        Cursor contactLookup = MyApplication.context.getContentResolver().query(uri, new String[] {ContactsContract.PhoneLookup._ID,
-                ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup.PHOTO_THUMBNAIL_URI }, null, null, null);
-
-        int indexName = contactLookup.getColumnIndex(ContactsContract.Data.DISPLAY_NAME);
-        int indexPhoto = contactLookup.getColumnIndex(ContactsContract.Data.PHOTO_THUMBNAIL_URI);
-
-        try {
-            if (contactLookup != null && contactLookup.moveToNext()) {
-                name = contactLookup.getString(indexName);
-                photo_uri = contactLookup.getString(indexPhoto);
-            }
-        } finally {
-            if (contactLookup != null) {
-                contactLookup.close();
-            }
-        }
-        ArrayList<String> name_photo = new ArrayList<String>();
-        //  //Log.d(TAG," Name = "+number);
-        name_photo.add(name);
-        name_photo.add(photo_uri);
-        return name_photo;
-
-
-    }
-    ArrayList<String> getCarrieCircleTotalCost(String number)
-    {
-        //I need total duration called, call rate from shared pref, mapping of first 4 digits to short cuts,
-        // Providers and State map to convert from short form to readable form
-        //Call database table to know the tracked rate, the duration for how much it id tracked and have to calculate the total spent using that
-        ArrayList<String> returnList = new ArrayList<>();
-        MappingHelper mMappingHelper = new MappingHelper(MyApplication.context);
-        if (number.startsWith("+91"))
-            number = number.substring(3).replaceAll(" ","");
-        else
-            number = number.replaceAll(" ","");
-        String ph ="0000";
-        try {
-            ph = number.substring(number.length() - 10,
-                    number.length() - 6);
-        } catch (Exception e1) {
-            ph = "0000";
-        }
-        ArrayList<String> x = (ArrayList<String>) mMappingHelper.getMapping(Integer.parseInt(ph));
-        // //Log.d("Data mapping",x.get(0)+"  "+x.get(1));
-        returnList.add(DataInitializer.Providers.get(x.get(0)));
-        returnList.add(DataInitializer.States.get(x.get(1)));
-        returnList.add("N/A");
-        if(DataInitializer.mainmap == null)
-        {
-            //Loading the whole data will take lot of time so skip for now
-            return returnList;
-        }
-        MySQLiteHelper mSQLiteHelper = MySQLiteHelper.getInstance(this);
-        SQLiteDatabase db = mSQLiteHelper.getReadableDatabase();
-        String query = "select sum(COST), sum(DURATION) from CALL where NUMBER = \'+91"+number+"\'" + " OR NUMBER =\'"+number+"\'";
-        //Log.d("Contacts Loader", "Query = "+ query);
-        Cursor c = db.rawQuery(query, null);
-        c.moveToFirst();
-        int duration= 0;
-        float callCost = (float) 0.0;
-        try{
-            callCost = c.getFloat(0);
-            duration = c.getInt(1);
-
-
-        }
-        catch(NullPointerException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            if(c!=null)
-                c.close();
-            if(db!=null)
-                db.close();
-        }
-        //Start calculation using total call duration
-        Object[] number_details = DataInitializer.mainmap.get(number);
-        String totalDuration = "0";
-        if(number_details!=null)
-        {
-            // name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,imageUuri
-            try
-            {
-                totalDuration = (int)number_details[4]+"";
-                if(number.length()<10)
-                {
-                    callCost = 0;
-                }
-                else
-                {
-                    SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-                    float call_rate = mSharedPreferences.getFloat("CALL_RATE", 1.7f);
-                    callCost = (float) ((float)(Integer.parseInt(totalDuration)-duration)*call_rate/100) + callCost;
-                }
-                returnList.add(2,String.format("%.2f",callCost));
-            }
-            catch (Exception e)
-            {
-
-            }
-        }
-
-        return returnList;
-    }
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -194,6 +75,7 @@ public class UssdPopup extends Activity {
 	
 */
 
+        String cost,balance;
         String rupee_symbol = getResources().getString(R.string.rupee_symbol);
 		switch (mintent.getIntExtra("TYPE", -1)) {
 		case 1:
@@ -205,20 +87,18 @@ public class UssdPopup extends Activity {
             TextView contact_carrier_circle = (TextView) contactLayout.findViewById(R.id.ussd_contact_carrier_circle);
             TextView contact_total_spent = (TextView) contactLayout.findViewById(R.id.ussd_contact_total_spent);
             TextView contact_call_cost = (TextView) contactLayout.findViewById(R.id.ussd_contact_call_cost);
-			String cost = mintent.getStringExtra("CALL_COST");
+            CallDetailsModel details = mintent.getParcelableExtra("DATA");
 			head1.setText("Call Cost");
-			field1.setText(rupee_symbol+" "+cost);
+			field1.setText(rupee_symbol+" "+details.getCall_cost());
 
-			String balance = mintent.getStringExtra("BALANCE");
 			head2.setText("Current Balance");
-			field2.setText(rupee_symbol+" "+balance);
-			
-			String duration = mintent.getStringExtra("CALL_DURATION");
+			field2.setText(rupee_symbol+" "+details.getCurrent_balance());
+
 			head3.setText("Call Duration");
-			field3.setText(getTimeFormatted(Integer.parseInt(duration)));
+			field3.setText(getTimeFormatted(details.getDuration()));
 			String call_rate;
 			try{
-			 call_rate = String.format("%.1f", (Float.parseFloat(cost)/Float.parseFloat(duration))*100)+ " p/s";
+			 call_rate = String.format("%.1f", details.getCall_rate())+ " p/s";
 			}
 			catch(Exception e)
 			{
@@ -227,15 +107,12 @@ public class UssdPopup extends Activity {
 			head4.setText("Call Rate");
 			field4.setText(call_rate);
 
-            String number = mintent.getStringExtra("NUMBER");
-            ArrayList<String> name_photo = getContactNamePicture(number);
-            contact_name.setText(name_photo.get(0));
-            Picasso.with(this).load(name_photo.get(1)).placeholder(R.drawable.default_contact_picture).into(contact_picture);
-            contact_number.setText(number);
-            ArrayList<String> carrier_circle_totalcost = getCarrieCircleTotalCost(number);
-            contact_carrier_circle.setText(carrier_circle_totalcost.get(0)+","+carrier_circle_totalcost.get(1));
-            contact_total_spent.setText(rupee_symbol+" "+carrier_circle_totalcost.get(2));
-            contact_call_cost.setText("+ "+cost);
+            contact_name.setText(details.getName());
+            Picasso.with(this).load(details.getImage_uri()).placeholder(R.drawable.default_contact_picture).into(contact_picture);
+            contact_number.setText(details.getNumber());
+            contact_carrier_circle.setText(details.getCarrier_circle());
+            contact_total_spent.setText(rupee_symbol+" "+details.getTotal_spent());
+            contact_call_cost.setText("+ "+details.getCall_cost());
 			break;
 			//Normal SMS
 		case 2:

@@ -1,25 +1,23 @@
 package com.builder.ibalance.datainitializers;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
-
-import com.builder.ibalance.CallPatternFragment;
-import com.builder.ibalance.database.MappingHelper;
-import com.builder.ibalance.util.MyApplication;
-
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
-import android.util.Log;
+
+import com.builder.ibalance.CallPatternFragment;
+import com.builder.ibalance.database.MappingHelper;
+import com.builder.ibalance.util.MyApplication;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > {
 	public static boolean mainActivityRunning = true;
@@ -135,9 +133,25 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 				DataInitializer.nameCache.put(phNumber, name_image);
 			}
 			if (phNumber.startsWith("+91"))
+			{
 				phNumber = phNumber.substring(3).replaceAll(" ","");
+				phNumber = phNumber.replaceAll("-", "");
+			}
 			else
+			{
 				phNumber = phNumber.replaceAll(" ","");
+				phNumber = phNumber.replaceAll("-","");
+			}
+			if(phNumber.startsWith("0"))
+			{
+				phNumber = phNumber.substring(1).replaceAll(" ","");
+				phNumber = phNumber.replaceAll("-", "");
+			}
+			else
+			{
+				phNumber = phNumber.replaceAll(" ","");
+				phNumber = phNumber.replaceAll("-","");
+			}
 			// //Log.d(TAG,phNumber);
 			// Extract other details
 			String callType = managedCursor.getString(type);

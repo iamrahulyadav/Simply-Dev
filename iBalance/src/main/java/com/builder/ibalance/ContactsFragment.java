@@ -220,7 +220,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 				int totalOutsecs = Integer.parseInt(st[5]);
 				String total_duration_formatted = getTotalDurationFormatted(totalOutsecs);
 				// if((callCost - 0.0)<0.01)
-				if (st[0].length() < 10) {
+				if (st[0].length() < 10 || st[0].startsWith("1800")) {
 					callCost = 0;
 				} else {
 					SharedPreferences mSharedPreferences = MyApplication.context
@@ -228,8 +228,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 									Context.MODE_PRIVATE);
 					float call_rate = mSharedPreferences.getFloat("CALL_RATE",
 							1.7f);
-					callCost = (float) ((float) ((Integer.parseInt(st[5]
-							.toString()) - duration) * call_rate) / 100)
+					callCost = (float) ((float) ((Integer.parseInt(st[5].toString()) - duration) * call_rate) / 100)
 							+ callCost;
 				}
 

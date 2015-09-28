@@ -482,13 +482,25 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
 				nameCache.put(phNumber, name_image);
 			}
 			if (phNumber.startsWith("+91"))
+			{
 				phNumber = phNumber.substring(3).replaceAll(" ","");
+				phNumber = phNumber.replaceAll("-", "");
+			}
 			else
+			{
 				phNumber = phNumber.replaceAll(" ","");
+				phNumber = phNumber.replaceAll("-","");
+			}
 			if(phNumber.startsWith("0"))
+			{
 				phNumber = phNumber.substring(1).replaceAll(" ","");
+				phNumber = phNumber.replaceAll("-", "");
+			}
 			else
+			{
 				phNumber = phNumber.replaceAll(" ","");
+				phNumber = phNumber.replaceAll("-","");
+			}
 			// //Log.d(TAG,phNumber);
 			// Extract other details
 			String callType = managedCursor.getString(type);

@@ -6,11 +6,16 @@ import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
+import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -22,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.BalanceWidget;
@@ -30,6 +36,8 @@ import com.builder.ibalance.R;
 import com.builder.ibalance.UssdPopup;
 import com.builder.ibalance.database.BalanceHelper;
 import com.builder.ibalance.database.DataPackHelper;
+import com.builder.ibalance.database.MappingHelper;
+import com.builder.ibalance.database.MySQLiteHelper;
 import com.builder.ibalance.database.NormalDataHelper;
 import com.builder.ibalance.database.NormalSMSHelper;
 import com.builder.ibalance.database.RechargeHelper;
@@ -38,6 +46,7 @@ import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.database.models.NormalData;
 import com.builder.ibalance.database.models.NormalSMS;
 import com.builder.ibalance.database.models.RechargeEntry;
+import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.parsers.USSDParser;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.MyApplication;
@@ -50,17 +59,226 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
 public class RecorderUpdaterService extends AccessibilityService {
 	static String TAG = "RecorderService", second = null;
 	boolean hasEditText = false;
-	final String tag = RecorderUpdaterService.class.getSimpleName();
+	final static String tag = RecorderUpdaterService.class.getSimpleName();
 	boolean isRegistered = false;
 	float previousBalance = (float) -20.0;
-	ContextWrapper mContext = null;
+	CallLogObserver mCallLogObserver;
+    StringBuilder sb = new StringBuilder();
+    AccessibilityNodeInfo dismissNode = null;
+    Message observerMsg = null;
+    CallDetailsModel mCallDetailsModel = null;
+    private  Handler CallLogObserverHandler = new Handler()
+    {
+        /**
+         * Subclasses must implement this to receive messages.
+         *
+         * @param msg
+         */
+        @Override
+        public void handleMessage(Message msg)
+        {
+            super.handleMessage(msg);
+            Log.d(tag +" handleMessage","What = "+msg.what+"  Contents"+msg.obj.toString());
+            if(msg.what == 1729)
+            {
+                observerMsg = new Message();
+                observerMsg.copyFrom(msg);
+                displayPopUp();
+            }
 
+        }
+    };
+    public static ArrayList<String> getContactNamePicture( String number) {
+        String name="Unkown",photo_uri=null;
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
+
+        Cursor contactLookup = MyApplication.context.getContentResolver().query(uri, new String[] {ContactsContract.PhoneLookup._ID,
+                ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup.PHOTO_THUMBNAIL_URI }, null, null, null);
+
+        int indexName = contactLookup.getColumnIndex(ContactsContract.Data.DISPLAY_NAME);
+        int indexPhoto = contactLookup.getColumnIndex(ContactsContract.Data.PHOTO_THUMBNAIL_URI);
+
+        try {
+            if (contactLookup != null && contactLookup.moveToNext()) {
+                name = contactLookup.getString(indexName);
+                photo_uri = contactLookup.getString(indexPhoto);
+            }
+        } finally {
+            if (contactLookup != null) {
+                contactLookup.close();
+            }
+        }
+        ArrayList<String> name_photo = new ArrayList<String>();
+        //  //Log.d(TAG," Name = "+number);
+        name_photo.add(name);
+        name_photo.add(photo_uri);
+        return name_photo;
+
+
+    }
+    ArrayList<String> getCarrieCircleTotalCost(String number)
+    {
+        //I need total duration called, call rate from shared pref, mapping of first 4 digits to short cuts,
+        // Providers and State map to convert from short form to readable form
+        //Call database table to know the tracked rate, the duration for how much it id tracked and have to calculate the total spent using that
+        ArrayList<String> returnList = new ArrayList<>();
+        MappingHelper mMappingHelper = new MappingHelper(MyApplication.context);
+        if (number.startsWith("+91"))
+        {
+            number = number.substring(3).replaceAll(" ","");
+            number = number.replaceAll("-", "");
+        }
+        else
+        {
+            number = number.replaceAll(" ","");
+            number = number.replaceAll("-","");
+        }
+        if(number.startsWith("0"))
+        {
+            number = number.substring(1).replaceAll(" ","");
+            number = number.replaceAll("-", "");
+        }
+        else
+        {
+            number = number.replaceAll(" ","");
+            number = number.replaceAll("-","");
+        }
+        String ph ="0000";
+        try {
+            ph = number.substring(number.length() - 10,
+                    number.length() - 6);
+        } catch (Exception e1) {
+            ph = "0000";
+        }
+        ArrayList<String> x = (ArrayList<String>) mMappingHelper.getMapping(Integer.parseInt(ph));
+        // //Log.d("Data mapping",x.get(0)+"  "+x.get(1));
+        returnList.add(DataInitializer.Providers.get(x.get(0)));
+        returnList.add(DataInitializer.States.get(x.get(1)));
+        returnList.add("N/A");
+        if(DataInitializer.mainmap == null)
+        {
+            //Loading the whole data will take lot of time so skip for now
+            return returnList;
+        }
+        MySQLiteHelper mSQLiteHelper = MySQLiteHelper.getInstance(this);
+        SQLiteDatabase db = mSQLiteHelper.getReadableDatabase();
+        String query = "select sum(COST), sum(DURATION) from CALL where NUMBER = \'+91"+number+"\'" + " OR NUMBER =\'"+number+"\'";
+        //Log.d("Contacts Loader", "Query = "+ query);
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+        int duration= 0;
+        float callCost = (float) 0.0;
+        try{
+            callCost = c.getFloat(0);
+            duration = c.getInt(1);
+
+
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if(c!=null)
+                c.close();
+            if(db!=null)
+                db.close();
+        }
+        //Start calculation using total call duration
+        Object[] number_details = DataInitializer.mainmap.get(number);
+        String totalDuration = "0";
+        if(number_details!=null)
+        {
+            // name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,imageUuri
+            try
+            {
+                totalDuration = (int)number_details[4]+"";
+                if(number.length()<10 || number.startsWith("1800"))
+                {
+                    callCost = 0;
+                }
+                else
+                {
+                    SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+                    float call_rate = mSharedPreferences.getFloat("CALL_RATE", 1.7f);
+                    callCost = (float) ((float)(Integer.parseInt(totalDuration)-duration)*call_rate/100) + callCost;
+                }
+                returnList.add(2,String.format("%.2f",callCost));
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+
+        return returnList;
+    }
+    private void displayPopUp()
+    {
+
+        if(observerMsg != null)
+        {
+            Handler handler = new Handler();
+            if(observerMsg.what == 1729)
+            Log.d(tag+ "  displayPopUp",observerMsg.obj.toString());
+            if(mCallDetailsModel!=null)
+            {
+
+                Intent popup_intent = new Intent(getApplicationContext(),
+                        UssdPopup.class);
+                popup_intent.putExtra("TYPE", 1);
+                String number = observerMsg.obj.toString();
+
+                ArrayList<String> name_photo = getContactNamePicture(number);
+                mCallDetailsModel.setName(name_photo.get(0));
+                mCallDetailsModel.setImage_uri(name_photo.get(1));
+                mCallDetailsModel.setNumber(number);
+
+                ArrayList<String> carrier_circle_totalcost = getCarrieCircleTotalCost(number);
+                mCallDetailsModel.setCarrier_circle(carrier_circle_totalcost.get(0)+','+carrier_circle_totalcost.get(1));
+                mCallDetailsModel.setTotal_spent(Float.parseFloat(carrier_circle_totalcost.get(2)));
+                popup_intent.putExtra("DATA", mCallDetailsModel);
+                popup_intent
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                popup_intent
+                        .addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                popup_intent
+                        .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                handler.removeCallbacks(null);
+                startActivity(popup_intent);
+                mCallDetailsModel = null;
+                observerMsg = null;
+            }
+            else
+            {
+                Log.d(tag,"USSD MEssage Not received");
+
+                handler.postDelayed(new Runnable()
+                {
+                    public void run()
+                    {
+                        mCallDetailsModel = null;
+                        observerMsg = null;
+                        Toast.makeText(MyApplication.context,"USSD Message was not Received",Toast.LENGTH_LONG).show();
+                    }
+                }, 5000);
+                //wait for 5 seconds and show that USSD message was not received
+            }
+        }
+        else
+        {
+            Log.d(tag,"CallLog Not Updated");
+            //wait for callLog to update
+        }
+    }
 	private String getEventType(AccessibilityEvent event) {
 		switch (event.getEventType()) {
 			case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:
@@ -81,8 +299,7 @@ public class RecorderUpdaterService extends AccessibilityService {
 		return "default";
 	}
 
-	StringBuilder sb = new StringBuilder();
-	AccessibilityNodeInfo dismissNode = null;
+
 
 	public String getTextFromNode(AccessibilityNodeInfo accessibilityNodeInfo) {
 		StringBuilder sb = new StringBuilder();
@@ -126,7 +343,7 @@ public class RecorderUpdaterService extends AccessibilityService {
 
 	@SuppressLint("NewApi")
 	public void onAccessibilityEvent(AccessibilityEvent event) {
-
+        mCallDetailsModel = null;
 		text = getTextFromNode(event.getSource());// getEventText(event);
 		text = text.replace("\r\n", "").replace("\n", "");
 		Log.d(TAG, "Dismissed AccessibilityNodeInfo");
@@ -174,27 +391,19 @@ public class RecorderUpdaterService extends AccessibilityService {
 								FlurryAgent.logEvent("POPUP_SHOWN");
 
 								AppsFlyerLib.sendTrackingWithEvent(
-										MyApplication.context, "POPUP_SHOWN", "");
+                                        MyApplication.context, "POPUP_SHOWN", "");
 								t.send(new HitBuilders.EventBuilder()
-										.setCategory("POPUP").setAction("SHOWN")
-										.setLabel("").build());
-								popup_intent = new Intent(getApplicationContext(),
-										UssdPopup.class);
-								popup_intent.putExtra("TYPE", 1);
-								popup_intent.putExtra("BALANCE",
-										details.bal.toString());
-								popup_intent.putExtra("CALL_COST",
-										String.format("%.2f", details.callCost));
-								popup_intent.putExtra("CALL_DURATION",
-										details.callDuration + "");
-								popup_intent.putExtra("NUMBER",details.lastNumber);
-								popup_intent
-										.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-								popup_intent
-										.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-								popup_intent
-										.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-								startActivity(popup_intent);
+                                        .setCategory("POPUP").setAction("SHOWN")
+                                        .setLabel("").build());
+                                float call_rate = 1.7f;
+                                try{
+                                 call_rate = (details.callCost/details.callDuration)*100;}
+                                catch (Exception e)
+                                {
+
+                                }
+                                mCallDetailsModel= new CallDetailsModel(details.callCost,details.bal,call_rate,details.callDuration);
+								displayPopUp();
 								updateWidget((details).bal.toString());
 							}
 
@@ -602,6 +811,7 @@ public class RecorderUpdaterService extends AccessibilityService {
 		// Log.d(TAG, "onInterrupt");
 	}
 
+
 	@Override
 	protected void onServiceConnected() {
 		super.onServiceConnected();
@@ -613,6 +823,11 @@ public class RecorderUpdaterService extends AccessibilityService {
 		info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 		info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
 		setServiceInfo(info);
+
+		mCallLogObserver = new CallLogObserver(CallLogObserverHandler);
+		getContentResolver().registerContentObserver(
+				android.provider.CallLog.Calls.CONTENT_URI, false,
+				mCallLogObserver);
 		// Log.d(TAG, "onServiceConnected");
 		// mBalanceHelper.addDemoentries();
 		if (ConstantsAndStatics.WAITING_FOR_SERVICE) {
@@ -643,6 +858,7 @@ public class RecorderUpdaterService extends AccessibilityService {
 					}
 				}
 			});
+
 			// Log.d(TAG, "OpeningMain Activity");
 			ConstantsAndStatics.WAITING_FOR_SERVICE = false;
 			Intent openApplication = new Intent(getApplicationContext(),

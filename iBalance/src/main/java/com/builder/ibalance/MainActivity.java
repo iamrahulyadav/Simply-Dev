@@ -174,26 +174,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 					.setTabListener(this));
 		}
 
-
-
-		Intent popup_intent = popup_intent = new Intent(getApplicationContext(),
-				UssdPopup.class);
-		popup_intent.putExtra("TYPE", 1);
-		popup_intent.putExtra("BALANCE",
-				"121.23");
-		popup_intent.putExtra("CALL_COST",
-				String.format("%.2f", 2.15));
-		popup_intent.putExtra("CALL_DURATION",
-				"121" + "");
-		popup_intent.putExtra("NUMBER",
-				"121" + "");
-		popup_intent
-				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		popup_intent
-				.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-		popup_intent
-				.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-		startActivity(popup_intent);
 		
 	}
 
