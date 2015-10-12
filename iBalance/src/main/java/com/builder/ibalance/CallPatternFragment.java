@@ -1,16 +1,5 @@
 package com.builder.ibalance;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -62,10 +51,21 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.parse.ParseObject;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TimeZone;
+import java.util.TreeMap;
+
 public class CallPatternFragment extends Fragment implements
 		OnChartGestureListener,OnItemSelectedListener,DataLoader {
 	int dummy = 0;
-	int vall = 0;
 	int spinnerPosition = 0,lastSpinnerPosition = -1;
 	BarChartItem day_count,carrier_duration,circle_count,in_out_duration;
 	PieChartItem most_called;
@@ -95,6 +95,7 @@ public class CallPatternFragment extends Fragment implements
 	ProgressDialog mProgressDialog;
 	ListView mListView;
 	ProgressBar mProgressBar;
+    long filterDate = -1l;
 	@Override
 	public View onCreateView(LayoutInflater inflater,
 			@Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -115,11 +116,44 @@ public class CallPatternFragment extends Fragment implements
 		int filter = mSharedPreferences.getInt("FILTER", 0);
 		if(filter == 2)//all data
 		{
+			filterDate = -1l;
 			mainMap = DataInitializer.mainmap;
 			dateDurationMap = DataInitializer.dateDurationMap;
 		}
-		else
+        else if(filter == 1)
+        {
+            //Get IST Time zone date-time
+            Calendar c = Calendar.getInstance(TimeZone.getDefault());
+            //Get nex day same time
+            c.add(Calendar.DAY_OF_MONTH, +1);
+            //Get Midnight time
+            c.set(Calendar.HOUR, 0);
+            c.set(Calendar.MINUTE, 0);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            //Get 1 Month  Prior midnight time
+            c.add(Calendar.MONTH, -1);
+            Log.d(TAG, "One Month Prior date = " + c.toString());;
+            filterDate = c.getTimeInMillis();
+            mainMap = FilteredDataInitializer.filteredMainMap;
+            dateDurationMap = FilteredDataInitializer.filteredDateDurationMap;
+            //Log.d(TAG,"else WEEKS  "+ FilteredDataInitializer.filteredDateDurationMap.size());
+        }
+		else if(filter == 0)
 		{
+            //Get IST Time zone date-time
+            Calendar c = Calendar.getInstance(TimeZone.getDefault());
+            //Get nex day same time
+            c.add(Calendar.DAY_OF_MONTH, +1);
+            //Get Midnight time
+            c.set(Calendar.HOUR, 0);
+            c.set(Calendar.MINUTE, 0);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            //Get 7 Days Prior midnight time
+            c.add(Calendar.DAY_OF_MONTH, -7);
+            Log.d(TAG,"Seven Days Prior date = "+c.toString());;
+            filterDate = c.getTimeInMillis();
 			mainMap = FilteredDataInitializer.filteredMainMap;
 			dateDurationMap = FilteredDataInitializer.filteredDateDurationMap;
 			//Log.d(TAG,"else WEEKS  "+ FilteredDataInitializer.filteredDateDurationMap.size());
@@ -205,7 +239,7 @@ public class CallPatternFragment extends Fragment implements
 		 spinner.setAdapter( ArrayAdapter.createFromResource( this.getActivity(),
 		 R.array.analytics_period,
 		 R.layout.date_spinner_item) );
-		 spinner.setSelection(spinnerPosition,false);
+		 spinner.setSelection(spinnerPosition, false);
 		 spinner.setOnItemSelectedListener(this);
 		 
 		}
@@ -499,7 +533,6 @@ public class CallPatternFragment extends Fragment implements
 		set1.setColor(MyApplication.context.getResources().getColor(R.color.primary_green));
 		ArrayList<BarDataSet> dataSets = new ArrayList<BarDataSet>();
 		dataSets.add(set1);
-		vall = MainActivity.adFrequency;
 		BarData data = new BarData(xVals, dataSets);
 		// data.setValueFormatter(new MyValueFormatter());
 		data.setValueTextSize(10f);
@@ -549,11 +582,7 @@ public class CallPatternFragment extends Fragment implements
 		set1.setColor(getResources().getColor(R.color.primary_green));
 		ArrayList<BarDataSet> dataSets = new ArrayList<BarDataSet>();
 		dataSets.add(set1);
-		if(vall==-2)
-			{
-			set1 = (BarDataSet) set2;
-			setOtherdata();
-			}
+
 			
 		BarData data = new BarData(xVals, dataSets);
 		// data.setValueFormatter(new MyValueFormatter());
@@ -563,11 +592,7 @@ public class CallPatternFragment extends Fragment implements
 		return data;
 	}
 
-	private void setOtherdata() {
-		BarDataSet set1 = new BarDataSet(null, "OutGoing Count");
-		set1.setColor(getResources().getColor(R.color.primary_green));
-		ArrayList<BarDataSet> dataSets = new ArrayList<BarDataSet>();
-	}
+
 	private BarData setOperator_outDurationData() {
 		//Log.d(TAG, "SetDAta Fragment");
 		Map<String, Integer> temp = new TreeMap<String, Integer>();
