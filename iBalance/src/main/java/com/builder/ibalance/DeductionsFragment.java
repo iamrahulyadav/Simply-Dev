@@ -11,7 +11,7 @@ import android.widget.ListView;
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.DeductionsAdapter;
-import com.builder.ibalance.database.BalanceHelper;
+import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;

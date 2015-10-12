@@ -1,25 +1,21 @@
 package com.builder.ibalance.database;
 
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.builder.ibalance.database.helpers.BalanceHelper;
+import com.builder.ibalance.database.models.NormalSMS;
+
 import java.util.LinkedList;
 import java.util.List;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-
-import com.builder.ibalance.database.models.NormalSMS;
-import com.builder.ibalance.util.MyApplication;
-
 public class NormalSMSHelper {
 	final String TAG = BalanceHelper.class.getSimpleName();
-	MySQLiteHelper mMySQLiteHelper;
+	DatabaseManager mMySQLiteHelper;
 	public NormalSMSHelper() {
-		mMySQLiteHelper = MySQLiteHelper.getInstance(MyApplication.context);
+		mMySQLiteHelper = DatabaseManager.getInstance();
 	}
 
 

@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
-import com.builder.ibalance.database.MySQLiteHelper;
+import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -53,8 +53,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 		setContentView(R.layout.activity_contact_detail);
 		Intent it = this.getIntent();
 		phnumber = it.getStringExtra("phnumber");
-		MySQLiteHelper mSQLiteHelper = MySQLiteHelper.getInstance(this);
-        SQLiteDatabase db = mSQLiteHelper.getReadableDatabase();
+        SQLiteDatabase db = DatabaseManager.getInstance().getReadableDatabase();
         String query = "select sum(COST), sum(DURATION) from CALL where NUMBER = \'+91"+phnumber+"\'" + " OR NUMBER =\'"+phnumber+"\'";
 		//Log.d("Contacts Loader", "Query = "+ query);
 		Cursor c = db.rawQuery(query,null);
@@ -196,7 +195,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 	        KahunaAnalytics.start();
 	  	  Apptentive.onStart(this);
 	  	AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Contact Detail","");
-	  	FlurryAgent.logEvent("ContactDetail", true);
+	  	FlurryAgent.logEvent("ContactDetailHelper", true);
 		Apptentive.engage(this, "Contact Detail");
 		 super.onStart();
 	    }
@@ -205,7 +204,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 	    protected void onStop() {
 	       
 	        KahunaAnalytics.stop();
-	        FlurryAgent.endTimedEvent("ContactDetail");
+	        FlurryAgent.endTimedEvent("ContactDetailHelper");
 	  	  Apptentive.onStop(this);
 	  	 super.onStop();
 	    } 

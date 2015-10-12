@@ -1,11 +1,11 @@
 package com.builder.ibalance.util;
 
-import android.app.Application;
 import android.content.Context;
+import android.support.multidex.MultiDex;
+import android.support.multidex.MultiDexApplication;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.R;
 import com.flurry.android.FlurryAgent;
@@ -21,7 +21,8 @@ import com.parse.SaveCallback;
 
 import java.util.HashMap;
 
-public class MyApplication extends Application {
+public class MyApplication extends MultiDexApplication
+{
 	public static Context context;
 	final String tag = MyApplication.class.getSimpleName();
 	private static final String PROPERTY_ID = "UA-62225498-2";
@@ -30,13 +31,14 @@ public class MyApplication extends Application {
     	
         super.onCreate();
 		//Fabric.with(this, new Crashlytics());
-		context = getApplicationContext();
+		context = this;
+
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
         //Log.d(tag, "Initializing Parse");
         Parse.enableLocalDatastore(this);
         Parse.initialize(this, "UDKaBRgXs4lSZoTyUbUFtEDcCoFjnVHYkt8M7xvW", "7Sf6euqZUq30EqN9YDjOgwZTD4uSYm9En7pqH7Ax");
-        AppsFlyerLib.setAppsFlyerKey("M3yd5JZJrEjPSSvFggiwME");
+        //AppsFlyerLib.setAppsFlyerKey("M3yd5JZJrEjPSSvFggiwME");
 
 
         String deviceId =mtelTelephonyManager.getDeviceId(); 
@@ -49,8 +51,8 @@ public class MyApplication extends Application {
      // configure Flurry
         FlurryAgent.setLogEnabled(false);
         FlurryAgent.init(this, "7R65ZKFNW9CPSNGS4XNK");
-        AppsFlyerLib.setCurrencyCode("INR");
-        AppsFlyerLib.setUseHTTPFalback(true);
+       //AppsFlyerLib.setCurrencyCode("INR");
+        //AppsFlyerLib.setUseHTTPFalback(true);
         //Log.d(tag, "Flurry Configured");
         ParsePush.subscribeInBackground("", new SaveCallback() {
         	  @Override
@@ -65,6 +67,11 @@ public class MyApplication extends Application {
         	  }
         	});
     }
+	@Override
+	public void attachBaseContext(Context base) {
+		MultiDex.install(base);
+		super.attachBaseContext(base);
+	}
     public enum TrackerName {
     	  APP_TRACKER, // Tracker used only in this app.
     	  GLOBAL_TRACKER, // Tracker used by all the apps from a company. eg: roll-up tracking.

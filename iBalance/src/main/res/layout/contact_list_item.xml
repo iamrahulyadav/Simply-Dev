@@ -7,7 +7,7 @@
     android:id="@+id/contact_list" >
  
     <!-- contact_picture -->
-    <ImageView
+    <com.builder.ibalance.util.RoundedImageView
         android:id="@+id/contact_picture"
         android:layout_width="80dp"
         android:layout_height="80dp"
@@ -17,7 +17,8 @@
         android:src="@drawable/default_contact_picture" />
  
     <!-- contact_name -->
-    <TextView
+
+    <TextView
         android:id="@+id/contact_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

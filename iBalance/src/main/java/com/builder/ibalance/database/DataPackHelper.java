@@ -1,22 +1,20 @@
 package com.builder.ibalance.database;
 
 
-import java.util.LinkedList;
-import java.util.List;
-
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.builder.ibalance.database.models.DataPack;
-import com.builder.ibalance.database.models.NormalData;
-import com.builder.ibalance.util.MyApplication;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class DataPackHelper {
 	final String TAG = DataPackHelper.class.getSimpleName();
-	MySQLiteHelper mMySQLiteHelper;
+	DatabaseManager mMySQLiteHelper;
 	public DataPackHelper() {
-		mMySQLiteHelper = MySQLiteHelper.getInstance(MyApplication.context);
+		mMySQLiteHelper = DatabaseManager.getInstance();
 	}
 
 	

@@ -6,16 +6,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.builder.ibalance.database.models.NormalData;
-import com.builder.ibalance.util.MyApplication;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class NormalDataHelper {
 	final String TAG = NormalDataHelper.class.getSimpleName();
-	MySQLiteHelper mMySQLiteHelper;
+	DatabaseManager mMySQLiteHelper;
 	public NormalDataHelper() {
-		mMySQLiteHelper = MySQLiteHelper.getInstance(MyApplication.context);
+		mMySQLiteHelper = DatabaseManager.getInstance();
 	}
 
 	

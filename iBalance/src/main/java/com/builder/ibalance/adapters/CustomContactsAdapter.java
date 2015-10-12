@@ -1,8 +1,6 @@
 package com.builder.ibalance.adapters;
 
  
-import java.util.List;
-
 import android.content.Context;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
@@ -15,6 +13,8 @@ import android.widget.TextView;
 import com.builder.ibalance.R;
 import com.builder.ibalance.util.MyApplication;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
  
  
 public class CustomContactsAdapter extends BaseAdapter {

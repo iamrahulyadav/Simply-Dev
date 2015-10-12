@@ -7,7 +7,6 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -23,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -31,6 +31,7 @@ import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.datainitializers.FilteredDataInitializer;
+import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.util.DataLoader;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -47,11 +48,14 @@ import com.parse.ParseException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 
+import de.greenrobot.event.EventBus;
+
 public class MainActivity extends Activity implements ActionBar.TabListener,
-		DataLoader,DialogInterface.OnClickListener,PreferenceChangeListener {
+		DataLoader,PreferenceChangeListener {
 	final String tag = MainActivity.class.getSimpleName();
 	SharedPreferences mSharedPreferences;
 	EditText input ;
+	EventBus dataIntializerCompleteEvent;
 	//MoPubInterstitial mInterstitial;
 	Tracker t = ((MyApplication)MyApplication.context).getTracker(
 		    TrackerName.APP_TRACKER);
@@ -72,8 +76,10 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 		
 		//SubscriptionManager mSubscriptionManager = SubscriptionManager.from(this);
 		////Log.d("DUAL_SIM","Sunscription Count = " + mSubscriptionManager.getActiveSubscriptionInfoCountMax());
-		mDataInitializer = new DataInitializer();
-		mDataInitializer.execute(this);
+		dataIntializerCompleteEvent = EventBus.getDefault();
+		dataIntializerCompleteEvent.register(this);
+		/*mDataInitializer = new DataInitializer();
+		mDataInitializer.execute(this);*/
 		mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 		current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE", (float)-1.0);
 		minimum_balance = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float)10.0);
@@ -336,26 +342,64 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 	
 		
 		// create a dialog box to enter the minimum balance
-		AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-		alert.setTitle("Minimum Balance");
-		alert.setMessage("Enter the value");
+		final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+		LayoutInflater inflater = getLayoutInflater();
+        View mView = inflater.inflate(R.layout.balance_reminder, null);
+		alertBuilder.setView(mView);
 
 		// Set an EditText view to get user input
-		input = new EditText(this);
+		input = (EditText) mView.findViewById(R.id.balance_value);
 		Float previousSetBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
-		input.append(previousSetBal+"");
+		input.setText(previousSetBal+"");
 		input.setFocusable(true);
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
 		input.setMinimumWidth(5);
 		
-		input.setSelection(input.getText().length(),input.getText().length());
+		input.setSelection(input.getText().length(), input.getText().length());
 		input.setGravity(Gravity.CENTER_HORIZONTAL);
 		input.setInputType(InputType.TYPE_CLASS_NUMBER);
-		alert.setView(input);
-		alert.setPositiveButton("Ok", this); 
-		alert.show();
+		Button done = (Button) mView.findViewById(R.id.balance_reminder_done);
+		Button cancel = (Button) mView.findViewById(R.id.balance_reminder_cancel);
+        final AlertDialog alert = alertBuilder.create();
+		done.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Float setBal;
+                try
+                {
+
+                    setBal = Float.parseFloat(input.getText().toString());
+                } catch (Exception e)
+                {
+                    setBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
+                }
+                //Log.d("CHART", setBal + " ");
+                Editor editor = mSharedPreferences.edit();
+                editor.putFloat("MINIMUM_BALANCE", (float) setBal);
+                editor.commit();
+                if (mMainActivityAdapter.getmBalanceFragment() != null && ((BalanceFragment) mMainActivityAdapter.getmBalanceFragment()).mLineChart != null)
+                {
+                    //Log.d("CHART", "Balance fragment not null" + " ");
+                    ((BalanceFragment) mMainActivityAdapter.getmBalanceFragment()).setLimitLine();
+                    ((BalanceFragment) mMainActivityAdapter.getmBalanceFragment()).mLineChart.notifyDataSetChanged();
+                    ((BalanceFragment) mMainActivityAdapter.getmBalanceFragment()).mLineChart.invalidate();
+                    //mMainActivityAdapter.notifyDataSetChanged();
+                }
+                alert.dismiss();
+            }
+        });
+		cancel.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                alert.dismiss();
+            }
+        });
+        alert.show();;
 		//Log.d("CHART", "Dialog Creation done");
 		return true;
 
@@ -410,33 +454,36 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 			return rootView;
 		}
 	}
+public void onEvent(DataLoadingDone mDataLoadingDone)
+{
+    if(mMainActivityAdapter.getmBalanceFragment()!=null)
+    {
+        ((BalanceFragment)mMainActivityAdapter.getmBalanceFragment()).setPredictedDays(BalanceFragment.sim_slot);
+        mMainActivityAdapter.notifyDataSetChanged();
+    }
+    if(mMainActivityAdapter.getmCallPatternFragment()!=null)
+    {
 
+        ((CallPatternFragment) mMainActivityAdapter
+                .getmCallPatternFragment()).loadDataAsync(mMainActivityAdapter);
+    }
+    if(mMainActivityAdapter.getmContFragment()!=null)
+    {
+
+        ((ContactsFragment) mMainActivityAdapter
+                .getmContFragment()).loadDataAsync(mMainActivityAdapter);
+    }
+    if(mMainActivityAdapter.getmRechargeFragment()!=null)
+    {
+        ((RechargeFragment) mMainActivityAdapter
+                .getmRechargeFragment()).loadDataAsync(mMainActivityAdapter);
+    }
+
+}
 	@Override
 	public void dataLoaded() {
 		//Log.d(tag, "Data loaded!!!!!!!!!!!!!!!!!!!");
 		//exportData();
-		if(mMainActivityAdapter.getmBalanceFragment()!=null)
-		{
-			((BalanceFragment)mMainActivityAdapter.getmBalanceFragment()).setPredictedDays();
-			mMainActivityAdapter.notifyDataSetChanged();
-		}
-		if(mMainActivityAdapter.getmCallPatternFragment()!=null)
-		{
-			
-			((CallPatternFragment) mMainActivityAdapter
-					.getmCallPatternFragment()).loadDataAsync(mMainActivityAdapter);
-		}
-		if(mMainActivityAdapter.getmContFragment()!=null)
-		{
-			
-			((ContactsFragment) mMainActivityAdapter
-					.getmContFragment()).loadDataAsync(mMainActivityAdapter);
-		}
-		if(mMainActivityAdapter.getmRechargeFragment()!=null)
-		{
-			((RechargeFragment) mMainActivityAdapter
-					.getmRechargeFragment()).loadDataAsync(mMainActivityAdapter);
-		}
 
 	}
 	/*private boolean exportData() {
@@ -608,32 +655,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 		mInterstitial.destroy();*/
 	}
 
-	@Override
-	public void onClick(DialogInterface dialog, int which) {
-		//Log.d("CHART", "Clicked okay");
-		Float setBal;
-		try{
-			
-		setBal = Float.parseFloat(input.getText().toString());
-		}
-		catch(Exception e)
-		{
-			setBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
-		}
-		//Log.d("CHART", setBal + " ");
-		Editor editor = mSharedPreferences.edit();
-		editor.putFloat("MINIMUM_BALANCE", (float) setBal);
-		editor.commit();
-		if(mMainActivityAdapter.getmBalanceFragment()!=null && ((BalanceFragment)mMainActivityAdapter.getmBalanceFragment()).mLineChart!=null)
-		{
-			//Log.d("CHART", "Balance fragment not null" + " ");
-			((BalanceFragment)mMainActivityAdapter.getmBalanceFragment()).setLimitLine();
-			((BalanceFragment)mMainActivityAdapter.getmBalanceFragment()).mLineChart.notifyDataSetChanged();
-			((BalanceFragment)mMainActivityAdapter.getmBalanceFragment()).mLineChart.invalidate();
-			//mMainActivityAdapter.notifyDataSetChanged();
-		}
-		
-	}
+
 	
 
 	@Override

@@ -1,30 +1,28 @@
 package com.builder.ibalance.parsers;
 
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.CallLog;
-import android.telephony.SmsMessage;
 import android.util.Log;
 
-import com.builder.ibalance.database.models.Base;
 import com.builder.ibalance.database.models.DataPack;
+import com.builder.ibalance.database.models.DatabaseEntryBase;
 import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.database.models.NormalData;
 import com.builder.ibalance.database.models.NormalSMS;
 import com.builder.ibalance.util.ConstantsAndStatics.USSDMessageType;
 import com.builder.ibalance.util.MyApplication;
 
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class USSDParser {
 	
 	final String TAG = USSDParser.class.getSimpleName();
 	USSDMessageType type;
-	Base details;
-	public Base getDetails() {
+	DatabaseEntryBase details;
+	public DatabaseEntryBase getDetails() {
 		return details;
 	}
 
@@ -386,10 +384,8 @@ public class USSDParser {
 				if(count>=3)
 				{
 					//Log.d(TAG +" CALL", "message was of NormalCall");
-					String lastNumber = CallLog.Calls
-							.getLastOutgoingCall(MyApplication.context);
 					type = USSDMessageType.NORMAL_CALL;
-					details = new NormalCall(time,callCost,bal,secs,lastNumber,message);
+					details = new NormalCall(time,callCost,bal,secs,message);
 					return true;
 				}
 				

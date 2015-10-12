@@ -12,18 +12,26 @@ public class CallDetailsModel implements Parcelable
                     current_balance = 0.0f,
                     call_rate = 0.0f,
                     total_spent = 0.0f;
-    private int duration = 0;
-    private String  name = "Unkown",
-                    number = "xxxxxxxxxxx",
-                    carrier_circle = "Unkown/Unkown",
-                    image_uri = null;
+    private int duration = 0,sim_slot;
+    private String  name = "Unkown";
+    private String number = "xxxxxxxxxxx";
+    private String carrier_circle = "Unkown/Unkown";
+    private String image_uri = null;
 
-    public CallDetailsModel(float call_cost, float current_balance, float call_rate, int duration)
+    public String getMessage()
+    {
+        return message;
+    }
+
+    private String message="";
+
+    public CallDetailsModel(float call_cost, float current_balance, float call_rate, int duration,String message)
     {
         this.call_cost = call_cost;
         this.current_balance = current_balance;
         this.call_rate = call_rate;
         this.duration = duration;
+        this.message = message;
     }
 
     public void setTotal_spent(float total_spent)
@@ -51,8 +59,9 @@ public class CallDetailsModel implements Parcelable
         this.image_uri = image_uri;
     }
 
-    public CallDetailsModel(float call_cost, float current_balance, float call_rate, int duration, float total_spent, String name, String number, String carrier_circle, String image_uri)
+    public CallDetailsModel(int sim_slot,float call_cost, float current_balance, float call_rate, int duration, float total_spent, String name, String number, String carrier_circle, String image_uri)
     {
+        this.sim_slot =sim_slot;
         this.call_cost = call_cost;
         this.current_balance = current_balance;
         this.call_rate = call_rate;
@@ -64,8 +73,19 @@ public class CallDetailsModel implements Parcelable
         this.image_uri = image_uri;
     }
 
+    public int getSim_slot()
+    {
+        return sim_slot;
+    }
+
+    public void setSim_slot(int sim_slot)
+    {
+        this.sim_slot = sim_slot;
+    }
+
     protected CallDetailsModel(Parcel in)
     {
+        sim_slot = in.readInt();
         call_cost = in.readFloat();
         current_balance = in.readFloat();
         call_rate = in.readFloat();
@@ -160,6 +180,7 @@ public class CallDetailsModel implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
+        dest.writeInt(sim_slot);
         dest.writeFloat(call_cost);
         dest.writeFloat(current_balance);
         dest.writeFloat(call_rate);

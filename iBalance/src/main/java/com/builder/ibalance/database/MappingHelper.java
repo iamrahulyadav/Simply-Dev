@@ -1,26 +1,17 @@
 package com.builder.ibalance.database;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class MappingHelper {
 	final String tag = MappingHelper.class.getSimpleName();
 	SQLiteDatabase myDB;
 	Cursor cursor = null;
-	public MappingHelper(Context ctx) {
+	public MappingHelper() {
 		//Log.d(tag, "Creating Databse");
-		 try {
-			MySQLiteHelper.getInstance(ctx).createDataBase();
-		} catch (IOException e) {
-			//Log.d(tag, "There was a problem in creating database");
-			e.printStackTrace();
-		
-		}
-		 myDB = MySQLiteHelper.getInstance(ctx).getReadableDatabase();
+		myDB =	 DatabaseManager.getInstance().getReadableDatabase();
 	}
 	
 	public ArrayList<String> getMapping(int number) {

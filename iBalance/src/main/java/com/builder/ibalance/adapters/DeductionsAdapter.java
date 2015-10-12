@@ -1,16 +1,9 @@
 package com.builder.ibalance.adapters;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.support.v4.widget.CursorAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +11,10 @@ import android.widget.TextView;
 
 import com.builder.ibalance.R;
 import com.builder.ibalance.datainitializers.DataInitializer;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class DeductionsAdapter extends CursorAdapter{
 	
@@ -49,9 +46,16 @@ public class DeductionsAdapter extends CursorAdapter{
 		days_ago.setText(getDaysAgo(tmsecs));
 		//Log.d("Deduc Adapter", "Setting call cost "+ cursor.getString(2));
 		String ruppee_symbol = arg1.getResources().getString(R.string.rupee_symbol);
-		call_cost.setText("Call Cost: "+ruppee_symbol +" "+ cursor.getString(2));
-		call_rate.setText("Call Rate: " + String.format("%.1f", cursor.getFloat(2)*100/(int)cursor.getInt(3))+" p/s");
-		String phnumber = cursor.getString(4);
+		int date_idx = cursor.getColumnIndex("DATE"),
+				slot_idx = cursor.getColumnIndex("SLOT"),
+				cost_idx = cursor.getColumnIndex("COST"),
+				dur_idx = cursor.getColumnIndex("DURATION"),
+				num_idx = cursor.getColumnIndex("NUMBER"),
+				bal_idx = cursor.getColumnIndex("BALANCE"),
+				msg_idx =cursor.getColumnIndex("MESSAGE");
+		call_cost.setText("Call Cost: "+ruppee_symbol +" "+ cursor.getString(cost_idx));
+		call_rate.setText("Call Rate: " + String.format("%.1f", cursor.getFloat(cost_idx)*100/(int)cursor.getInt(dur_idx))+" p/s");
+		String phnumber = cursor.getString(num_idx);
 		if(phnumber.startsWith("+91"))
 			phnumber = phnumber.substring(3);
 		Object[] data = DataInitializer.mainmap.get(phnumber);

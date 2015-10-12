@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/rootRL"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:layout_gravity="center"
-    android:orientation="vertical" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:fab="http://schemas.android.com/apk/res-auto"
 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <LinearLayout
+        android:id="@+id/rootRL"
+        android:visibility="gone"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -121,6 +126,9 @@
             android:text="No Balance tracked!"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
+
+
+
     </RelativeLayout>
 
     <com.github.mikephil.charting.charts.LineChart
@@ -133,3 +141,25 @@
     </com.github.mikephil.charting.charts.LineChart>
 
 </LinearLayout>
+    <com.melnykov.fab.FloatingActionButton
+        android:id="@+id/sim_switch"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="16dp"
+        android:src="@drawable/sim_toggle"
+        fab:fab_colorNormal="@color/green_btn_bg_color"
+        fab:fab_colorPressed="@color/green_btn_bg_pressed_color"
+        fab:fab_colorRipple="@color/grey"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ussd_progress"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"/>
+</RelativeLayout>

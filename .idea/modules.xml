@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/iBalance.iml" filepath="$PROJECT_DIR$/iBalance.iml" />
       <module fileurl="file://$PROJECT_DIR$/iBalance/iBalance-iBalance.iml" filepath="$PROJECT_DIR$/iBalance/iBalance-iBalance.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mediatek-android/mediatek-android.iml" filepath="$PROJECT_DIR$/mediatek-android/mediatek-android.iml" />
     </modules>
   </component>
 </project>

@@ -1,6 +1,7 @@
 package com.builder.ibalance.database.models;
 
-public class NormalSMS extends Base {
+public class NormalSMS extends DatabaseEntryBase
+{
 	    public Long date;
 	    public Float cost;
 	    public Float bal;

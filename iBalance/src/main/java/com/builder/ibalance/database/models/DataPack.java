@@ -1,6 +1,7 @@
 package com.builder.ibalance.database.models;
 
-public class DataPack extends Base {
+public class DataPack extends DatabaseEntryBase
+{
     public Long date;
     public Float data_left;
     public Float data_consumed;

@@ -1,9 +1,5 @@
 package com.builder.ibalance;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeMap;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +23,10 @@ import com.builder.ibalance.util.AdvertisingIdClient.AdInfo;
 import com.builder.ibalance.util.MyApplication;
 import com.kahuna.sdk.KahunaAnalytics;
 import com.parse.ParseObject;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Wizard extends Activity {
 	Spinner carrier, circle, sims;
@@ -58,7 +58,7 @@ public class Wizard extends Activity {
 			        }                       
 			    }
 			}).start();
-			mMappingHelper = new MappingHelper(this);
+			mMappingHelper = new MappingHelper();
 			sharedPreferences = getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
 			carrier = (Spinner) findViewById(R.id.carrier_spinner);
 			circle = (Spinner) findViewById(R.id.circle_spinner);
@@ -281,7 +281,7 @@ public class Wizard extends Activity {
 		 Providers.put("VC", "Virgin");
 		 Providers.put("VF", "Vodafone");
 		 Providers.put("VD", "Videocon");
-		 //States.clear();
+		 //circle.clear();
 		 States.put("AP", "Andhra Pradesh");
 		 States.put("AS", "Assam");
 		 States.put("BR", "Bihar");

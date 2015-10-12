@@ -1,5 +1,7 @@
 package com.builder.ibalance.services;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -8,7 +10,13 @@ import android.os.Message;
 import android.provider.CallLog;
 import android.util.Log;
 
+import com.builder.ibalance.core.SimModel;
+import com.builder.ibalance.messages.OutgoingCallMessage;
+import com.builder.ibalance.util.Constants;
+import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.MyApplication;
+
+import java.util.ArrayList;
 
 /**
  * Created by Shabaz on 25-Sep-15.
@@ -38,54 +46,130 @@ public class CallLogObserver extends ContentObserver
         this.onChange(selfChange, null);
     }
 
+    //Sends a IPC message to Accessibility service with arg1 as SimSlot and Obj as Mobile Number
     @Override
     public void onChange(boolean selfChange, Uri uri)
     {
-        Log.d(tag, "Change in callLog detected " + uri.toString());
-        String sortOrder = String.format("%s limit 1 ", CallLog.Calls.DATE + " DESC");
-
-        cursor = MyApplication.context.getContentResolver().
-                query(
-                        android.provider.CallLog.Calls.CONTENT_URI,
-                        null,
-                        android.provider.CallLog.Calls.TYPE+"="+android.provider.CallLog.Calls.OUTGOING_TYPE,
-                        null,
-                        sortOrder);
-        if(cursor.moveToFirst() && cursor!=null)
+        //Log.d(tag, "Change in callLog detected " + uri.toString());
+        SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+        long previous_id = mSharedPreferences.getLong("PREV_ID", -1l);
+        if(previous_id == -1l)
         {
-            int len = cursor.getColumnCount();
-            for(int i=0;i<len;i++)
+            previous_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
+        }
+        Log.d(tag,"NEW ID = "+previous_id);
+
+        cursor = MyApplication.context.getContentResolver().query(
+                CallLog.Calls.CONTENT_URI,
+                null,
+                CallLog.Calls._ID + ">?",
+                new String[]{String.valueOf(previous_id)}, CallLog.Calls._ID + " ASC");
+        int id_idex = cursor.getColumnIndex(CallLog.Calls._ID);
+        int type_index =cursor.getColumnIndex(CallLog.Calls.TYPE);
+        int number_index =cursor.getColumnIndex( CallLog.Calls.NUMBER);
+        int duration_index =cursor.getColumnIndex(CallLog.Calls.DURATION);
+        Log.d(tag,"No.of Rows = "+cursor.getCount());
+        while (cursor.moveToNext())
+        {
+            int slot_id = 0;
+            int call_type = cursor.getInt(type_index);
+            if(call_type == CallLog.Calls.OUTGOING_TYPE )
             {
-                Log.d(tag,"Col = "+cursor.getColumnName(i));
-            }
-            Message msg = accessibiltyServiceHandler.obtainMessage();
-            msg.what = 1729;
-            msg.obj = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
-            accessibiltyServiceHandler.sendMessage(msg);
-            /*accessibiltyServiceHandler.post(new Runnable()
-            {
-                *//**
-                 * Starts executing the active part of the class' code. This method is4
-                 * called when a thread is started that has been created with a class which
-                 * implements {@code Runnable}.
-                 *//*
-                @Override
-                public void run()
+
+                int duration = cursor.getInt(duration_index);
+                if(duration>0)
                 {
 
-                    Toast.makeText(MyApplication.context
-                            , "Call Log Updated with " + cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER)), Toast.LENGTH_LONG).show();
+                    int len = cursor.getColumnCount();
+                    for(int i=0;i<len;i++)
+                    {
+                        Log.d(tag,"Col = "+cursor.getColumnName(i));
+                    }
+                    ArrayList<String> column_names = SimModel.call_log_columns;
+                    if(SimModel.isTwo_slots())
+                    {
+                        for (String column_name : column_names)
+                        {
+                            if (cursor.getColumnIndex(column_name) != -1)
+                            {
+                                if (GlobalData.globalSimList.get(0).subid!=-1)
+                                {
+                                    if (column_name.toLowerCase().equals("iccid") || column_name.toLowerCase().equals("icc_id"))
+                                    {
+                                        String iccId = cursor.getString(cursor.getColumnIndex(column_name));
+                                        slot_id = getSlotIdforLG(iccId);
+                                    } else
+                                    {
+                                        long subid = cursor.getLong(cursor.getColumnIndex(column_name));
+                                        slot_id = getSlotIdforSub(subid);
+                                    }
 
+                                } else if (SimModel.dual_type == Constants.TYPE_ASUS)
+                                {
+                                    String sim_index = cursor.getString(cursor.getColumnIndex(column_name));
+                                    slot_id = getSlotIdforAsus(sim_index);
+                                } else
+                                {
+                                    String temp = cursor.getString(cursor.getColumnIndex(column_name));
+                                    if (temp != null)
+                                    {
+                                        try
+                                        {
+                                            slot_id = Integer.parseInt(temp);
+                                        } catch (Exception e)
+                                        {
+                                            slot_id = 0;
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    Log.d(tag, "slot_id = " + slot_id);
+                    String number = cursor.getString(number_index);
+                    Message msg = accessibiltyServiceHandler.obtainMessage();
+                    msg.arg1 = slot_id;
+                    msg.what = 1729;
+                    msg.obj = new OutgoingCallMessage(number,duration);
+                    accessibiltyServiceHandler.sendMessage(msg);
                 }
-
-            });*/
-           //new CallDetailsFetch().execute(cursor);
+            }
+            previous_id = cursor.getLong(id_idex);
         }
-        else
+        cursor.close();
+        mSharedPreferences.edit().putLong("PREV_ID",previous_id).commit();
+
+    }
+    private int getSlotIdforLG(String iccId)
+    {
+        for (SimModel model: GlobalData.globalSimList)
         {
-            //Don't do anything
+            if(model.serial.contains(iccId))
+                return model.getSimslot();
         }
+        return 0;
+    }
 
+    private int getSlotIdforAsus(String sim_index)
+    {
+        for (SimModel model: GlobalData.globalSimList)
+        {
+            if(model.subscriber_id.contains(sim_index))
+                return model.getSimslot();
+        }
+        return 0;
+    }
+
+    private int getSlotIdforSub(long subid)
+    {
+
+        for (SimModel model: GlobalData.globalSimList)
+        {
+            if(model.subid == subid)
+                return model.getSimslot();
+        }
+        return 0;
     }
 
     /*class CallDetailsFetch extends AsyncTask<Cursor,Void,CallDetailsEvent>

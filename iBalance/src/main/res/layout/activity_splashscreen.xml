@@ -38,5 +38,14 @@
         android:textColor="#1AD3A2"
         android:textSize="50dp" />
 
-</RelativeLayout>
+     <ProgressBar
+         style="?android:attr/indeterminateProgressStyle"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:id="@+id/sim_check_progress"
+         android:layout_below="@+id/fullscreen_content"
+         android:layout_centerHorizontal="true"
+         android:layout_marginTop="41dp"/>
+
+ </RelativeLayout>
    

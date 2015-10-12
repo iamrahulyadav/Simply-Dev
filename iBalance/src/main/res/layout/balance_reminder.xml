@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+    android:layout_margin="10dp">
+
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="20dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Set Minimum Balance"
+            android:id="@+id/textView14"
+            android:gravity="center"
+            android:layout_below="@+id/imageView5"
+            android:layout_centerHorizontal="true"
+            android:textSize="20dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="20dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rupee_symbol"
+            android:gravity="right"
+            android:id="@+id/textView20"
+            android:layout_weight=".5"
+            android:layout_marginRight="5dp"
+            android:textSize="20dp" />
+
+        <EditText
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:hint="20.0"
+            android:gravity="left"
+            android:inputType="number"
+            android:id="@+id/balance_value"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingTop="20dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_marginBottom="30dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:gravity="center" >
+
+            <Button
+                android:id="@+id/balance_reminder_cancel"
+                style="@style/ussd_popup_button"
+                android:text="CANCLE" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:gravity="center" >
+
+            <Button
+                android:id="@+id/balance_reminder_done"
+                style="@style/ussd_popup_button"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:text=" DONE " />
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

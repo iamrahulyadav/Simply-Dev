@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/iBalance" />
+            <option value="$PROJECT_DIR$/mediatek-android" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -1,6 +1,7 @@
 package com.builder.ibalance.database.models;
 
-public class RechargeEntry extends Base {
+public class RechargeEntry extends DatabaseEntryBase
+{
 	    public Long date;
 	    public Float RechargeAmount;
 	    public Float Balance;

@@ -19,12 +19,17 @@ import android.widget.RemoteViews;
 
 import com.builder.ibalance.BalanceWidget;
 import com.builder.ibalance.R;
-import com.builder.ibalance.database.BalanceHelper;
 import com.builder.ibalance.database.MappingHelper;
+import com.builder.ibalance.database.helpers.BalanceHelper;
+import com.builder.ibalance.database.helpers.CallLogsHelper;
+import com.builder.ibalance.database.helpers.IbalanceContract;
+import com.builder.ibalance.database.models.ContactDetailModel;
+import com.builder.ibalance.database.models.DateDurationModel;
 import com.builder.ibalance.database.models.NormalCall;
-import com.builder.ibalance.util.DataLoader;
+import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.util.MyApplication;
 
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,10 +44,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import de.greenrobot.event.EventBus;
 
-public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
+
+public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 	public static boolean mainActivityRunning = true;
-	DataLoader mDataLoader;
 	//static Context context;
 	public static boolean done = false;
 	static MappingHelper mMappingHelper;
@@ -67,17 +73,17 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
 	// don't convert date, keep it in epoch time
 	// no need to create new data object
 	private static final String TAG = DataInitializer.class.getSimpleName();
-	public static Map<String, String> Providers = new TreeMap<String, String>();
-    public static Map<String, String> States = new TreeMap<String, String>();
+	public static Map<String, String> carriers = new TreeMap<String, String>();
+    public static Map<String, String> circle = new TreeMap<String, String>();
 	public static Map<Integer, ArrayList<String>> Cache = new TreeMap<Integer, ArrayList<String>>();
 	public static Map<String, String[]> nameCache = new TreeMap<String, String[]>();
 	public static Map<String, Object[]> mainmap = new TreeMap<String, Object[]>();
+	public static Map<String, ContactDetailModel> contactDetailMap = new TreeMap<String, ContactDetailModel>();
 	public static Map<Date, ArrayList<Integer>> dateDurationMap = new TreeMap<Date, ArrayList<Integer>>();
-	static Map<Integer, ArrayList<Integer>> Plans = new TreeMap<Integer, ArrayList<Integer>>();
 	public static Map<String, SmsLogs> smsMap = new TreeMap<String, SmsLogs>();
 	public static List<NormalCall> ussdDataList = new LinkedList<NormalCall>();
-
-	public static void initializeUSSDData(Context ctx) {
+    SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+	public static void initializeUSSDData(int sim_slot) {
 		
 		
 		BalanceHelper mBalanceHelper = new BalanceHelper();
@@ -91,26 +97,32 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
         String fromdate = dateFormat.format(fromDate);
         //Log.d(TAG,"7 day old date = "+fromDate);
         ussdDataList.clear();
-        ussdDataList =( mBalanceHelper.getEntriesFromDate(fromDate.getTime(),ctx));
+        ussdDataList =( mBalanceHelper.getEntriesFromDate(fromDate.getTime(),sim_slot));
 		 //Log.d(TAG,ussdDataList.toString());
 		mBalanceHelper.close();
 	}
 
 	@Override
-	protected Integer doInBackground(Context... ctx) {
+	protected Integer doInBackground(Void... p) {
 		{
+            long startTime = System.nanoTime();
 			// Cache.clear();
 			done=false;
-			mDataLoader = (DataLoader) ctx[0];
-			//context = ctx[0];
-			//Log.d("DataInit", "WORKING IN BACKGROUND");
-			//Log.d("DataInit", "WORKING IN InitializeData");
+            boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME",true);
+            if(firstTime )
+            {
+                //Copy the whole call log + create Main Map and Date Duration Map
+                createTotalDetails();
+            }
+			updateLocalDetails();
 			InitializeData();
 			//Log.d("DataInit", "WORKING IN InitializeMap");
-			InitializeMap(MyApplication.context);
+			//InitializeMap(MyApplication.context);
 			//Log.d("DataInit", "WORKING IN updateWidgetInitially");
 			updateWidgetInitially(MyApplication.context);
 			done = true;
+            long endTime = System.nanoTime();
+            Log.d(TAG,"DataInitializer Took Totally = "+((endTime-startTime)/1000000)+"ms");
 			//Log.d("DataInit", "WORKING IN InitializeSmsMap");
 			//InitializeSmsMap(MyApplication.context);
 
@@ -118,23 +130,482 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
 		return 0;
 	}
 
-	/* (non-Javadoc)
-	 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-	 */
+    private void createTotalDetails()
+    {
+        long startTime = System.nanoTime();
+        CallLogsHelper mCallLogsHelper = new CallLogsHelper();
+        Cursor callLogCursor = mCallLogsHelper.getAllCallLogs();
+        Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
+        int slot,duration,type;
+        Calendar c =Calendar.getInstance();
+        DateDurationModel dateDurationModel = new DateDurationModel(0l,0,0,0,0,0,0);
+        ContactDetailModel contactDetail;
+        int id_index = callLogCursor.getColumnIndex(CallLog.Calls._ID);
+        int date_index =callLogCursor.getColumnIndex(CallLog.Calls.DATE);
+        int duration_index =callLogCursor.getColumnIndex(CallLog.Calls.DURATION);
+        int type_index =callLogCursor.getColumnIndex(CallLog.Calls.TYPE);
+        int number_index =callLogCursor.getColumnIndex(CallLog.Calls.NUMBER);
+        long date,id ;
+        long curr_date = 0l;
+        mMappingHelper = new MappingHelper();
+
+        String number,query="",query_format = "INSERT INTO " +
+                IbalanceContract.CallLogEntry.TABLE_NAME +
+                "("+
+                IbalanceContract.CallLogEntry.COLUMN_NAME_ID+","+
+                IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT+","+
+                IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+","+
+                IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION+","+
+                IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE+","+
+                IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER+
+                ") " +
+                "VALUES ";
+        if(!callLogCursor.moveToFirst())
+        {
+            callLogCursor.close();
+            return;
+        }
+        Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
+        mCallLogsHelper.getDatabase().beginTransaction();
+        try
+        {
+            date = callLogCursor.getLong(date_index);
+            mSharedPreferences.edit().putLong("FIRST_DATE", date).commit();
+            c.setTimeInMillis(date + 19800l);
+            c.set(Calendar.HOUR, 0);
+            c.set(Calendar.MINUTE, 0);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            curr_date = c.getTimeInMillis();
+            dateDurationModel.setDate(curr_date);
+            dateDurationModel.setDay_of_the_week(c.get(Calendar.DAY_OF_WEEK));
+
+            do
+            {
+                type = callLogCursor.getInt(type_index);
+                duration = callLogCursor.getInt(duration_index);
+                if (type > 4)
+                {
+                    //If Call Log type is other than incoming,Outgoing,Missed and Voice Mail then skip
+                    continue;
+                }
+                if (type == CallLog.Calls.OUTGOING_TYPE)
+                {
+                    if (duration <= 0)
+                    {
+                        //If outgoing is 0s then its call didn't connect so skip it
+                        continue;
+                    }
+                }
+                id = callLogCursor.getLong(id_index);
+                date = callLogCursor.getLong(date_index);
+                number = callLogCursor.getString(number_index);
+                slot = mCallLogsHelper.getSlot(callLogCursor);
+                number = number.replace(" ", "");
+                //Converting to IST
+                c.setTimeInMillis(date + 19800l);
+                c.set(Calendar.HOUR, 0);
+                c.set(Calendar.MINUTE, 0);
+                c.set(Calendar.SECOND, 0);
+                c.set(Calendar.MILLISECOND, 0);
+                if (c.getTimeInMillis() > curr_date)
+                {
+                    curr_date = c.getTimeInMillis();
+                    mCallLogsHelper.executeQuery(dateDurationModel.toString());
+                    dateDurationModel.clear();
+                    dateDurationModel.setDate(curr_date);
+                    dateDurationModel.setDay_of_the_week(c.get(Calendar.DAY_OF_WEEK));
+                }
+                contactDetail = getContactDetails(number);
+                switch (type)
+                {
+                    case CallLog.Calls.INCOMING_TYPE:
+                        dateDurationModel.increment_in_count();
+                        dateDurationModel.add_to_in_duration(duration);
+                        contactDetail.increment_in_count();
+                        contactDetail.add_to_in_duration(duration);
+                        break;
+
+                    case CallLog.Calls.OUTGOING_TYPE:
+                        dateDurationModel.increment_out_count();
+                        dateDurationModel.add_to_out_duration(duration);
+                        contactDetail.increment_out_count();
+                        contactDetail.add_to_out_duration(duration);
+                        break;
+
+                    case CallLog.Calls.MISSED_TYPE:
+                        dateDurationModel.increment_miss_count();
+                        contactDetail.increment_miss_count();
+                        break;
+                }
+
+                query = query_format + "(" + id + "," + slot + "," + date + "," + duration + "," + type + ", '" + number + "')";
+                //Log.d(tag,"Query = "+query);
+                mCallLogsHelper.executeQuery(query + "");
+            } while (callLogCursor.moveToNext());
+            callLogCursor.moveToPrevious();
+            long indexed_id = callLogCursor.getLong(id_index);
+            Log.d(TAG,"FIRST TIME INDEXED ID = "+indexed_id);
+            Editor mEditor = mSharedPreferences.edit();
+            mEditor.putLong("INDEXED_ID", indexed_id);
+            mEditor.putBoolean("FIRST_TIME", false);
+            mEditor.commit();
+            callLogCursor.close();
+            //Write All ContactDetails to Database
+            for (Entry<String, ContactDetailModel> entry : DataInitializer.contactDetailMap.entrySet())
+            {
+                mCallLogsHelper.insert(entry.getValue());
+            }
+            mCallLogsHelper.getDatabase().setTransactionSuccessful();
+            long endTime = System.nanoTime();
+            Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            mCallLogsHelper.getDatabase().endTransaction();
+        }
+    }
+
+    public ContactDetailModel getContactDetails(String phNumber)
+    {
+        if(phNumber == null)
+            return new ContactDetailModel("000000","Unknown","Unknown","Unknown","",0,0,0,0,0);
+
+        String[] name_image;
+        ContactDetailModel contactDetail;
+
+
+        contactDetail = contactDetailMap.get(phNumber);
+        if(contactDetail == null)
+        {
+            //Get Name and Image URI
+            name_image = nameCache.get(phNumber);
+            if (name_image == null) {
+                name_image = new String[2];
+                name_image =  getContactName(phNumber).toArray(name_image);
+
+                if (name_image[0] == "")
+                    name_image[0] = "Unknown";
+                nameCache.put(phNumber, name_image);
+            }
+            if (phNumber.startsWith("+91"))
+            {
+                phNumber = phNumber.substring(3);
+            }
+            if(phNumber.startsWith("0"))
+            {
+                phNumber = phNumber.substring(1);
+            }
+            phNumber = phNumber.replaceAll(" ","");
+            phNumber = phNumber.replaceAll("-", "");
+
+            //Get Carrier and Circle
+            String ph = "0000",carrier = "Unknown",circle = "Unknown";
+            try {
+                ph = phNumber.substring(phNumber.length() - 10,
+                        phNumber.length() - 6);
+            } catch (Exception e1) {
+                ph = "0000";
+            }
+            // Identify provider and state begin
+            try {
+                // check if already there in cache
+                ArrayList<String> x = (ArrayList<String>) DataInitializer.Cache
+                        .get(Integer.parseInt(ph));
+                carrier = DataInitializer.carriers.get(x.get(0));
+                circle =DataInitializer.circle.get( x.get(1));
+                // //Log.d("cache", "from cache");
+            } catch (Exception e) {
+                try {
+                    // if not there in cache, extract
+                    ArrayList<String> x = (ArrayList<String>) mMappingHelper.getMapping(Integer.parseInt(ph));
+                    // //Log.d("Data mapping",x.get(0)+"  "+x.get(1));
+                    carrier =DataInitializer.carriers.get(x.get(0));
+                    circle = DataInitializer.circle.get(x.get(1));
+                    DataInitializer.Cache.put(Integer.parseInt(ph), x);
+
+                    // //Log.d("cache", "from num");
+
+                } catch (Exception ee) {
+                    // if not found
+                    if (ph.length() >= 10)
+                        carrier = "Land Line";
+                    else
+                        circle = "Unknown";
+                }
+            }
+            contactDetail = new ContactDetailModel(phNumber,name_image[0],carrier,circle,name_image[1],0,0,0,0,0);
+            contactDetailMap.put(phNumber,contactDetail);
+        }
+        return contactDetail;
+    }
+    public static void InitializeMap(Context context) {
+        long startTime = System.nanoTime();
+        SharedPreferences mSharedPreferences = context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+        Log.d(TAG,"InitializeMap");
+        Long startDate = 0l;//cal.getTimeInMillis();
+        // Cache.clear();
+        //Log.d("DataInit", "InitializeMap");
+
+        if (!mainmap.isEmpty() && !dateDurationMap.isEmpty()) {
+            //Log.d(TAG, "Main and dateDurationMap Map Exists");
+            startDate = mSharedPreferences.getLong("CACHE_DATE", 0l);
+            //Log.d("TEST", "Logging from "+startDate);
+        }
+		/*mainmap.clear();
+		dateDurationMap.clear();*/
+        mMappingHelper = new MappingHelper();
+        //  Long endDate = new IndianDate().getTime();
+        //CallLog.Calls.DATE + ">? AND "+ CallLog.Calls.DATE + "<?", , String.valueOf(endDate)
+        Cursor managedCursor = (new CallLogsHelper()).
+                getDatabase().
+                query(
+                        IbalanceContract.CallLogEntry.TABLE_NAME,
+                        null,
+                        IbalanceContract.CallLogEntry.COLUMN_NAME_DATE + ">?",
+                        new String[] { String.valueOf(startDate)},
+                        null,
+                        null,
+                        IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+ " ASC"
+                );
+        Log.d(TAG,"QUERY Returned "+managedCursor.getCount());
+		/*Cursor managedCursor = context.getContentResolver().query(
+				CallLog.Calls.CONTENT_URI,
+				new String[] {CallLog.Calls.NUMBER,CallLog.Calls.DATE,CallLog.Calls.TYPE,CallLog.Calls.DURATION},
+				CallLog.Calls.DATE + ">?",
+				new String[] { String.valueOf(startDate)}, CallLog.Calls.DATE + " ASC");*/
+        Editor mEditor = mSharedPreferences.edit();
+        mEditor.putLong("CACHE_DATE", (new Date()).getTime());
+        //Log.d("DataInit", managedCursor.getCount() + " ");
+        // Get Indexes
+        int number = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
+        int type = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE);
+        int date = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DATE);
+        int duration = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION);
+        // loop through the call log
+        String phNumber;
+        String[] name_image;
+        String ph;
+        String Provider, State;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+
+        int temp_call_duration=0,total_callDuration=0;
+        while (managedCursor.moveToNext()) {
+            //managedCursor.getColumnIndex(CallLog.Calls.)
+            phNumber = (managedCursor.getString(number));
+            ////Log.d("TEST",phNumber);
+            if(phNumber == null)
+                continue;
+            name_image = nameCache.get(phNumber);
+            if (name_image == null) {
+                name_image = new String[2];
+                name_image =  getContactName(phNumber).toArray(name_image);
+				/*name_image[0] =
+				name_image[1] = getContactsImage(phNumber);*/
+
+                if (name_image[0] == "")
+                    name_image[0] = "Unknown";
+                nameCache.put(phNumber, name_image);
+            }
+            if (phNumber.startsWith("+91"))
+            {
+                phNumber = phNumber.substring(3).replaceAll(" ","");
+                phNumber = phNumber.replaceAll("-", "");
+            }
+            else
+            {
+                phNumber = phNumber.replaceAll(" ","");
+                phNumber = phNumber.replaceAll("-","");
+            }
+            if(phNumber.startsWith("0"))
+            {
+                phNumber = phNumber.substring(1).replaceAll(" ","");
+                phNumber = phNumber.replaceAll("-", "");
+            }
+            else
+            {
+                phNumber = phNumber.replaceAll(" ","");
+                phNumber = phNumber.replaceAll("-","");
+            }
+            // //Log.d(TAG,phNumber);
+            // Extract other details
+            String callType = managedCursor.getString(type);
+            String callDate = managedCursor.getString(date);
+            // //Log.d("datainit", callDate);
+
+            String onlyDateString = sdf
+                    .format(new Date(Long.valueOf(callDate)));
+
+            ////Log.d("datainit", onlyDateString);
+            // SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            // String onlyDateString = df.format(callDayTime);
+            Date onlyDate = null;
+
+            try {
+                onlyDate = sdf.parse(onlyDateString);
+            } catch (ParseException e2) {
+                e2.printStackTrace();
+            }
+            // //Log.d("datainit", onlyDate.toString());
+            String callDuration = managedCursor.getString(duration);
+
+            int dircode = Integer.parseInt(callType);
+            if(dircode == CallLog.Calls.OUTGOING_TYPE && Integer.parseInt(callDuration)<=0)
+                continue;
+            if (!dateDurationMap.containsKey(onlyDate)) {
+                dateDurationMap.put(onlyDate,
+                        new ArrayList<Integer>(Arrays.asList(0, 0, 0, 0)));
+
+            }
+            ArrayList<Integer> datedata = (ArrayList<Integer>) dateDurationMap
+                    .get(onlyDate);
+            // InCount-0 Indur-1 OutCount-2 OutDur-3
+            switch (dircode) {
+                case CallLog.Calls.OUTGOING_TYPE:
+                    datedata.set(2, (Integer) datedata.get(2) + 1) ;//outCount
+                    temp_call_duration = Integer.parseInt(callDuration);
+                    total_callDuration += temp_call_duration;
+                    datedata.set(3, (Integer) datedata.get(3) +temp_call_duration );//outDuration
+                    dateDurationMap.put(onlyDate,datedata);
+                    break;
+
+                case CallLog.Calls.INCOMING_TYPE:
+                    datedata.set(0,(Integer) datedata.get(0) + 1);//inCount
+                    datedata.set(1,(Integer) datedata.get(1)+ Integer.parseInt(callDuration));//inDuration
+                    dateDurationMap.put(onlyDate,datedata);
+                    break;
+            }
+
+            // check for the existance of map entry
+
+            if (!mainmap.containsKey(phNumber)) {
+                // Extract the first 4 digits of the number
+                try {
+                    ph = phNumber.substring(phNumber.length() - 10,
+                            phNumber.length() - 6);
+                } catch (Exception e1) {
+                    ph = "0000";
+                }
+                // Identify provider and state begin
+                try {
+                    // check if already there in cache
+                    ArrayList<String> x = (ArrayList<String>) DataInitializer.Cache
+                            .get(Integer.parseInt(ph));
+                    Provider = DataInitializer.carriers.get(x.get(0));
+                    State =DataInitializer.circle.get( x.get(1));
+                    // //Log.d("cache", "from cache");
+                } catch (Exception e) {
+                    try {
+                        // if not there in cache, extract
+                        ArrayList<String> x = (ArrayList<String>) mMappingHelper.getMapping(Integer.parseInt(ph));
+                        // //Log.d("Data mapping",x.get(0)+"  "+x.get(1));
+                        Provider =DataInitializer.carriers.get(x.get(0));
+                        State = DataInitializer.circle.get(x.get(1));
+                        DataInitializer.Cache.put(Integer.parseInt(ph), x);
+
+                        // //Log.d("cache", "from num");
+
+                    } catch (Exception ee) {
+                        // ee.printStackTrace();
+                        // if not found
+                        if (ph.length() >= 10)
+                            Provider = "Land Line";
+                        else
+                            Provider = "Unknown";
+                        State = "Not Found";
+                        // //Log.d("cache", "not found");
+                    }
+                }
+                // name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,imageUuri
+                if(Provider==null)
+                {
+                    Provider = "Unknown";
+                }
+                if(State==null)
+                {
+                    State = "Not Found";
+                }
+                mainmap.put(phNumber, new Object[] { name_image[0], 0, 0, 0, 0,
+                        0, Provider, State, name_image[1] });
+
+            }
+            // //Log.d(TAG +"Cahche initialize done", Cache.size() +" ");
+            Object[] data = (Object[]) mainmap.get(phNumber);
+            Provider = (String) data[6];
+            State = (String) data[7];
+            // decide depending on the type of call log
+            switch (dircode) {
+                case CallLog.Calls.OUTGOING_TYPE:
+                    data[3] = (Integer) data[3] + 1;
+                    data[4] = (Integer) data[4] + Integer.parseInt(callDuration);
+                    mainmap.put(phNumber, data);
+                    break;
+
+                case CallLog.Calls.INCOMING_TYPE:
+                    data[1] = (Integer) data[1] + 1;
+                    data[2] = (Integer) data[2] + Integer.parseInt(callDuration);
+                    mainmap.put(phNumber, data);
+                    break;
+
+                case CallLog.Calls.MISSED_TYPE:
+                    data[5] = (Integer) data[5] + 1;
+                    mainmap.put(phNumber, data);
+                    break;
+
+            }
+
+        }
+        managedCursor.close();
+        //nameCache.clear();
+        mMappingHelper.close();
+        //SharedPreferences mSharedPreferences = context.getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
+        // mEditor = mSharedPreferences.edit();
+        if(startDate==0l)
+        {
+            //Log.d(TAG, "Shared Pref TOTAL_OUT_DURATION = "+total_callDuration);
+            mEditor.putInt("TOTAL_OUT_DURATION", total_callDuration);
+            Date dt =new Date(Long.parseLong("1420050619800"));
+            for (Entry<Date, ArrayList<Integer>> entry : DataInitializer.dateDurationMap
+                    .entrySet()) {
+                dt = entry.getKey();
+                break;
+            }
+            //Log.d(TAG, "First Date = "+dt.toString());
+            mEditor.putLong("FIRST_DATE", dt.getTime());
+            mEditor.commit();
+        }
+
+        long endTime = System.nanoTime();
+        Log.d(TAG, "Initialize Map Took  = " + ((endTime - startTime) / 1000000) + "ms");
+    }
+    private void updateLocalDetails()
+	{
+        Log.d(TAG, "updateLocalDetails");
+
+		long last_indexed_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
+        Log.d(TAG,"INDEXED ID = "+last_indexed_id);
+		CallLogsHelper mCallLogsHelper = new CallLogsHelper();
+		long new_id = mCallLogsHelper.updateLocalDatabase(last_indexed_id);
+        Log.d(TAG,"NEW ID = "+new_id);
+		mSharedPreferences.edit().putLong("INDEXED_ID", new_id).commit();
+	}
+
+
+
+    /* (non-Javadoc)
+         * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+         */
 	@SuppressLint("NewApi")
 	@Override
 	protected void onPostExecute(Integer result) {
 		super.onPostExecute(result);
-		
-		if(mainActivityRunning)
-		{
-			mDataLoader.dataLoaded();
-		}
-		else
-		{
-			//Log.d(TAG,"mMainActivity is null ACtivity closed");
-		}
-	}
+    Log.d(TAG, "POSTING DataLoadingDone Event");
+        EventBus.getDefault().post(new DataLoadingDone());
+    }
 
 	private void updateWidgetInitially(Context ctx) {
 		//Log.d("DataInit","Came to update  widget inittially "+ "iin Data initializer");
@@ -148,7 +619,7 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
 	      // Set the text
 	      
 	      int predictedDays = -1 ;
-      long firstDate = mSharedPreferences.getLong("FIRST_DATE", Long.parseLong("1420050600000"));
+      long firstDate = mSharedPreferences.getLong("FIRST_DATE", Long.parseLong("1420050619800"));
 	      
 	      int total_out_duration = mSharedPreferences.getInt("TOTAL_OUT_DURATION", 100);
 	      //Log.d(TAG, "Toatl OUT Duration = "+total_out_duration);
@@ -227,7 +698,7 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
 		int number = cursor.getColumnIndexOrThrow("address");
 		int dateIndex = cursor.getColumnIndexOrThrow("date");
 		smsMap.clear();
-		mMappingHelper = new MappingHelper(context);
+		mMappingHelper = new MappingHelper();
 
 		String Provider, State;
 		String phnumber = null;
@@ -255,8 +726,8 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
 						ArrayList<String> x = (ArrayList<String>) mMappingHelper
 								.getMapping(Integer.parseInt(first4digits));
 						// //Log.d("Data mapping",x.get(0)+"  "+x.get(1));
-						Provider = DataInitializer.Providers.get(x.get(0));
-						State = DataInitializer.States.get(x.get(1));
+						Provider = DataInitializer.carriers.get(x.get(0));
+						State = DataInitializer.circle.get(x.get(1));
 						DataInitializer.Cache.put((number), x);
 
 					} catch (Exception ee) {
@@ -301,51 +772,51 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
 	}
 
 	public static void InitializeData() {
-		// Providers.clear();
-		Providers.put("AC", "AIRCEL");
-		Providers.put("AT", "Airtel");
-		Providers.put("CC", "BSNL");
-		Providers.put("DP", "MTNL");
-		Providers.put("ET", "Etisalat");
-		Providers.put("ID", "IDEA");
-		Providers.put("LM", "Loop");
-		Providers.put("MT", "MTS");
-		Providers.put("PG", "PING CDMA");
-		Providers.put("RC", "Reliance");
-		Providers.put("SP", "Spice");
-		Providers.put("ST", "S Tel");
-		Providers.put("T24", "T24");
-		Providers.put("TD", "TATA DOCOMO");
-		Providers.put("TI", "Tata Indicom");
-		Providers.put("UN", "Uninor");
-		Providers.put("VC", "Virgin");
-		Providers.put("VF", "Vodafone");
-		Providers.put("VD", "Videocon");
-		// States.clear();
-		States.put("AP", "Andhra Pradesh");
-		States.put("AS", "Assam");
-		States.put("BR", "Bihar");
-		States.put("CH", "Chennai");
-		States.put("DL", "Delhi");
-		States.put("GJ", "Gujarat");
-		States.put("HP", "Himachal Pradesh");
-		States.put("HR", "Haryana");
-		States.put("JK", "Jammu and Kashmir");
-		States.put("KL", "Kerala");
-		States.put("KA", "Karnataka");
-		States.put("KO", "Kolkata");
-		States.put("MH", "Maharashtra");
-		States.put("MP", "Madhya Pradesh");
-		States.put("MU", "Mumbai");
-		States.put("NE", "Arunachal Pradesh (North East India)");
-		States.put("OR", "Odisha");
-		States.put("PB", "Punjab");
-		States.put("RJ", "Rajasthan");
-		States.put("TN", "Tamil Nadu");
-		States.put("UE", "Uttar Pradesh (East)");
-		States.put("UW", "Uttar Pradesh (West)");
-		States.put("WB", "West Bengal");
-		States.put("ZZ", "Customer Care (All Over India)");
+		// carriers.clear();
+		carriers.put("AC", "AIRCEL");
+		carriers.put("AT", "Airtel");
+		carriers.put("CC", "BSNL");
+		carriers.put("DP", "MTNL");
+		carriers.put("ET", "Etisalat");
+		carriers.put("ID", "IDEA");
+		carriers.put("LM", "Loop");
+		carriers.put("MT", "MTS");
+		carriers.put("PG", "PING CDMA");
+		carriers.put("RC", "Reliance");
+		carriers.put("SP", "Spice");
+		carriers.put("ST", "S Tel");
+		carriers.put("T24", "T24");
+		carriers.put("TD", "TATA DOCOMO");
+		carriers.put("TI", "Tata Indicom");
+		carriers.put("UN", "Uninor");
+		carriers.put("VC", "Virgin");
+		carriers.put("VF", "Vodafone");
+		carriers.put("VD", "Videocon");
+		// circle.clear();
+		circle.put("AP", "Andhra Pradesh");
+		circle.put("AS", "Assam");
+		circle.put("BR", "Bihar");
+		circle.put("CH", "Chennai");
+		circle.put("DL", "Delhi");
+		circle.put("GJ", "Gujarat");
+		circle.put("HP", "Himachal Pradesh");
+		circle.put("HR", "Haryana");
+		circle.put("JK", "Jammu and Kashmir");
+		circle.put("KL", "Kerala");
+		circle.put("KA", "Karnataka");
+		circle.put("KO", "Kolkata");
+		circle.put("MH", "Maharashtra");
+		circle.put("MP", "Madhya Pradesh");
+		circle.put("MU", "Mumbai");
+		circle.put("NE", "Arunachal Pradesh (North East India)");
+		circle.put("OR", "Odisha");
+		circle.put("PB", "Punjab");
+		circle.put("RJ", "Rajasthan");
+		circle.put("TN", "Tamil Nadu");
+		circle.put("UE", "Uttar Pradesh (East)");
+		circle.put("UW", "Uttar Pradesh (West)");
+		circle.put("WB", "West Bengal");
+		circle.put("ZZ", "Customer Care (All Over India)");
 
 		// Map<Integer, ArrayList<String>> Num = new TreeMap<Integer,
 		// ArrayList<String>>();
@@ -405,250 +876,10 @@ public class DataInitializer extends AsyncTask<Context, Integer, Integer> {
 
     	name_photo.add(photo_uri);
 	    return name_photo;
-	    //return number;
-		/*Uri uri;
-		String[] projection;
-		uri = Uri.parse("content://com.android.contacts/phone_lookup");
-		projection = new String[] { "display_name" };
-		uri = Uri.withAppendedPath(uri, Uri.encode(phoneNumber));
-
-		Cursor cursor = context.getContentResolver().query(uri, projection,
-				null, null, null);
-
-		String contactName = "";
-
-		if (cursor.moveToFirst()) {
-			contactName = cursor.getString(0);
-		}
-
-		cursor.close();
-		cursor = null;
-
-		return contactName;*/
 	}
 
-	public static void InitializeMap(Context context) {
-		SharedPreferences mSharedPreferences = context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 
-        Long startDate = 0l;//cal.getTimeInMillis();
-		// Cache.clear();
-		//Log.d("DataInit", "InitializeMap");
 
-		if (!mainmap.isEmpty() && !dateDurationMap.isEmpty()) {
-			//Log.d(TAG, "Main and dateDurationMap Map Exists");
-			startDate = mSharedPreferences.getLong("CACHE_DATE", 0l);
-			//Log.d("TEST", "Logging from "+startDate);
-		}
-		/*mainmap.clear();
-		dateDurationMap.clear();*/
-		mMappingHelper = new MappingHelper(context);
-      //  Long endDate = new Date().getTime();
-        //CallLog.Calls.DATE + ">? AND "+ CallLog.Calls.DATE + "<?", , String.valueOf(endDate)
-		Cursor managedCursor = context.getContentResolver().query(
-				CallLog.Calls.CONTENT_URI, 
-				new String[] {CallLog.Calls.NUMBER,CallLog.Calls.DATE,CallLog.Calls.TYPE,CallLog.Calls.DURATION}, 
-				CallLog.Calls.DATE + ">?",
-				new String[] { String.valueOf(startDate)}, CallLog.Calls.DATE + " ASC");
-		Editor mEditor = mSharedPreferences.edit();
-		mEditor.putLong("CACHE_DATE", (new Date()).getTime());
-		//Log.d("DataInit", managedCursor.getCount() + " ");
-		// Get Indexes
-		int number = managedCursor.getColumnIndex(CallLog.Calls.NUMBER);
-		int type = managedCursor.getColumnIndex(CallLog.Calls.TYPE);
-		int date = managedCursor.getColumnIndex(CallLog.Calls.DATE);
-		int duration = managedCursor.getColumnIndex(CallLog.Calls.DURATION);
-		// loop through the call log
-		String phNumber;
-		String[] name_image;
-		String ph;
-		String Provider, State;
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
-		int temp_call_duration=0,total_callDuration=0;
-		while (managedCursor.moveToNext()) {
-			//managedCursor.getColumnIndex(CallLog.Calls.)
-			phNumber = (managedCursor.getString(number));
-			////Log.d("TEST",phNumber);
-			if(phNumber == null)
-				continue;
-			name_image = nameCache.get(phNumber);
-			if (name_image == null) {
-				name_image = new String[2];
-				name_image =  getContactName(phNumber).toArray(name_image);
-				/*name_image[0] = 
-				name_image[1] = getContactsImage(phNumber);*/
-
-				if (name_image[0] == "")
-					name_image[0] = "Unknown";
-				nameCache.put(phNumber, name_image);
-			}
-			if (phNumber.startsWith("+91"))
-			{
-				phNumber = phNumber.substring(3).replaceAll(" ","");
-				phNumber = phNumber.replaceAll("-", "");
-			}
-			else
-			{
-				phNumber = phNumber.replaceAll(" ","");
-				phNumber = phNumber.replaceAll("-","");
-			}
-			if(phNumber.startsWith("0"))
-			{
-				phNumber = phNumber.substring(1).replaceAll(" ","");
-				phNumber = phNumber.replaceAll("-", "");
-			}
-			else
-			{
-				phNumber = phNumber.replaceAll(" ","");
-				phNumber = phNumber.replaceAll("-","");
-			}
-			// //Log.d(TAG,phNumber);
-			// Extract other details
-			String callType = managedCursor.getString(type);
-			String callDate = managedCursor.getString(date);
-			// //Log.d("datainit", callDate);
-			
-			String onlyDateString = sdf
-					.format(new Date(Long.valueOf(callDate)));
-			 ////Log.d("datainit", onlyDateString);
-			// SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-			// String onlyDateString = df.format(callDayTime);
-			Date onlyDate = null;
-			
-			try {
-				onlyDate = sdf.parse(onlyDateString);
-			} catch (ParseException e2) {
-				e2.printStackTrace();
-			}
-			// //Log.d("datainit", onlyDate.toString());
-			String callDuration = managedCursor.getString(duration);
-			
-			int dircode = Integer.parseInt(callType);
-			if(dircode == CallLog.Calls.OUTGOING_TYPE && Integer.parseInt(callDuration)<=0)
-				continue;
-			if (!dateDurationMap.containsKey(onlyDate)) {
-				dateDurationMap.put(onlyDate,
-						new ArrayList<Integer>(Arrays.asList(0, 0, 0, 0)));
-
-			}
-			ArrayList<Integer> datedata = (ArrayList<Integer>) dateDurationMap
-					.get(onlyDate);
-			// InCount-0 Indur-1 OutCount-2 OutDur-3
-			switch (dircode) {
-			case CallLog.Calls.OUTGOING_TYPE:
-				datedata.set(2, (Integer) datedata.get(2) + 1) ;//outCount
-				temp_call_duration = Integer.parseInt(callDuration);
-				total_callDuration += temp_call_duration;
-				datedata.set(3, (Integer) datedata.get(3) +temp_call_duration );//outDuration
-				dateDurationMap.put(onlyDate,datedata);
-				break;
-
-			case CallLog.Calls.INCOMING_TYPE:
-				datedata.set(0,(Integer) datedata.get(0) + 1);//inCount
-				datedata.set(1,(Integer) datedata.get(1)+ Integer.parseInt(callDuration));//inDuration
-				dateDurationMap.put(onlyDate,datedata);
-				break;
-			}
-
-			// check for the existance of map entry
-
-			if (!mainmap.containsKey(phNumber)) { 
-				// Extract the first 4 digits of the number
-				try {
-					ph = phNumber.substring(phNumber.length() - 10,
-							phNumber.length() - 6);
-				} catch (Exception e1) {
-					ph = "0000";
-				}
-				// Identify provider and state begin
-				try {
-					// check if already there in cache
-					ArrayList<String> x = (ArrayList<String>) DataInitializer.Cache
-							.get(Integer.parseInt(ph));
-					Provider = DataInitializer.Providers.get(x.get(0));
-					State =DataInitializer.States.get( x.get(1));
-					// //Log.d("cache", "from cache");
-				} catch (Exception e) {
-					try {
-						// if not there in cache, extract
-						ArrayList<String> x = (ArrayList<String>) mMappingHelper.getMapping(Integer.parseInt(ph));
-						// //Log.d("Data mapping",x.get(0)+"  "+x.get(1));
-						Provider =DataInitializer.Providers.get(x.get(0));
-						State = DataInitializer.States.get(x.get(1));
-						DataInitializer.Cache.put((number), x);
-
-						// //Log.d("cache", "from num");
-
-					} catch (Exception ee) {
-						// ee.printStackTrace();
-						// if not found
-						if (ph.length() >= 10)
-							Provider = "Land Line";
-						else
-							Provider = "Unknown";
-						State = "Not Found";
-						// //Log.d("cache", "not found");
-					}
-				}
-				// name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,imageUuri
-				if(Provider==null)
-				{
-					Provider = "Unknown";
-				}
-				if(State==null)
-				{
-					State = "Not Found";
-				}
-				mainmap.put(phNumber, new Object[] { name_image[0], 0, 0, 0, 0,
-						0, Provider, State, name_image[1] });
-
-			}
-			// //Log.d(TAG +"Cahche initialize done", Cache.size() +" ");
-			Object[] data = (Object[]) mainmap.get(phNumber);
-			Provider = (String) data[6];
-			State = (String) data[7];
-			// decide depending on the type of call log
-			switch (dircode) {
-			case CallLog.Calls.OUTGOING_TYPE:
-				data[3] = (Integer) data[3] + 1;
-				data[4] = (Integer) data[4] + Integer.parseInt(callDuration);
-				mainmap.put(phNumber, data);
-				break;
-
-			case CallLog.Calls.INCOMING_TYPE:
-				data[1] = (Integer) data[1] + 1;
-				data[2] = (Integer) data[2] + Integer.parseInt(callDuration);
-				mainmap.put(phNumber, data);
-				break;
-
-			case CallLog.Calls.MISSED_TYPE:
-				data[5] = (Integer) data[5] + 1;
-				mainmap.put(phNumber, data);
-				break;
-
-			}
-
-		}
-		managedCursor.close();
-		//nameCache.clear();
-		mMappingHelper.close();
-		//SharedPreferences mSharedPreferences = context.getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
-		// mEditor = mSharedPreferences.edit();
-		if(startDate==0l)
-		{
-		//Log.d(TAG, "Shared Pref TOTAL_OUT_DURATION = "+total_callDuration);
-		mEditor.putInt("TOTAL_OUT_DURATION", total_callDuration);
-		Date dt =new Date(Long.parseLong("1420050600000"));
-		for (Entry<Date, ArrayList<Integer>> entry : DataInitializer.dateDurationMap
-				.entrySet()) {
-			 dt = entry.getKey();
-			break;
-		}
-		//Log.d(TAG, "First Date = "+dt.toString());
-		mEditor.putLong("FIRST_DATE", dt.getTime());
-		mEditor.commit();
-		}
-		
-	}
 	
 
 }

@@ -5,9 +5,12 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
+import android.util.Log;
 
 import com.builder.ibalance.CallPatternFragment;
 import com.builder.ibalance.database.MappingHelper;
+import com.builder.ibalance.database.helpers.CallLogsHelper;
+import com.builder.ibalance.database.helpers.IbalanceContract;
 import com.builder.ibalance.util.MyApplication;
 
 import java.text.ParseException;
@@ -92,21 +95,33 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 	
 		filteredMainMap.clear();
 		filteredDateDurationMap.clear();
-		MappingHelper mMappingHelper = new MappingHelper(MyApplication.context);
+		MappingHelper mMappingHelper = new MappingHelper();
         Long startDate = params[0];//cal.getTimeInMillis();
       //  Long endDate = new Date().getTime();
         //CallLog.Calls.DATE + ">? AND "+ CallLog.Calls.DATE + "<?", , String.valueOf(endDate)
-		Cursor managedCursor = MyApplication.context.getContentResolver().query(
-				CallLog.Calls.CONTENT_URI, 
-				new String[] {CallLog.Calls.NUMBER,CallLog.Calls.DATE,CallLog.Calls.TYPE,CallLog.Calls.DURATION}, 
+		Cursor managedCursor = (new CallLogsHelper()).
+				getDatabase().
+				query(
+						IbalanceContract.CallLogEntry.TABLE_NAME,
+						null,
+						IbalanceContract.CallLogEntry.COLUMN_NAME_DATE + ">?",
+						new String[] { String.valueOf(startDate)},
+						null,
+						null,
+						IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+ " ASC"
+				);
+		Log.d(TAG, "QUERY Returned " + managedCursor.getCount());
+		/*Cursor managedCursor = context.getContentResolver().query(
+				CallLog.Calls.CONTENT_URI,
+				new String[] {CallLog.Calls.NUMBER,CallLog.Calls.DATE,CallLog.Calls.TYPE,CallLog.Calls.DURATION},
 				CallLog.Calls.DATE + ">?",
-				new String[] { String.valueOf(startDate)}, null);
+				new String[] { String.valueOf(startDate)}, CallLog.Calls.DATE + " ASC");*/
 		//Log.d("DataInit", managedCursor.getCount() + " ");
 		// Get Indexes
-		int number = managedCursor.getColumnIndex(CallLog.Calls.NUMBER);
-		int type = managedCursor.getColumnIndex(CallLog.Calls.TYPE);
-		int date = managedCursor.getColumnIndex(CallLog.Calls.DATE);
-		int duration = managedCursor.getColumnIndex(CallLog.Calls.DURATION);
+		int number = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
+		int type = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE);
+		int date = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DATE);
+		int duration = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION);
 		// loop through the call log
 		String phNumber;
 		String[] name_image;
@@ -214,16 +229,16 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 					// check if already there in cache
 					ArrayList<String> x = (ArrayList<String>) DataInitializer.Cache
 							.get(Integer.parseInt(ph));
-					Provider = DataInitializer.Providers.get(x.get(0));
-					State =DataInitializer.States.get( x.get(1));
+					Provider = DataInitializer.carriers.get(x.get(0));
+					State =DataInitializer.circle.get( x.get(1));
 					// //Log.d("cache", "from cache");
 				} catch (Exception e) {
 					try {
 						// if not there in cache, extract
 						ArrayList<String> x = (ArrayList<String>) mMappingHelper.getMapping(Integer.parseInt(ph));
 						// //Log.d("Data mapping",x.get(0)+"  "+x.get(1));
-						Provider =DataInitializer.Providers.get(x.get(0));
-						State = DataInitializer.States.get(x.get(1));
+						Provider =DataInitializer.carriers.get(x.get(0));
+						State = DataInitializer.circle.get(x.get(1));
 						DataInitializer.Cache.put((number), x);
 
 						// //Log.d("cache", "from num");

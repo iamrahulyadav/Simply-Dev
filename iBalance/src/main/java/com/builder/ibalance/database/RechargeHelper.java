@@ -1,20 +1,18 @@
 package com.builder.ibalance.database;
 
-import java.util.Date;
-
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import com.builder.ibalance.database.models.RechargeEntry;
-import com.builder.ibalance.util.MyApplication;
+
+import java.util.Date;
 
 public class RechargeHelper {
-	MySQLiteHelper mMySQLiteHelper;
+	DatabaseManager mMySQLiteHelper;
 	public RechargeHelper() {
-		mMySQLiteHelper = MySQLiteHelper.getInstance(MyApplication.context);
+		mMySQLiteHelper = DatabaseManager.getInstance();
 	}
 	
 	public void addRechargeEntry(RechargeEntry entry)

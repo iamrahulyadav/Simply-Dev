@@ -1,20 +1,13 @@
 package com.builder.ibalance;
 
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,12 +17,14 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
-import com.builder.ibalance.database.BalanceHelper;
+import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.datainitializers.DataInitializer;
+import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -50,6 +45,15 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.Highlight;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.melnykov.fab.FloatingActionButton;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class BalanceFragment extends Fragment implements OnChartValueSelectedListener, OnClickListener{
 	final String tag = BalanceFragment.class.getSimpleName();
@@ -62,6 +66,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 	ProgressBar balProgress;
 	ArrayList<String> xVals;
 	View rootView;
+    static int sim_slot = 0;
 	public  List<NormalCall> ussdDataList = null;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -70,6 +75,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		 rootView = inflater.inflate(R.layout.fragment_balance, container,
 				false);
 		//MainActivity.dateSelector.setVisible(false);
+		final FloatingActionButton sim_switch = (FloatingActionButton) rootView.findViewById(R.id.sim_switch);
 		mSharedPreferences = getActivity().getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 		predictionTextView = (TextView) rootView.findViewById(R.id.predictionView);
 		predictionTextView.setTypeface(tf);
@@ -79,19 +85,78 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		dataTextView = (TextView) rootView.findViewById(R.id.dataView);
 		dataTextView.setTypeface(tf);
 		balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
-		intializeScreen();
+        mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
+        if(GlobalData.globalSimList.size()>=2)
+        {
+            sim_switch.setVisibility(View.VISIBLE);
+            sim_switch.setOnClickListener(new OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    if(sim_slot == 0)
+                    {
+                        sim_slot = 1;
+
+                    }
+                    else
+                        sim_slot = 0;
+                    Toast.makeText(MyApplication.context,"Switched to Sim "+(sim_slot+1),Toast.LENGTH_LONG).show();
+                    getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
+                    new USSDLoader().execute(sim_slot);
+                }
+            });
+        }
+		else
+        {
+            sim_switch.setVisibility(View.GONE);
+        }
+        getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier+" - "+(sim_slot+1));
+        new USSDLoader().execute(sim_slot);
 		return rootView;
 	}
-	void intializeScreen()
+    class USSDLoader extends AsyncTask<Integer ,Void,Void>
+    {
+
+
+        @Override
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+            rootView.findViewById(R.id.rootRL).setVisibility(View.GONE);
+            rootView.findViewById(R.id.sim_switch).setVisibility(View.GONE);
+            rootView.findViewById(R.id.ussd_progress).setVisibility(View.VISIBLE);
+
+        }
+
+        @Override
+        protected Void doInBackground(Integer... params)
+        {
+            DataInitializer.initializeUSSDData(params[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid)
+        {
+            super.onPostExecute(aVoid);
+
+            rootView.findViewById(R.id.rootRL).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.sim_switch).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.ussd_progress).setVisibility(View.GONE);
+            intializeScreen(sim_slot);
+        }
+    }
+	void intializeScreen(int sim_slot)
 	{
-		currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE", (float)-1.0);
-		currData = mSharedPreferences.getFloat("CURRENT_DATA", (float)-1.0);
+		currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, mSharedPreferences.getFloat("CURRENT_BALANCE",(float)-1.0));
+		currData = mSharedPreferences.getFloat("CURRENT_DATA_"+sim_slot, mSharedPreferences.getFloat("CURRENT_DATA",(float)-1.0));
 		//Log.d(tag,"Balance  = "+currBalance);
 		//Log.d(tag,"DATA  = "+currData);
 		if (DataInitializer.done == true) 
 		{
 			//Log.d(tag, "Setting Predicted days");
-			setPredictedDays();
+			setPredictedDays(sim_slot);
 		}
 		
 	
@@ -111,7 +176,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		if(currBalance>-1.0)
 		{
 		((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
-		mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
 		mLineChart.setVisibility(View.VISIBLE);
 		createGraph();
 		}
@@ -136,7 +200,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 	public void onResume() {
 		//Log.d(tag,"ONResume");
 		//intializeScreen();
-		setPredictedDays();
 		Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(
 			    TrackerName.APP_TRACKER);
 
@@ -165,10 +228,10 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		super.onPause();
 	}
 
-	void setPredictedDays() {
+	void setPredictedDays(int sim_slot) {
 		//Log.d("TEST", "setPredictedDays Called");
 		SharedPreferences mSharedPreferences = getActivity().getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-		currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE", (float)-1.0);
+		currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, (float)-1.0);
 		//Log.d("TEST", "setPredictedDays currBalance = "+currBalance);
 		if(currBalance>=0.0)
 		{

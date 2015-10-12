@@ -1,6 +1,7 @@
 package com.builder.ibalance.database.models;
 
-public class NormalData extends Base {
+public class NormalData extends DatabaseEntryBase
+{
     public Long date;
     public Float cost;
     public Float data_consumed;

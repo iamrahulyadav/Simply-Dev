@@ -1,12 +1,5 @@
+/*
 package com.builder.ibalance.database;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import com.builder.ibalance.util.MyApplication;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -14,7 +7,14 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
+
+import com.builder.ibalance.util.MyApplication;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
@@ -78,10 +78,12 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 		//this.myContext = context;
 	}
 
-	/**
+	*/
+/**
 	 * Creates a empty database on the system and rewrites it with your own
 	 * database.
-	 * */
+	 * *//*
+
 	public void createDataBase() throws IOException {
 
 		boolean dbExist = checkDataBase();
@@ -130,7 +132,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 				
 				db.execSQL(CREATE_SUSPICIOUS_TABLE);
 				//Log.d("databse", "executed " + CREATE_SUSPICIOUS_TABLE);
-				
+
 				
 				db.close();
 
@@ -143,12 +145,14 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
 	}
 
-	/**
+	*/
+/**
 	 * Check if the database already exist to avoid re-copying the file each
 	 * time you open the application.
 	 * 
 	 * @return true if it exists, false if it doesn't
-	 */
+	 *//*
+
 
 	private boolean checkDataBase() {
 		boolean checkdb = false;
@@ -164,11 +168,13 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 		return checkdb;
 	}
 
-	/*
+	*/
+/*
 	 * Copies your database from your local assets-folder to the just created
 	 * empty database in the system folder, from where it can be accessed and
 	 * handled. This is done by transfering bytestream.
-	 */
+	 *//*
+
 	private void copyDataBase() throws IOException {
 		//Log.d(TAG, "copy started");
 		// Open your local db as the input stream
@@ -231,3 +237,4 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
 	}
 }
+*/

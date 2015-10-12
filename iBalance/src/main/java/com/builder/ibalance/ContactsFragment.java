@@ -23,7 +23,7 @@ import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.ContactsModel;
 import com.builder.ibalance.adapters.CustomContactsAdapter;
 import com.builder.ibalance.adapters.MainActivityAdapter;
-import com.builder.ibalance.database.MySQLiteHelper;
+import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -176,8 +176,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 			if(contactsList!=null)
 				return contactsList;
 			contactsList = new ArrayList<ContactsModel>();
-			MySQLiteHelper mSQLiteHelper = new MySQLiteHelper(MyApplication.context);
-			SQLiteDatabase readableDB = mSQLiteHelper.getReadableDatabase();
+			SQLiteDatabase readableDB = DatabaseManager.getInstance().getReadableDatabase();
 
 			Object[] values;
 			Cursor c = null;
