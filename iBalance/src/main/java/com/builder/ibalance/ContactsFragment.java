@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,10 +19,12 @@ import android.widget.ProgressBar;
 
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
-import com.builder.ibalance.adapters.ContactsModel;
 import com.builder.ibalance.adapters.CustomContactsAdapter;
 import com.builder.ibalance.adapters.MainActivityAdapter;
-import com.builder.ibalance.database.DatabaseManager;
+import com.builder.ibalance.database.helpers.BalanceHelper;
+import com.builder.ibalance.database.helpers.ContactDetailHelper;
+import com.builder.ibalance.database.helpers.IbalanceContract;
+import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -35,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map.Entry;
 
 public class ContactsFragment extends Fragment implements OnItemClickListener {
 	final String TAG = "ContactsFragment";
@@ -43,7 +43,8 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 	private ProgressDialog pDialog;
 	private ListView listView;
 	private CustomContactsAdapter adapter;
-	List<ContactsModel> contactsList;
+	List<ContactDetailModel> contactsList;
+
 	// ContactsFragment ctx;
 
 	@Override
@@ -139,7 +140,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		Intent mIntent = new Intent(this.getActivity(),
 				ContactDetailActivity.class);
-		mIntent.putExtra("phnumber", arg1.getTag().toString());
+		mIntent.putExtra("DETAILS", (ContactDetailModel) arg1.getTag());
 		//Log.d(TAG, "Phnumber = " + arg1.getTag().toString());
 		startActivity(mIntent);
 		// Toast.makeText(getActivity().getApplicationContext(), ,
@@ -148,14 +149,14 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 	}
 
 	public class ContactsLoader extends
-			AsyncTask<Integer, Integer, List<ContactsModel>>  {
+			AsyncTask<Integer, Integer, List<ContactDetailModel>>  {
 
 
-		public class customComparator implements Comparator<ContactsModel> {
-			public int compare(ContactsModel object1, ContactsModel object2) {
-				if (object1.total_secs == object2.total_secs)
+		public class customComparator implements Comparator<ContactDetailModel> {
+			public int compare(ContactDetailModel object1, ContactDetailModel object2) {
+				if (object1.total_cost == object2.total_cost)
 					return 0;
-				if (object1.total_secs > object2.total_secs)
+				if (object1.total_cost > object2.total_cost)
 					return -1;
 				else
 					return 1;
@@ -163,8 +164,73 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 		}
 
 		@Override
-		protected List<ContactsModel> doInBackground(Integer... a) {
-			Log.d(TAG, "Contact Async Task Started");
+		protected List<ContactDetailModel> doInBackground(Integer... a) {
+
+			if(contactsList!=null)
+				return contactsList;
+            contactsList = new ArrayList<ContactDetailModel>();
+			ContactDetailHelper mContactDetailHelper = new ContactDetailHelper();
+            BalanceHelper mBalanceHelper = new BalanceHelper();
+            Cursor c = mContactDetailHelper.getAllContacts();
+            String number="",name="",carrier="",circle="",image_uri="";
+            int in_ct=0,in_dur=0,out_c=0,out_dur=0,miss_c=0;
+            float call_cost = 0;
+            int num_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER);
+            int name_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME);
+            int carrier_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER);
+            int circle_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE);
+            int img_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI);
+            int in_ct_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_COUNT);
+            int in_d_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_DURATION);
+            int out_c_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_COUNT);
+            int out_d_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION);
+            int miss_idx = c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT);
+            SharedPreferences mSharedPreferences = MyApplication.context
+                    .getSharedPreferences("USER_DATA",
+                            Context.MODE_PRIVATE);
+            float call_rate = mSharedPreferences.getFloat("CALL_RATE",
+                    1.7f);
+
+            while(c.moveToNext())
+            {
+                number = c.getString(num_idx);
+                name = c.getString(name_idx);
+                carrier = c.getString(carrier_idx);
+                circle = c.getString(circle_idx);
+                image_uri = c.getString(img_idx);
+                in_ct = c.getInt(in_ct_idx);
+                in_dur = c.getInt(in_d_idx);
+                out_c = c.getInt(out_c_idx);
+                out_dur = c.getInt(out_d_idx);
+                miss_c = c.getInt(miss_idx);
+                if (number.length() >= 10 && !number.startsWith("1800"))
+                {
+                    call_cost = mBalanceHelper.getTotalCost(number,out_dur,call_rate);
+                }
+                else
+                {
+                    call_cost = 0f;
+                }
+                contactsList.add(new ContactDetailModel(
+                        number,
+                        name,
+                        carrier,
+                        circle,
+                        image_uri,
+                        in_ct,
+                        in_dur,
+                        out_c,
+                        out_dur,
+                        miss_c,
+                        call_cost));
+            }
+            c.close();
+            Log.d(TAG, "Before Sorting" + contactsList.toString());
+            Collections.sort(contactsList, new customComparator());
+            Log.d(TAG, "After Sorting" + contactsList.toString());
+            return contactsList;
+
+			/*Log.d(TAG, "Contact Async Task Started");
 			if(contactsList==null )
 			{
 				Log.d(TAG, "Contact List is null Initializing");
@@ -241,10 +307,10 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 			}
 			readableDB.close();
 			Collections.sort(contactsList, new customComparator());
-			return contactsList;
+			return contactsList;*/
 		}
 
-		protected void onPostExecute(List<ContactsModel> contactsList1) {
+		protected void onPostExecute(List<ContactDetailModel> contactsList1) {
 			Log.d(TAG, "Contact Async Task Finished");
 			//Log.d(TAG, "Done Initializing data");
 			if(adapter==null)
@@ -257,28 +323,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 			adapter.notifyDataSetChanged();
 		}
 
-		private String getTotalDurationFormatted(int totalSecs) {
-			String min, sec, hr;
-			Integer hrs, mins, secs;
-			secs = totalSecs % 60;
-			if (secs < 10)
-				sec = "0" + secs;
-			else
-				sec = "" + secs;
-			totalSecs = totalSecs / 60;
-			mins = totalSecs % 60;
-			if (mins < 10)
-				min = "0" + mins;
-			else
-				min = "" + mins;
-			totalSecs = totalSecs / 60;
-			hrs = totalSecs;
-			if (hrs < 10)
-				hr = "0" + hrs;
-			else
-				hr = "" + hrs;
-			return hr + ":" + min + ":" + sec;
-		}
+
 
 	}
 

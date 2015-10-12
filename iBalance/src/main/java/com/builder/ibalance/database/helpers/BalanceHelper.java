@@ -96,7 +96,17 @@ public class BalanceHelper {
 
 		// 1. get reference to writable DB
 		SQLiteDatabase db = mMySQLiteHelper.getWritableDatabase();
-
+        String phNumber = entry.lastNumber;
+        if (phNumber.startsWith("+91"))
+        {
+            phNumber = phNumber.substring(3);
+        }
+        if(phNumber.startsWith("0"))
+        {
+            phNumber = phNumber.substring(1);
+        }
+        phNumber = phNumber.replaceAll(" ","");
+        phNumber = phNumber.replaceAll("-", "");
 		// 2. create ContentValues to add key "column"/value
 		ContentValues values = new ContentValues();
 		values.put("DATE", entry.date); // get date in milliseconds
@@ -104,12 +114,12 @@ public class BalanceHelper {
 		values.put("COST", entry.callCost); // get callcost
 		values.put("BALANCE", entry.bal); // get balance
 		values.put("DURATION", entry.callDuration); // get callduration
-		values.put("NUMBER", entry.lastNumber); // last dialled number
+		values.put("NUMBER", phNumber); // last dialled number
 		values.put("MESSAGE", entry.message);
 		// 3. insert
 		db.insert("CALL", // table
-				null, // nullColumnHack
-				values); // key/value -> keys = column names/ values = column
+                null, // nullColumnHack
+                values); // key/value -> keys = column names/ values = column
 							// values
 
 		// 4. close
@@ -249,7 +259,27 @@ public class BalanceHelper {
 		// return entries
 		return entries;
 	}
-
+	public float getTotalCost(String phNumber, int total_duration,float call_rate)
+	{
+       String query = "select sum(COST), sum(DURATION) from CALL where NUMBER = \'+91"
+                + phNumber + "\'" + " OR NUMBER =\'" + phNumber + "\'";
+        Cursor c = mMySQLiteHelper.getReadableDatabase().rawQuery(query,null);
+        float callCost = (float) 0.0;
+        int duration = 0;
+        if(c.moveToFirst())
+        {
+            try
+            {
+                callCost = c.getFloat(0);
+                duration = c.getInt(1);
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        float total_cost = callCost + ((total_duration-duration) * call_rate)/100;
+        return  total_cost;
+	}
 	public void close() {
 		mMySQLiteHelper.close();
 		

@@ -3,7 +3,6 @@ package com.builder.ibalance;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -20,7 +19,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,9 +39,6 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.KahunaAnalytics;
-import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
 
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -60,8 +55,8 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 	Tracker t = ((MyApplication)MyApplication.context).getTracker(
 		    TrackerName.APP_TRACKER);
 
-	public static int appOpenCount = 0;
-	public static int adFrequency = -1;
+	//public static int appOpenCount = 0;
+	//public static int adFrequency = -1;
 
 	 MainActivityAdapter mMainActivityAdapter;
 	public static MenuItem dateSelector = null;
@@ -73,22 +68,12 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		
-		//SubscriptionManager mSubscriptionManager = SubscriptionManager.from(this);
-		////Log.d("DUAL_SIM","Sunscription Count = " + mSubscriptionManager.getActiveSubscriptionInfoCountMax());
 		dataIntializerCompleteEvent = EventBus.getDefault();
 		dataIntializerCompleteEvent.register(this);
-		/*mDataInitializer = new DataInitializer();
-		mDataInitializer.execute(this);*/
 		mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 		current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE", (float)-1.0);
 		minimum_balance = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float)10.0);
-//		RechargeHelper mRechargeHelper = new RechargeHelper(MyApplication.context);
-//		mRechargeHelper.adDummyData();
-		/*mInterstitial = new MoPubInterstitial(MainActivity.this, "37f5fbea1a5847d894ad27f15729d20e");
-        mInterstitial.setInterstitialAdListener(MainActivity.this);
-        mInterstitial.load();*/
-        appOpenCount = mSharedPreferences.getInt("APP_OPEN_COUNT", 0);
+       /* appOpenCount = mSharedPreferences.getInt("APP_OPEN_COUNT", 0);
         appOpenCount++;
         Editor mEditor = mSharedPreferences.edit();
         mEditor.putInt("APP_OPEN_COUNT", appOpenCount);
@@ -118,17 +103,17 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
         if((appOpenCount%adFrequency)==0)
         {
         	//Log.d(tag, "Showing Add");
-        	/*mInterstitial = new MoPubInterstitial(MainActivity.this, "37f5fbea1a5847d894ad27f15729d20e");
+        	*//*mInterstitial = new MoPubInterstitial(MainActivity.this, "37f5fbea1a5847d894ad27f15729d20e");
             mInterstitial.setInterstitialAdListener(MainActivity.this);
-            mInterstitial.load();*/
+            mInterstitial.load();*//*
         }
         else
         {
-        	/*if(mInterstitial!=null)
+        	*//*if(mInterstitial!=null)
         		{
         		mInterstitial.destroy();
-        		}*/
-        }
+        		}*//*
+        }*/
 		
 		if(current_balance>0.0)
 		{
@@ -422,38 +407,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 			FragmentTransaction fragmentTransaction) {
 	}
 
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment {
-		/**
-		 * The fragment argument representing the section number for this
-		 * fragment.
-		 */
-		private static final String ARG_SECTION_NUMBER = "section_number";
 
-		/**
-		 * Returns a new instance of this fragment for the given section number.
-		 */
-		public static PlaceholderFragment newInstance(int sectionNumber) {
-			PlaceholderFragment fragment = new PlaceholderFragment();
-			Bundle args = new Bundle();
-			args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-			fragment.setArguments(args);
-			return fragment;
-		}
-
-		public PlaceholderFragment() {
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
-			return rootView;
-		}
-	}
 public void onEvent(DataLoadingDone mDataLoadingDone)
 {
     if(mMainActivityAdapter.getmBalanceFragment()!=null)
@@ -469,7 +423,6 @@ public void onEvent(DataLoadingDone mDataLoadingDone)
     }
     if(mMainActivityAdapter.getmContFragment()!=null)
     {
-
         ((ContactsFragment) mMainActivityAdapter
                 .getmContFragment()).loadDataAsync(mMainActivityAdapter);
     }

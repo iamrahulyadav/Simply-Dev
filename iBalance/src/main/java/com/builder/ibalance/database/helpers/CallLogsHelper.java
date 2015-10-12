@@ -10,6 +10,7 @@ import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.database.helpers.IbalanceContract.CallLogEntry;
 import com.builder.ibalance.database.models.ContactDetailModel;
+import com.builder.ibalance.database.models.DateDurationModel;
 import com.builder.ibalance.util.Constants;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.MyApplication;
@@ -191,7 +192,7 @@ public class CallLogsHelper
         return 0;
     }
 
-    public Cursor getAllCallLogs()
+    public Cursor getAllCallLogs(long id)
     {
 
         ArrayList<String> projection = new ArrayList<>();
@@ -207,9 +208,8 @@ public class CallLogsHelper
         Cursor managedCursor = MyApplication.context.getContentResolver().query(
                 CallLog.Calls.CONTENT_URI,
                  projection.toArray(new String[projection.size()]) ,
-                        null,
-                        null,
-                        CallLog.Calls._ID + " ASC");
+                CallLog.Calls._ID + ">?",
+                new String[] { String.valueOf(id)}, CallLog.Calls._ID + " ASC");
         return managedCursor;
     }
 
@@ -227,6 +227,7 @@ public class CallLogsHelper
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME,entry.name);
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER, entry.carrier);
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE, entry.circle);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI, entry.image_uri);
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_COUNT, entry.in_count);
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_DURATION, entry.in_duration);
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_COUNT, entry.out_count);
@@ -234,6 +235,75 @@ public class CallLogsHelper
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT, entry.miss_count);
 
         mSqlDB.insert(IbalanceContract.ContactDetailEntry.TABLE_NAME, // table
+                null, // nullColumnHack
+                values); // key/value -> keys = column names/ values = column
+        // values
+    }
+
+    public DateDurationModel getDateDurationModel(long date)
+    {
+        Cursor c = mSqlDB.rawQuery("SELECT * FROM "+IbalanceContract.DateDurationEntry.TABLE_NAME+" WHERE "+IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE+" ="+date,null);
+        DateDurationModel m;
+        if(c.moveToFirst())
+        {
+            m = new
+                    DateDurationModel(
+                    c.getLong(c.getColumnIndex(IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE)),
+                    c.getInt(c.getColumnIndex(IbalanceContract.DateDurationEntry.COLUMN_NAME_WEEK_DAY)),
+                    c.getInt(c.getColumnIndex(IbalanceContract.DateDurationEntry.COLUMN_NAME_IN_COUNT)),
+                    c.getInt(c.getColumnIndex(IbalanceContract.DateDurationEntry.COLUMN_NAME_IN_DURATION)),
+                    c.getInt(c.getColumnIndex(IbalanceContract.DateDurationEntry.COLUMN_NAME_OUT_COUNT)),
+                    c.getInt(c.getColumnIndex(IbalanceContract.DateDurationEntry.COLUMN_NAME_OUT_DURATION)),
+                    c.getInt(c.getColumnIndex(IbalanceContract.DateDurationEntry.COLUMN_NAME_MISS_COUNT))
+            );
+        }
+        else
+        {
+            m = new DateDurationModel(date,0,0,0,0,0,0);
+        }
+
+        return m;
+    }
+
+    public ContactDetailModel getContactDetailFromDb(String phNumber)
+    {
+
+        Cursor c = mSqlDB.rawQuery("SELECT * FROM "+IbalanceContract.ContactDetailEntry.TABLE_NAME+" WHERE "+IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER+" = \""+phNumber+"\"",null);
+        if(c.moveToFirst())
+        {
+            ContactDetailModel m = new ContactDetailModel(
+                   c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER)),
+                   c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME)),
+                   c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER)),
+                   c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE)),
+                   c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI)),
+                   c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_COUNT)),
+                   c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_DURATION)),
+                   c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_COUNT)),
+                   c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION)),
+                   c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT))
+            );
+            return m;
+        }
+        return null;
+    }
+
+    public void insertOrReplace(ContactDetailModel entry)
+    {
+
+        ContentValues values = new ContentValues();
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER, entry.number);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME,entry.name);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER, entry.carrier);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE, entry.circle);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI, entry.image_uri);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_COUNT, entry.in_count);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_DURATION, entry.in_duration);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_COUNT, entry.out_count);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION, entry.out_duration);
+        values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT, entry.miss_count);
+
+        mSqlDB.replace(IbalanceContract.ContactDetailEntry.TABLE_NAME, // table
                 null, // nullColumnHack
                 values); // key/value -> keys = column names/ values = column
         // values

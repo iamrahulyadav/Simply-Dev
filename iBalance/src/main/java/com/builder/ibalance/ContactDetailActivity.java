@@ -2,11 +2,7 @@ package com.builder.ibalance;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -16,8 +12,7 @@ import android.widget.TextView;
 
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
-import com.builder.ibalance.database.DatabaseManager;
-import com.builder.ibalance.datainitializers.DataInitializer;
+import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -46,72 +41,44 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 	TextView name,number,total_duration,outgoing,cost,incoming,missed;
 	ImageView contactPicture;
 	PieChart mChart;
-	Object[] data;
-	@Override
+    ContactDetailModel c;
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_contact_detail);
 		Intent it = this.getIntent();
-		phnumber = it.getStringExtra("phnumber");
-        SQLiteDatabase db = DatabaseManager.getInstance().getReadableDatabase();
-        String query = "select sum(COST), sum(DURATION) from CALL where NUMBER = \'+91"+phnumber+"\'" + " OR NUMBER =\'"+phnumber+"\'";
-		//Log.d("Contacts Loader", "Query = "+ query);
-		Cursor c = db.rawQuery(query,null);
-		c.moveToFirst();
-		int duration= 0;
-		float callCost = (float) 0.0;
-		try{
-			callCost = c.getFloat(0);
-			duration = c.getInt(1);
-		}
-		catch(NullPointerException e)
-		{
-			e.printStackTrace();
-		}
+		c = it.getParcelableExtra("DETAILS");
 		ActionBar mActionBar = getActionBar();
-		db.close();
-		//key = number values = name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,image_uri
-		data = DataInitializer.mainmap.get(phnumber);
-		if(data!=null)
+		if(c!=null)
 		{
+
+            //key = number values = name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,image_uri
 			number = (TextView)findViewById(R.id.contact_detail_number);
 			name  = (TextView)findViewById(R.id.contact_detail_name);
-			mActionBar.setTitle(data[0].toString());
+			mActionBar.setTitle(c.name);
 			total_duration  = (TextView)findViewById(R.id.contact_detail_duration);
 			outgoing = (TextView)findViewById(R.id.contact_detail_outgoing_calls);
 			cost = (TextView)findViewById(R.id.contact_detail_cost);
 			incoming = (TextView)findViewById(R.id.contact_detail_incoming_calls);
 			missed = (TextView)findViewById(R.id.contact_detail_missed_calls);
-			//Log.d("PAI", ""+data.length);
-			
-	        	
-			number.setText(phnumber);
-			name.setText(data[0].toString());
-			
-			total_duration.append(getTotalDurationFormatted(Integer.parseInt(data[2].toString())+Integer.parseInt(data[4].toString())));
-			outgoing.append(data[3].toString());
-			//if((callCost - 0.0)<0.01)
-			if(number.length()<10)
-			{
-				callCost = 0;
-			}
-			else
-			{
-				SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
-				float call_rate = mSharedPreferences.getFloat("CALL_RATE", 1.7f);
-				callCost = (float) ((float)(Integer.parseInt(data[4].toString())-duration)*call_rate/100) + callCost;
-			}
-			
-			cost.append(String.format("%.2f", callCost));
-			incoming.append(data[1].toString());
-			missed.append(data[5].toString());
-			addPieChart();
-			if (data[8]!=null) {
-				contactPicture = (ImageView) findViewById(R.id.contact_detail_picture);
-				////Log.d("PAI", data[8].toString());
-	        	Picasso.with(this).load(data[8].toString()).into(contactPicture);
-			}
+            number.setText(c.number);
+            name.setText(c.name);
+
+            total_duration.append(getTotalDurationFormatted(c.in_duration+c.out_duration));
+            outgoing.append(c.out_count+"");
+
+
+            cost.append(String.format("%.2f", c.total_cost));
+            incoming.append(c.in_count+"");
+            missed.append(c.miss_count+"");
+            addPieChart();
+            if(c.image_uri!=null)
+            {
+                contactPicture = (ImageView) findViewById(R.id.contact_detail_picture);
+                Picasso.with(this).load(c.image_uri).into(contactPicture);
+            }
 		}
+
 	}
 	private void addPieChart() {
 		 mChart = (PieChart) findViewById(R.id.details_pie_chart);
@@ -135,7 +102,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 		 
 
 		 // mChart.setTouchEnabled(false);
-		 mChart.setCenterText(getTotalDurationFormatted(Integer.parseInt(data[2].toString())) + "  Incoming\n" + getTotalDurationFormatted(Integer.parseInt(data[4].toString()))+"  Outgoing");
+		 mChart.setCenterText(getTotalDurationFormatted(c.in_duration) + "  Incoming\n" + getTotalDurationFormatted(c.out_duration)+"  Outgoing");
 		 
 		 setData();
 		 mChart.animateXY(1500, 1500);
@@ -151,8 +118,8 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 		 // IMPORTANT: In a PieChart, no values (Entry) should have the same
 		 // xIndex (even if from different DataSets), since no values can be
 		 // drawn above each other.
-		 yVals1.add(new Entry(Float.parseFloat(data[2].toString()), 0));
-		 yVals1.add(new Entry(Float.parseFloat(data[4].toString()), 1));
+		 yVals1.add(new Entry((float)(c.in_duration), 0));
+		 yVals1.add(new Entry((float)(c.out_duration), 1));
 		 
 		 
 		 ArrayList<String> xVals = new ArrayList<String>();

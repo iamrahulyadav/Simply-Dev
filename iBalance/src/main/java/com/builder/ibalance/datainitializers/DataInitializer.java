@@ -108,21 +108,22 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             long startTime = System.nanoTime();
 			// Cache.clear();
 			done=false;
-            boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME",true);
-            if(firstTime )
-            {
-                //Copy the whole call log + create Main Map and Date Duration Map
-                createTotalDetails();
-            }
-			updateLocalDetails();
-			InitializeData();
+
+
+            InitializeData();
+
+            //Copy the whole call log + create Main Map and Date Duration Map
+            updateDetails();
+
+
+            //updateLocalDetails();
 			//Log.d("DataInit", "WORKING IN InitializeMap");
 			//InitializeMap(MyApplication.context);
 			//Log.d("DataInit", "WORKING IN updateWidgetInitially");
 			updateWidgetInitially(MyApplication.context);
 			done = true;
             long endTime = System.nanoTime();
-            Log.d(TAG,"DataInitializer Took Totally = "+((endTime-startTime)/1000000)+"ms");
+            Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
 			//Log.d("DataInit", "WORKING IN InitializeSmsMap");
 			//InitializeSmsMap(MyApplication.context);
 
@@ -130,11 +131,14 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 		return 0;
 	}
 
-    private void createTotalDetails()
+    private void updateDetails()
     {
         long startTime = System.nanoTime();
+        long last_indexed_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
+        boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME",true);
+        Log.d(TAG, "INDEXED ID = " + last_indexed_id);
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
-        Cursor callLogCursor = mCallLogsHelper.getAllCallLogs();
+        Cursor callLogCursor = mCallLogsHelper.getAllCallLogs(last_indexed_id);
         Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
         int slot,duration,type;
         Calendar c =Calendar.getInstance();
@@ -149,7 +153,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         long curr_date = 0l;
         mMappingHelper = new MappingHelper();
 
-        String number,query="",query_format = "INSERT INTO " +
+        String number,normalizedNumber,query="",query_format = "INSERT INTO " +
                 IbalanceContract.CallLogEntry.TABLE_NAME +
                 "("+
                 IbalanceContract.CallLogEntry.COLUMN_NAME_ID+","+
@@ -170,14 +174,22 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         try
         {
             date = callLogCursor.getLong(date_index);
-            mSharedPreferences.edit().putLong("FIRST_DATE", date).commit();
+            if(firstTime)
+            {
+                mSharedPreferences.edit().putLong("FIRST_DATE", date).commit();
+            }
             c.setTimeInMillis(date + 19800l);
             c.set(Calendar.HOUR, 0);
             c.set(Calendar.MINUTE, 0);
             c.set(Calendar.SECOND, 0);
             c.set(Calendar.MILLISECOND, 0);
             curr_date = c.getTimeInMillis();
+            if(!firstTime)
+            {
+                dateDurationModel = mCallLogsHelper.getDateDurationModel(curr_date);
+            }
             dateDurationModel.setDate(curr_date);
+            //Sun -1 ... Sat -7
             dateDurationModel.setDay_of_the_week(c.get(Calendar.DAY_OF_WEEK));
 
             do
@@ -202,6 +214,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                 number = callLogCursor.getString(number_index);
                 slot = mCallLogsHelper.getSlot(callLogCursor);
                 number = number.replace(" ", "");
+
                 //Converting to IST
                 c.setTimeInMillis(date + 19800l);
                 c.set(Calendar.HOUR, 0);
@@ -216,7 +229,43 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                     dateDurationModel.setDate(curr_date);
                     dateDurationModel.setDay_of_the_week(c.get(Calendar.DAY_OF_WEEK));
                 }
-                contactDetail = getContactDetails(number);
+                if(!firstTime)
+                {
+                    normalizedNumber = number;
+                    if (normalizedNumber.startsWith("+91"))
+                    {
+                        normalizedNumber = normalizedNumber.substring(3);
+                    }
+                    if(normalizedNumber.startsWith("0"))
+                    {
+                        normalizedNumber = normalizedNumber.substring(1);
+                    }
+                    normalizedNumber = normalizedNumber.replaceAll(" ","");
+                    normalizedNumber = normalizedNumber.replaceAll("-", "");
+                    //Check if you got the number in the previous pass
+                    contactDetail = contactDetailMap.get(normalizedNumber);
+                    if(contactDetail == null)
+                    {
+                        //If nt try to get from DB
+                        contactDetail = mCallLogsHelper.getContactDetailFromDb(normalizedNumber);
+                        if (contactDetail == null)
+                        {
+                            //If its a new Number then Get fresh Details
+                            contactDetail = getContactDetails(number);
+                        }
+                        else
+                        {
+                            //Put the Details Fetched from Db into Map
+                            contactDetailMap.put(normalizedNumber, contactDetail);
+
+                        }
+                    }
+                }
+                else
+                {
+                    //First Time Get it Fresh
+                    contactDetail = getContactDetails(number);
+                }
                 switch (type)
                 {
                     case CallLog.Calls.INCOMING_TYPE:
@@ -245,16 +294,27 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             } while (callLogCursor.moveToNext());
             callLogCursor.moveToPrevious();
             long indexed_id = callLogCursor.getLong(id_index);
-            Log.d(TAG,"FIRST TIME INDEXED ID = "+indexed_id);
+            Log.d(TAG, "INDEXED ID = " + indexed_id);
             Editor mEditor = mSharedPreferences.edit();
             mEditor.putLong("INDEXED_ID", indexed_id);
             mEditor.putBoolean("FIRST_TIME", false);
             mEditor.commit();
             callLogCursor.close();
             //Write All ContactDetails to Database
-            for (Entry<String, ContactDetailModel> entry : DataInitializer.contactDetailMap.entrySet())
+            if(firstTime)
             {
-                mCallLogsHelper.insert(entry.getValue());
+                Log.d(TAG,"Contacts Created = "+contactDetailMap.size());
+                for (Entry<String, ContactDetailModel> entry : DataInitializer.contactDetailMap.entrySet())
+                {
+                    mCallLogsHelper.insert(entry.getValue());
+                }
+            }
+            else
+            {
+                for (Entry<String, ContactDetailModel> entry : DataInitializer.contactDetailMap.entrySet())
+                {
+                    mCallLogsHelper.insertOrReplace(entry.getValue());
+                }
             }
             mCallLogsHelper.getDatabase().setTransactionSuccessful();
             long endTime = System.nanoTime();
@@ -277,31 +337,35 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 
         String[] name_image;
         ContactDetailModel contactDetail;
-
-
+        String original_number = phNumber;
+        if (phNumber.startsWith("+91"))
+        {
+            phNumber = phNumber.substring(3);
+        }
+        if(phNumber.startsWith("0"))
+        {
+            phNumber = phNumber.substring(1);
+        }
+        phNumber = phNumber.replaceAll(" ","");
+        phNumber = phNumber.replaceAll("-", "");
         contactDetail = contactDetailMap.get(phNumber);
         if(contactDetail == null)
         {
             //Get Name and Image URI
-            name_image = nameCache.get(phNumber);
+            if(original_number == "121")
+            {
+                int i= 2;
+            }
+            name_image = nameCache.get(original_number);
             if (name_image == null) {
                 name_image = new String[2];
-                name_image =  getContactName(phNumber).toArray(name_image);
+                name_image =  getContactName(original_number).toArray(name_image);
 
                 if (name_image[0] == "")
                     name_image[0] = "Unknown";
-                nameCache.put(phNumber, name_image);
+                nameCache.put(original_number, name_image);
             }
-            if (phNumber.startsWith("+91"))
-            {
-                phNumber = phNumber.substring(3);
-            }
-            if(phNumber.startsWith("0"))
-            {
-                phNumber = phNumber.substring(1);
-            }
-            phNumber = phNumber.replaceAll(" ","");
-            phNumber = phNumber.replaceAll("-", "");
+
 
             //Get Carrier and Circle
             String ph = "0000",carrier = "Unknown",circle = "Unknown";
@@ -326,6 +390,10 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                     // //Log.d("Data mapping",x.get(0)+"  "+x.get(1));
                     carrier =DataInitializer.carriers.get(x.get(0));
                     circle = DataInitializer.circle.get(x.get(1));
+                    if(carrier==null)
+                        carrier = "Unkown";
+                    if(circle == null)
+                        circle = "Unknown";
                     DataInitializer.Cache.put(Integer.parseInt(ph), x);
 
                     // //Log.d("cache", "from num");
@@ -338,6 +406,10 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                         circle = "Unknown";
                 }
             }
+            if(carrier==null)
+                carrier = "Unkown";
+            if(circle == null)
+                circle = "Unknown";
             contactDetail = new ContactDetailModel(phNumber,name_image[0],carrier,circle,name_image[1],0,0,0,0,0);
             contactDetailMap.put(phNumber,contactDetail);
         }
@@ -831,6 +903,10 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 		ArrayList<String> name_photo = new ArrayList<String>();
 		Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
 		Cursor contactLookup;
+        if(number.contains("135514"))
+        {
+         int i = 0;
+        }
 		try{
 	     contactLookup = MyApplication.context.getContentResolver().query(uri, new String[] {ContactsContract.PhoneLookup._ID,
 	                                            ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup.PHOTO_THUMBNAIL_URI }, null, null, null);

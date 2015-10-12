@@ -230,7 +230,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 
 	void setPredictedDays(int sim_slot) {
 		//Log.d("TEST", "setPredictedDays Called");
-		SharedPreferences mSharedPreferences = getActivity().getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+		SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 		currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, (float)-1.0);
 		//Log.d("TEST", "setPredictedDays currBalance = "+currBalance);
 		if(currBalance>=0.0)
