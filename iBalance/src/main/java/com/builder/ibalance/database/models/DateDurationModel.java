@@ -7,13 +7,13 @@ import com.builder.ibalance.database.helpers.IbalanceContract;
  */
 public class DateDurationModel
 {
-    long date;
-    int day_of_the_week;
-    int in_count;
-    int in_duration;
-    int out_count;
-    int out_duration;
-    int miss_count;
+    public long date;
+    public int day_of_the_week;
+    public int in_count;
+    public int in_duration;
+    public int out_count;
+    public int out_duration;
+    public int miss_count;
 
     public DateDurationModel(long date, int day_of_the_week,int in_count, int in_duration, int out_count, int out_duration, int miss_count)
     {
@@ -24,6 +24,15 @@ public class DateDurationModel
         this.out_count = out_count;
         this.out_duration = out_duration;
         this.miss_count = miss_count;
+    }
+
+    public DateDurationModel(int in_count, int in_duration, int out_count, int out_duration,int day_of_the_week)
+    {
+        this.in_count = in_count;
+        this.in_duration = in_duration;
+        this.out_count = out_count;
+        this.out_duration = out_duration;
+        this.day_of_the_week = day_of_the_week;
     }
 
     public void clear()

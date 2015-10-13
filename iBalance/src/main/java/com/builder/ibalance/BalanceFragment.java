@@ -323,7 +323,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		        //Log.d(tag,"7 day old date = "+fromDate);
 		        ussdDataList = mBalanceHelper.getAllEntries();
 				 //Log.d(tag ,ussdDataList.toString());
-				mBalanceHelper.close();
 		 }
 		 else
 			 ussdDataList = DataInitializer.ussdDataList;

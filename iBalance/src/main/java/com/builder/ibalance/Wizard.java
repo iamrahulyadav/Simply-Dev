@@ -199,7 +199,6 @@ public class Wizard extends Activity {
 					
 					ArrayList<String> temp = mMappingHelper.getMapping(
 							Integer.parseInt(first4Digits));
-					mMappingHelper.close();
 					userCarrier = Providers.get(temp.get(0));
 					userCircle = States.get(temp.get(1));
 					//Log.d(TAG + "Provider",userCarrier+temp.get(0) );

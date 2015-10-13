@@ -88,7 +88,6 @@ public class BalanceHelper {
 		for (int i = 0; i < q.length; i++) {
 			db.execSQL(q[i]);
 		}
-		db.close();
 		//Log.d(TAG, "Finished Setting  Data");
 	}
 
@@ -122,8 +121,6 @@ public class BalanceHelper {
                 values); // key/value -> keys = column names/ values = column
 							// values
 
-		// 4. close
-		db.close();
 	}
 
 	public List<NormalCall> getAllEntries() {
@@ -165,7 +162,6 @@ public class BalanceHelper {
 		cursor.close();
 
 		// //Log.d("getAllUSSD Entries()", entries.toString());
-		myDataBase.close();
 		// return entries
 		return entries;
 	}
@@ -248,14 +244,17 @@ public class BalanceHelper {
 				//Log.d(TAG, "Exception CALL_RATE = 1.7");
 				editor.commit();
 			}
-		} else {
+            finally
+            {
+                cursor.close();
+            }
+        } else {
 			editor.putFloat("CALL_RATE", (float) 1.7);
 			//Log.d(TAG, "No data callRate = 1.7");
 			editor.commit();
 		}
 
 		//Log.d("getEntriesFromDate()", entries.toString());
-		myDataBase.close();
 		// return entries
 		return entries;
 	}
@@ -280,8 +279,5 @@ public class BalanceHelper {
         float total_cost = callCost + ((total_duration-duration) * call_rate)/100;
         return  total_cost;
 	}
-	public void close() {
-		mMySQLiteHelper.close();
-		
-	}
+
 }

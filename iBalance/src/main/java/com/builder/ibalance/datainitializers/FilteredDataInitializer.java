@@ -1,90 +1,77 @@
 package com.builder.ibalance.datainitializers;
 
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.CallLog;
-import android.provider.ContactsContract;
 import android.util.Log;
 
 import com.builder.ibalance.CallPatternFragment;
-import com.builder.ibalance.database.MappingHelper;
 import com.builder.ibalance.database.helpers.CallLogsHelper;
+import com.builder.ibalance.database.helpers.ContactDetailHelper;
 import com.builder.ibalance.database.helpers.IbalanceContract;
-import com.builder.ibalance.util.MyApplication;
+import com.builder.ibalance.database.models.ContactDetailModel;
+import com.builder.ibalance.messages.FilteredData;
+import com.builder.ibalance.util.Tuple;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.Locale;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import de.greenrobot.event.EventBus;
 
 public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > {
 	public static boolean mainActivityRunning = true;
 	final String TAG = FilteredDataInitializer.class.getSimpleName();
 	public static Map<String, Object[]> filteredMainMap = new TreeMap<String, Object[]>();
 	public static Map<Date, ArrayList<Integer>> filteredDateDurationMap = new TreeMap<Date, ArrayList<Integer>>();
+    public static Map<String, ContactDetailModel> contactDetailMap = new TreeMap<String, ContactDetailModel>();
 	public static boolean dataLoaded = false;
+    ArrayList<Tuple> mostCalled,carrierOutCount,circleOutDuration;
 	CallPatternFragment mCallPatternFragment;
-	public FilteredDataInitializer(CallPatternFragment mCallPatternFragment)
+    long startDate=0l,endDate= 1544755421;
+	public FilteredDataInitializer(long startDate,long endDate)
 	{
-		
-		this.mCallPatternFragment = mCallPatternFragment;
+        this.startDate = startDate;
+        this.endDate = endDate;
 	}
-	
+	class MutableInt
+    {
+        public int count =0;
+        public MutableInt(int count)
+        {
+            this.count = count;
+        }
+        public void add(int delta)
+        {
+            count+=delta;
+        }
+    }
 	@Override
 	protected void onPostExecute(Integer result) {
 		dataLoaded = true;
 		//Log.d(TAG, "Filtered Data Loaded");
-		if(mainActivityRunning)
-		{
-			mCallPatternFragment.dataLoaded();
-		}
+        FilteredData temp = new FilteredData(mostCalled,carrierOutCount,circleOutDuration);
+        EventBus.getDefault().post(temp);
 		super.onPostExecute(result);
 	}
 
-	public static ArrayList<String> getContactName( String number) {
-		String name="",photo_uri=null;
-		Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
-
-	    Cursor contactLookup = MyApplication.context.getContentResolver().query(uri, new String[] {ContactsContract.PhoneLookup._ID,
-	                                            ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup.PHOTO_THUMBNAIL_URI }, null, null, null);
-
-	    int indexName = contactLookup.getColumnIndex(ContactsContract.Data.DISPLAY_NAME);
-	    int indexPhoto = contactLookup.getColumnIndex(ContactsContract.Data.PHOTO_THUMBNAIL_URI);
-
-	    try {
-	        if (contactLookup != null && contactLookup.moveToNext()) {
-	            name = contactLookup.getString(indexName);
-	            photo_uri = contactLookup.getString(indexPhoto);
-	        }
-	    } finally {
-	        if (contactLookup != null) {
-	            contactLookup.close();
-	        }
-	    }
-	    ArrayList<String> name_photo = new ArrayList<String>();
-	  //  //Log.d(TAG," Name = "+number);
-	    if(name.equals(""))
-	    	{
-	    	name_photo.add(number);
-	    	
-	    	
-	    	}
-	    else
-	    {
-	    	name_photo.add(name);
-	    }
-
-    	name_photo.add(photo_uri);
-	    return name_photo;
-
-		
-		}
-	
+    public class customComparator implements Comparator<ContactDetailModel>
+    {
+        public int compare(ContactDetailModel object1, ContactDetailModel object2) {
+            if (object1.out_count == object2.out_count)
+                return 0;
+            if (object1.out_count > object2.out_count)
+                return -1;
+            else
+                return 1;
+        }
+    }
 	
 	@Override
 	protected Integer doInBackground(Long... params) {
@@ -92,15 +79,147 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 		// Cache.clear();
 		//Log.d("DataInit", "InitializeMap");
 		dataLoaded = false;
-	
-		filteredMainMap.clear();
+        long clockStartTime = System.nanoTime();
+        ContactDetailHelper mContactDetailHelper = new ContactDetailHelper();
+        CallLogsHelper mCallLogsHelper = new CallLogsHelper();
+        Cursor callLogCursor = mCallLogsHelper.getFilteredLocalCallLogs(startDate,endDate);
+        Log.d(TAG, "Number of Rows = " + callLogCursor.getCount());
+        int slot,duration,type;
+        Calendar c =Calendar.getInstance();
+        ContactDetailModel contactDetail;
+        int duration_index =callLogCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION);
+        int type_index =callLogCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE);
+        int number_index =callLogCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
+
+        String number,normalizedNumber;
+        if(!callLogCursor.moveToFirst())
+        {
+            callLogCursor.close();
+            return 0;
+        }
+        Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
+        try
+        {
+
+            while (callLogCursor.moveToNext())
+            {
+                type = callLogCursor.getInt(type_index);
+                duration = callLogCursor.getInt(duration_index);
+                number = callLogCursor.getString(number_index);
+                number = number.replace(" ", "");
+                String phNumber = number;
+                if (phNumber.startsWith("+91"))
+                {
+                    phNumber = phNumber.substring(3);
+                }
+                if(phNumber.startsWith("0"))
+                {
+                    phNumber = phNumber.substring(1);
+                }
+                phNumber = phNumber.replaceAll(" ", "");
+                phNumber = phNumber.replaceAll("-", "");
+
+                contactDetail = contactDetailMap.get(phNumber);
+                //First Time Get it From Contact Detail Map
+                if(contactDetail==null)
+                {
+                    contactDetail = mContactDetailHelper.getContactDetail(phNumber);
+                    contactDetailMap.put(phNumber,contactDetail);
+                }
+
+                switch (type)
+                {
+                    case CallLog.Calls.INCOMING_TYPE:
+                        contactDetail.increment_in_count();
+                        contactDetail.add_to_in_duration(duration);
+                        break;
+
+                    case CallLog.Calls.OUTGOING_TYPE:
+                        contactDetail.increment_out_count();
+                        contactDetail.add_to_out_duration(duration);
+                        break;
+
+                    case CallLog.Calls.MISSED_TYPE:
+                        contactDetail.increment_miss_count();
+                        break;
+                }
+
+            }
+
+            //Process all the ContactDetails
+            Log.d(TAG, "Contacts Created = " + contactDetailMap.size());
+
+            List<ContactDetailModel> mList = new ArrayList<>();
+            Map<String, MutableInt> carrierMap = new TreeMap<String, MutableInt>();
+            Map<String, MutableInt> circleMap = new TreeMap<String, MutableInt>();
+            ContactDetailModel temp;
+            MutableInt ctemp;
+            for (Map.Entry<String, ContactDetailModel> entry : contactDetailMap.entrySet())
+            {
+                temp = entry.getValue();
+                ctemp = carrierMap.get(temp.carrier);
+                if(ctemp == null)
+                {
+                    carrierMap.put(temp.carrier,new MutableInt(temp.out_count));
+                }
+                else
+                {
+                    ctemp.add(temp.out_count);
+                }
+                ctemp = carrierMap.get(temp.circle);
+                if(ctemp == null)
+                {
+                    circleMap.put(temp.circle,new MutableInt(temp.out_duration));
+                }
+                else
+                {
+                    ctemp.add(temp.out_duration);
+                }
+                mList.add(temp);
+            }
+            Collections.sort(mList,new customComparator());
+            carrierOutCount = new ArrayList<Tuple>();
+            for (Map.Entry<String, MutableInt> entry : carrierMap.entrySet())
+            {
+                carrierOutCount.add(new Tuple(entry.getKey(),entry.getValue().count));
+            }
+
+            circleOutDuration = new ArrayList<Tuple>();
+            for (Map.Entry<String, MutableInt> entry : circleMap.entrySet())
+            {
+                circleOutDuration.add(new Tuple(entry.getKey(), entry.getValue().count));
+            }
+            mostCalled = new ArrayList<>();
+            int len = mList.size();
+            for(int i=0;i<len;i++)
+            {
+                //Take only top 5 or less
+                if(i>=5)
+                    break;
+                mostCalled.add(new Tuple(mList.get(i).name, mList.get(i).out_count));
+            }
+            Log.d(TAG,"mostCalled List = "+mostCalled.toString());
+            Log.d(TAG,"Carrier List = "+carrierOutCount.toString());
+            Log.d(TAG, "Circle List = " + circleOutDuration.toString());
+            long endTime = System.nanoTime();
+            Log.d(TAG, "Filtered Data Took  = " + ((endTime - clockStartTime) / 1000000) + "ms");
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            callLogCursor.close();
+        }
+		/*filteredMainMap.clear();
 		filteredDateDurationMap.clear();
 		MappingHelper mMappingHelper = new MappingHelper();
         Long startDate = params[0];//cal.getTimeInMillis();
       //  Long endDate = new Date().getTime();
         //CallLog.Calls.DATE + ">? AND "+ CallLog.Calls.DATE + "<?", , String.valueOf(endDate)
 		Cursor managedCursor = (new CallLogsHelper()).
-				getDatabase().
+				getReadableDatabase().
 				query(
 						IbalanceContract.CallLogEntry.TABLE_NAME,
 						null,
@@ -117,7 +236,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 				CallLog.Calls.DATE + ">?",
 				new String[] { String.valueOf(startDate)}, CallLog.Calls.DATE + " ASC");*/
 		//Log.d("DataInit", managedCursor.getCount() + " ");
-		// Get Indexes
+/*		// Get Indexes
 		int number = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
 		int type = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE);
 		int date = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DATE);
@@ -140,8 +259,8 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 			if (name_image == null) {
 				name_image = new String[2];
 				name_image =  getContactName(phNumber).toArray(name_image);
-				/*name_image[0] = 
-				name_image[1] = getContactsImage(phNumber);*/
+				*//*name_image[0] =
+				name_image[1] = getContactsImage(phNumber);*//*
 
 				if (name_image[0] == "")
 					name_image[0] = "Unknown";
@@ -290,8 +409,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 
 		}
 		managedCursor.close();
-		//nameCache.clear();
-		mMappingHelper.close();
+		//nameCache.clear();*/
 		return 0;
 	}
 

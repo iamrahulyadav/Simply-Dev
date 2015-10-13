@@ -1,71 +1,124 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.builder.ibalance.ContactUs" >
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:background="@color/white"
+              android:paddingLeft="25dp"
+              android:paddingTop="50dp"
+              android:paddingBottom="50dp"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:paddingRight="25dp">
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:layout_weight=".33"
 
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/contactus_number"
-        android:layout_centerHorizontal="true"
-        android:padding="10dp"
-        android:text="Or Mail Us at" />
+        android:id="@+id/whatapp_contact"
+        android:orientation="horizontal"
+        android:background="@drawable/button_selector">
 
-    <TextView
-        android:id="@+id/contactus_number"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
-        android:layout_centerHorizontal="true"
-        android:clickable="true"
-        android:padding="10dp"
-        android:text="+91 9739663487"
-        android:textColor="#0000EE" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/whatsapp_icon_id"
 
-    <TextView
-        android:id="@+id/contactus_mail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView3"
-        android:layout_centerHorizontal="true"
-        android:clickable="true"
-        android:padding="10dp"
-        android:text="simplyappcontact@gmail.com"
-        android:textColor="#0000EE" />
+            android:layout_weight="2.5"
+            android:src="@drawable/whatsapp_icon"/>
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:paddingTop="10dp"
+                android:text="WhatsApp Us "
+                android:gravity="center_horizontal"
+                android:textSize="20dp"
+                android:layout_gravity="center_horizontal" />
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal"
+                android:layout_weight="1"
+                android:text="+91-9535354999"
+                android:textSize="18dp"
+                />
+        </LinearLayout>
+    </LinearLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"/>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:layout_weight=".33"
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="134dp"
-        android:padding="10dp"
-        android:text="You can contact us(Whatsapp) on" />
+        android:id="@+id/mail_contact"
+        android:background="@drawable/button_selector"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/chat_now"
-        style="@style/ussd_popup_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/contactus_mail"
-        android:layout_alignRight="@+id/contactus_mail"
-        android:layout_below="@+id/TextView01"
-        android:text="Chat Now" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2.5"
 
-    <TextView
-        android:id="@+id/TextView01"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/contactus_mail"
-        android:layout_centerHorizontal="true"
-        android:padding="10dp"
-        android:text="Or" />
+            android:id="@+id/mail_icon_id"
+            android:src="@drawable/mail_icon"/>
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:paddingTop="10dp"
+                android:text="Mail Us "
+                android:gravity="center_horizontal"
+                android:textSize="20dp"
+                android:layout_gravity="center_horizontal" />
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="simplyappcontact@gmail.com"
 
-</RelativeLayout>
+                android:textSize="15dp"
+                />
+        </LinearLayout>
+    </LinearLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"/>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:layout_weight=".33"
+        android:orientation="horizontal"
+        android:id="@+id/chat_contact"
+        android:background="@drawable/button_selector">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_weight="2.5"
+            android:id="@+id/chat_icon_id"
+            android:src="@drawable/chat_icon"/>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="Chat Now"
+            android:layout_weight="1"
+            android:textSize="20dp" />
+    </LinearLayout>
+
+
+</LinearLayout>

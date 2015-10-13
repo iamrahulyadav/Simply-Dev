@@ -169,7 +169,6 @@ public class RecorderUpdaterService extends AccessibilityService
                 if (Float.compare(previousBalance,  details.bal) == 0)
                 {
                     // Log.d(tag, "Duplicate  previousBalance ");
-                    mBalanceHelper.close();
                     return;
                 }
                 // if there has been a Recharge
@@ -203,7 +202,6 @@ public class RecorderUpdaterService extends AccessibilityService
                 mBalanceHelper.addEntry(details);
                 // Log.d(tag + "Current Bal", details.bal + " ");
                 sharedPreferences.edit().putFloat("CURRENT_BALANCE_"+details.slot, (float) details.bal).commit();
-                mBalanceHelper.close();
                 break;
             default:
         }
@@ -424,7 +422,6 @@ public class RecorderUpdaterService extends AccessibilityService
                             editor = sharedPreferences.edit();
                             editor.putFloat("CURRENT_BALANCE", (float) details1.bal);
                             editor.commit();
-                            mNormalDataHelper.close();
 
                             break;
                         case DATA_PACK:
@@ -490,7 +487,6 @@ public class RecorderUpdaterService extends AccessibilityService
                             editor.putFloat("CURRENT_DATA",
                                     (float) details2.data_left);
                             editor.commit();
-                            mDataPackHelper.close();
                             break;
                         case NORMAL_SMS:
                             type = "NORMAL_SMS";
@@ -552,7 +548,6 @@ public class RecorderUpdaterService extends AccessibilityService
                             if (Float.compare(previousBalance, detail3.bal) == 0)
                             {
                                 // Log.d(tag, "Duplicate  previousBalance ");
-                                mNormalSMSHelper.close();
                                 return;
                             }
                             // if there has been a Recharge
@@ -588,7 +583,6 @@ public class RecorderUpdaterService extends AccessibilityService
                             editor = sharedPreferences.edit();
                             editor.putFloat("CURRENT_BALANCE", (float) detail3.bal);
                             editor.commit();
-                            mNormalSMSHelper.close();
 
                             break;
 

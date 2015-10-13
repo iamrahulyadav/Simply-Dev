@@ -27,11 +27,14 @@ import android.widget.ViewFlipper;
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.MainActivityAdapter;
+import com.builder.ibalance.database.helpers.ContactDetailHelper;
+import com.builder.ibalance.database.helpers.DateDurationMapHelper;
+import com.builder.ibalance.database.models.DateDurationModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.datainitializers.FilteredDataInitializer;
+import com.builder.ibalance.messages.FilteredData;
 import com.builder.ibalance.util.BarChartItem;
 import com.builder.ibalance.util.ChartItem;
-import com.builder.ibalance.util.DataLoader;
 import com.builder.ibalance.util.LineChartItem;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -63,8 +66,10 @@ import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
+import de.greenrobot.event.EventBus;
+
 public class CallPatternFragment extends Fragment implements
-		OnChartGestureListener,OnItemSelectedListener,DataLoader {
+		OnChartGestureListener,OnItemSelectedListener {
 	int dummy = 0;
 	int spinnerPosition = 0,lastSpinnerPosition = -1;
 	BarChartItem day_count,carrier_duration,circle_count,in_out_duration;
@@ -84,6 +89,8 @@ public class CallPatternFragment extends Fragment implements
 	SharedPreferences mSharedPreferences;
 	FilteredDataInitializer mFilteredDataInitializer;
 	Spinner spinner;
+    DateDurationMapHelper dateDurationMapHelper = new DateDurationMapHelper();
+    ContactDetailHelper contactDetailHelper = new ContactDetailHelper();
 	int start=0;
 	/*
 	 * BarChart
@@ -95,7 +102,8 @@ public class CallPatternFragment extends Fragment implements
 	ProgressDialog mProgressDialog;
 	ListView mListView;
 	ProgressBar mProgressBar;
-    long filterDate = -1l;
+    long startDate = -1l;
+    long endDate =0l;
 	@Override
 	public View onCreateView(LayoutInflater inflater,
 			@Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -111,19 +119,21 @@ public class CallPatternFragment extends Fragment implements
 		weekDays.add("Thu");
 		weekDays.add("Fri");
 		weekDays.add("Sat");
-		
+		EventBus.getDefault().register(this);
 		mSharedPreferences = getActivity().getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 		int filter = mSharedPreferences.getInt("FILTER", 0);
+
+        Calendar c = Calendar.getInstance(TimeZone.getDefault());
+        endDate = c.getTimeInMillis();
 		if(filter == 2)//all data
 		{
-			filterDate = -1l;
+			startDate = -1l;
 			mainMap = DataInitializer.mainmap;
 			dateDurationMap = DataInitializer.dateDurationMap;
 		}
         else if(filter == 1)
         {
             //Get IST Time zone date-time
-            Calendar c = Calendar.getInstance(TimeZone.getDefault());
             //Get nex day same time
             c.add(Calendar.DAY_OF_MONTH, +1);
             //Get Midnight time
@@ -134,7 +144,7 @@ public class CallPatternFragment extends Fragment implements
             //Get 1 Month  Prior midnight time
             c.add(Calendar.MONTH, -1);
             Log.d(TAG, "One Month Prior date = " + c.toString());;
-            filterDate = c.getTimeInMillis();
+            startDate = c.getTimeInMillis();
             mainMap = FilteredDataInitializer.filteredMainMap;
             dateDurationMap = FilteredDataInitializer.filteredDateDurationMap;
             //Log.d(TAG,"else WEEKS  "+ FilteredDataInitializer.filteredDateDurationMap.size());
@@ -142,7 +152,6 @@ public class CallPatternFragment extends Fragment implements
 		else if(filter == 0)
 		{
             //Get IST Time zone date-time
-            Calendar c = Calendar.getInstance(TimeZone.getDefault());
             //Get nex day same time
             c.add(Calendar.DAY_OF_MONTH, +1);
             //Get Midnight time
@@ -153,7 +162,7 @@ public class CallPatternFragment extends Fragment implements
             //Get 7 Days Prior midnight time
             c.add(Calendar.DAY_OF_MONTH, -7);
             Log.d(TAG,"Seven Days Prior date = "+c.toString());;
-            filterDate = c.getTimeInMillis();
+            startDate = c.getTimeInMillis();
 			mainMap = FilteredDataInitializer.filteredMainMap;
 			dateDurationMap = FilteredDataInitializer.filteredDateDurationMap;
 			//Log.d(TAG,"else WEEKS  "+ FilteredDataInitializer.filteredDateDurationMap.size());
@@ -166,7 +175,7 @@ public class CallPatternFragment extends Fragment implements
 		
 			if (DataInitializer.done == true) {
 				//Log.d(TAG, "Data Already loaded");
-				loadData();
+				loadData(null);
 
 			} else {
 				//Log.d(TAG, "Data Still Loading");
@@ -249,15 +258,15 @@ public class CallPatternFragment extends Fragment implements
 	public void loadDataAsync(MainActivityAdapter mMainActivityAdapter) {
 		if(spinnerPosition == 2)
 		{
-			loadData();
+			loadData(null);
 			mMainActivityAdapter.notifyDataSetChanged();
 		}
 
 	}
-	public void loadDataFiltered()
+/*	public void loadDataFiltered()
 	{
 		Log.d(TAG, "Loading Filtered  Charts");
-		if(FilteredDataInitializer.dataLoaded)
+		if(FilteredDataInitializer.dataLoaded && DataInitializer.done)
 		{
 			initializeWeekData();
 			list.clear();
@@ -268,35 +277,7 @@ public class CallPatternFragment extends Fragment implements
 			list.add(new BarChartItem(setOperator_outDurationData(),getActivity(),"Which Carrier Are You Calling The Most?"));
 			list.add(new BarChartItem(setInOut_DurationData(), getActivity(),"What's Your Incoming and Outgoing Pattern?"));
 			list.add(new LineChartItem(setOutCount_outDurationData(),getActivity(),"How much Time is Spent per Call?"));
-		
-			/*if(most_called==null)
-				most_called = new PieChartItem(setMostCalledData(), getActivity(),"Top 5 People Called(no. of calls)");
-			if(day_count==null)
-				day_count = new BarChartItem(setDay_OutCountData(), getActivity(), "Which Day Are You Calling The Most?");	
-			if(circle_count==null)
-				circle_count = new BarChartItem(setCircle_outCountData(), getActivity(),"Which Circle Are You Calling The Most?");		
-			if(carrier_duration==null)
-				carrier_duration = new BarChartItem(setOperator_outDurationData(),getActivity(),"Which Carrier Are You Calling The Most?");			
-			if(in_out_duration==null)
-				in_out_duration	= new BarChartItem(setInOut_DurationData(), getActivity(),"What's Your Incoming and Outgoing Pattern?");			
-			if(count_duration==null)
-				{
-					Log.d(TAG, "Charts are null creating them");
-					count_duration = new LineChartItem(setOutCount_outDurationData(),getActivity(),"How much Time is Spent per Call");
-				}					
-			else
-			{
-				Log.d(TAG, "Charts already exists");
-			}
-			list.add(most_called);
-			list.add(day_count);
-			list.add(circle_count);
-			list.add(carrier_duration);
-			list.add(in_out_duration);
-			list.add(count_duration);
-		}*/
-	/*	if (mProgressDialog != null)
-			mProgressDia//Log.dismiss();*/
+
 		mProgressBar.setVisibility(View.GONE);
 		mListView.setVisibility(View.VISIBLE);
 		
@@ -305,33 +286,15 @@ public class CallPatternFragment extends Fragment implements
 		cda.notifyDataSetChanged();
 		//Log.d(TAG, "Finished Loading  Charts");
 		}
-	}
-	public void loadData() {
+	}*/
+	public void loadData(FilteredData mFilteredData)
+    {
 		Log.d(TAG, "Loading Charts");
 		if(DataInitializer.done)
 		{
 			list.clear();
 		initializeWeekData();
 		{
-			/*if(most_called==null)
-				most_called = new PieChartItem(setMostCalledData(), getActivity(),"Top 5 People Called(no. of calls)");
-			if(day_count==null)
-				day_count = new BarChartItem(setDay_OutCountData(), getActivity(), "Which Day Are You Calling The Most?");	
-			if(circle_count==null)
-				circle_count = new BarChartItem(setCircle_outCountData(), getActivity(),"Which Circle Are You Calling The Most?");		
-			if(carrier_duration==null)
-				carrier_duration = new BarChartItem(setOperator_outDurationData(),getActivity(),"Which Carrier Are You Calling The Most?");			
-			if(in_out_duration==null)
-				in_out_duration	= new BarChartItem(setInOut_DurationData(), getActivity(),"What's Your Incoming and Outgoing Pattern?");			
-			if(count_duration==null)
-				count_duration = new LineChartItem(setOutCount_outDurationData(),getActivity(),"How much Time is Spent per Call?");					
-			
-			list.add(most_called);
-			list.add(day_count);
-			list.add(circle_count);
-			list.add(carrier_duration);
-			list.add(in_out_duration);
-			list.add(count_duration);*/
 			list.add( new PieChartItem(setMostCalledData(), getActivity(),"Top 5 People Called(no. of calls)"));
 			list.add(new BarChartItem(setDay_OutCountData(), getActivity(), "Which Day Are You Calling The Most?"));
 			list.add(new BarChartItem(setCircle_outCountData(), getActivity(),"Which Circle Are You Calling The Most?"));
@@ -366,38 +329,43 @@ public class CallPatternFragment extends Fragment implements
 		Log.d(TAG, "Changing Charts");
 		mListView.setVisibility(View.GONE);
 		mProgressBar.setVisibility(View.VISIBLE);
+        Calendar c = Calendar.getInstance(TimeZone.getDefault());
+        //Will Get Data Back By EventBus
 		switch (position) {
 		case 0:
-			
-			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.DATE, 1);
-			Date nextDayStart = resetTime(cal.getTime());
-			cal.setTime(nextDayStart);
-	        cal.add(Calendar.DATE, -7); //exact 1 week
-	        //Log.d("SPINNER", "Loading week data");
+            endDate = c.getTimeInMillis();
+            c.add(Calendar.DAY_OF_MONTH, +1);
+            //Get Midnight time
+            c.set(Calendar.HOUR, 0);
+            c.set(Calendar.MINUTE, 0);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            //Get 7 Days Prior midnight time
+            c.add(Calendar.DAY_OF_MONTH, -7);
+            Log.d(TAG, "Seven Days Prior date = " + c.toString());;
+            startDate = c.getTimeInMillis(); //exact 1 week
 	        mProgressBar.setVisibility(View.VISIBLE);
 			mListView.setVisibility(View.GONE);
-	        new FilteredDataInitializer(this).execute(cal.getTimeInMillis());
+	        new FilteredDataInitializer(startDate,endDate).execute();
 			break;
 		case 1:
-			cal = Calendar.getInstance();
-			cal.add(Calendar.DATE, 1);
-			 nextDayStart = resetTime(cal.getTime());
-			cal.setTime(nextDayStart);
-	        cal.add(Calendar.DATE, -30); //excat 30ays
-	        //Log.d("SPINNER", "Loading Month data");
+            endDate = c.getTimeInMillis();
+            c.add(Calendar.DAY_OF_MONTH, +1);
+            //Get Midnight time
+            c.set(Calendar.HOUR, 0);
+            c.set(Calendar.MINUTE, 0);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            //Get 7 Days Prior midnight time
+            c.add(Calendar.MONTH, -1);
+            Log.d(TAG, "Seven Days Prior date = " + c.toString());;
+            startDate = c.getTimeInMillis(); //exact 1 week
 	        mProgressBar.setVisibility(View.VISIBLE);
 			mListView.setVisibility(View.GONE);
-	        new FilteredDataInitializer(this).execute(cal.getTimeInMillis());
+            new FilteredDataInitializer(startDate,endDate).execute();
 			break;
 		case 2:
-			//if(dummy>1)
-			{	
-			mainMap = DataInitializer.mainmap;
-			dateDurationMap = DataInitializer.dateDurationMap;
-			loadData();
-			//mListView.setVisibility(View.VISIBLE);
-			}
+            new FilteredDataInitializer(0l,1544755421).execute();
 			break;
 
 		default:
@@ -432,10 +400,19 @@ public class CallPatternFragment extends Fragment implements
 	// InCount-0 Indur-1 OutCount-2 OutDur-3
 	void initializeWeekData()
 	{
+        //Asof now not using inCount but querying it for future use
 		 outCount = new ArrayList<Integer>(Collections.nCopies(7, 0));
 		 inDuration = new ArrayList<Integer>(Collections.nCopies(7, 0));
 		 outDuration = new ArrayList<Integer>(Collections.nCopies(7, 0));
-		Calendar c = Calendar.getInstance();
+         ArrayList<DateDurationModel> avgDateDuarationDetail =
+                 dateDurationMapHelper.getCallPatterDetails(startDate, endDate);
+        for(DateDurationModel m: avgDateDuarationDetail)
+        {
+            outCount.set(m.day_of_the_week-1,m.out_count);
+            inDuration.set(m.day_of_the_week-1,m.in_duration);
+            outDuration.set(m.day_of_the_week-1,m.out_duration);
+        }
+		/*Calendar c = Calendar.getInstance();
 		int weekCount = 0;
 		//Log.d(TAG,"GETTING WEEKS  "+ dateDurationMap.size());
 		for (Entry<Date, ArrayList<Integer>> entry : dateDurationMap.entrySet()) {
@@ -449,7 +426,7 @@ public class CallPatternFragment extends Fragment implements
 			outDuration.set(dayOfWeek,outDuration.get(dayOfWeek)+value.get(3));
 		}
 		c.setTime(new Date());
-		
+
 		for (Entry<Date, ArrayList<Integer>> entry : dateDurationMap.entrySet())
 		{
 			//Log.d(TAG,"GETTING WEEKS count");
@@ -467,7 +444,7 @@ public class CallPatternFragment extends Fragment implements
 			inDuration.set(i, (int)Math.ceil((float)((float)inDuration.get(i)/weekCount/60)));
 			outDuration.set(i, (int)Math.ceil((float)((float)outDuration.get(i)/weekCount/60)));
 		}
-		
+		*/
 		//Log.d(TAG+ "WeekData Induration in mins", inDuration.toString());
 		//Log.d(TAG+ "WeekData", outDuration.toString());
 		//Log.d(TAG+ "WeekData", outCount.toString());
@@ -565,12 +542,6 @@ public class CallPatternFragment extends Fragment implements
 						Integer.parseInt(temp.get(value[7].toString())
 								.toString())
 								+ Integer.parseInt(value[3].toString()));
-
-			////Log.d(TAG, "Outcount" + value[3].toString());
-			/*
-			 * dateData.add(new DataFeeder(key, value.get(0), value.get(1),
-			 * value .get(2), value.get(3)));
-			 */
 		}
 		for (Entry<String, Integer> entry : temp.entrySet()) {
 			xVals.add(entry.getKey());
@@ -863,7 +834,7 @@ public class CallPatternFragment extends Fragment implements
 	public void onChartFling(MotionEvent e1, MotionEvent e2, float velocityX,
 			float velocityY) {
 		Log.i("Fling", "Chart flinged. VeloX: " + velocityX + ", VeloY: "
-				+ velocityY);
+                + velocityY);
 
 		/*
 		 * ////Log.d("CallLog", "Fling detected"); // Swipe left (next) if
@@ -909,22 +880,12 @@ public class CallPatternFragment extends Fragment implements
 		// TODO Auto-generated method stub
 		
 	}
-	@Override
-	public void dataLoaded() {
-		//Log.d("TAG"+ "SPINNER"," FilteredDataInitializer Loaded");
-		if(spinnerPosition<2)
-		{
-		mainMap = FilteredDataInitializer.filteredMainMap;
-		dateDurationMap = FilteredDataInitializer.filteredDateDurationMap;
-		loadDataFiltered();
-		}
-		else
-		{
-			//Log.d("TAG"+ "SPINNER"," All Data must be  Loaded");
-		}
-		
-		
-	}
+
+    public void onEvent(FilteredData mFilteredData)
+    {
+        Log.d(TAG,"Filtered Data Received");
+        loadData(mFilteredData);
+    }
 
 	
 }

@@ -9,7 +9,6 @@ import android.support.v13.app.FragmentStatePagerAdapter;
 import com.builder.ibalance.BalanceFragment;
 import com.builder.ibalance.CallPatternFragment;
 import com.builder.ibalance.ContactsFragment;
-import com.builder.ibalance.MainActivity.PlaceholderFragment;
 import com.builder.ibalance.R;
 import com.builder.ibalance.RechargeFragment;
 
@@ -21,7 +20,7 @@ import java.util.Locale;
  */
 public class MainActivityAdapter extends FragmentPagerAdapter  {
 	private Fragment mCallPatternFragment,mContFragment,mBalanceFragment,mRechargeFragment;
-	
+
 	public Fragment getmBalanceFragment() {
 		return mBalanceFragment;
 	}
@@ -64,7 +63,7 @@ public class MainActivityAdapter extends FragmentPagerAdapter  {
 		// getItem is called to instantiate the fragment for the given page.
 		// Return a PlaceholderFragment (defined as a static inner class
 		// below).
-	
+
 		//Log.d(TAG, "Shabazz Position = " + position);
 		switch (position) {
 		case 0:
@@ -78,15 +77,15 @@ public class MainActivityAdapter extends FragmentPagerAdapter  {
 			return mBalanceFragment;
 		case 1:
 			this.position=1;
-			
+
 			if(mCallPatternFragment==null)
 			{
 				//Log.d(TAG, "Creating New CallPattternFragment");
 				mCallPatternFragment= new CallPatternFragment();
-				
+
 			}
 			return mCallPatternFragment;
-				
+
 			//return new CallPatternFragment();	
 		case 2:
 			this.position=2;
@@ -94,7 +93,7 @@ public class MainActivityAdapter extends FragmentPagerAdapter  {
 			{
 				//Log.d(TAG, "Creating New mContFragment");
 				mContFragment= new ContactsFragment();
-				
+
 			}
 			return mContFragment;
 			//return new ContactsFragment();	
@@ -106,13 +105,11 @@ public class MainActivityAdapter extends FragmentPagerAdapter  {
 				mRechargeFragment = new RechargeFragment();
 			}
 			return mRechargeFragment;
-			//return new RechargeFragment();	
-
-		default:
-			return PlaceholderFragment.newInstance(position + 1);
+			//return new RechargeFragment();
+            default: return null;
 		}
-		
 	}
+
 
 	@Override
 	public int getCount() {

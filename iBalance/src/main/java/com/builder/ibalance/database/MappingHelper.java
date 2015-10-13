@@ -44,15 +44,14 @@ public class MappingHelper {
 				temp.add(cursor.getString(2));
 
 			}
-			cursor.close();
+
 		}
+
+        cursor.close();
 		return temp;
 	}
 
-	public void close() {
-		myDB.close();
-		
-	}
+
 	
 
 }

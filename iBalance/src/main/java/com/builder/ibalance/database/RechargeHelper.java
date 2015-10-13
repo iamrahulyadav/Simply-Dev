@@ -31,8 +31,6 @@ public class RechargeHelper {
 				null, //nullColumnHack
 				values); // key/value -> keys = column names/ values = column values
 
-		// 4. close
-		db.close();
 	}
 	public void adDummyData()
 	{

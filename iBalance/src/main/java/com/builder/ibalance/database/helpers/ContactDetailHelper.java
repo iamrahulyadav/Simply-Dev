@@ -8,6 +8,8 @@ import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.util.MyApplication;
 
+import java.sql.SQLException;
+
 /**
  * Created by Shabaz on 03-Oct-15.
  */
@@ -37,6 +39,25 @@ public class ContactDetailHelper
                 null,
                 null);
         return c;
+    }
+    public ContactDetailModel getContactDetail(String phNumber) throws SQLException
+    {
+
+        Cursor c = mSqlDB.rawQuery("SELECT "+IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME+","+
+                IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER+","+
+                IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE+" FROM " +
+                IbalanceContract.ContactDetailEntry.TABLE_NAME + " WHERE " +
+                IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER + " = \"" + phNumber + "\"", null);
+        ContactDetailModel m ;
+        if(c.moveToFirst())
+        {
+            m = new ContactDetailModel(phNumber,c.getString(0),c.getString(1),c.getString(2));
+        }
+        else
+        {
+            m = new ContactDetailModel(phNumber,phNumber,"Unknown","Unknown",0);
+        }
+        return m;
     }
 
     public ContactDetailModel getPopUpDetails(String phNumber)

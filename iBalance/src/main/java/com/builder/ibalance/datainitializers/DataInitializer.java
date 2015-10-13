@@ -99,7 +99,6 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         ussdDataList.clear();
         ussdDataList =( mBalanceHelper.getEntriesFromDate(fromDate.getTime(),sim_slot));
 		 //Log.d(TAG,ussdDataList.toString());
-		mBalanceHelper.close();
 	}
 
 	@Override
@@ -173,13 +172,13 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         mCallLogsHelper.getDatabase().beginTransaction();
         try
         {
-            date = callLogCursor.getLong(date_index);
+            date = callLogCursor.getLong(date_index) + 19800l;
             if(firstTime)
             {
                 mSharedPreferences.edit().putLong("FIRST_DATE", date).commit();
             }
-            c.setTimeInMillis(date + 19800l);
-            c.set(Calendar.HOUR, 0);
+            c.setTimeInMillis(date);
+            c.set(Calendar.HOUR_OF_DAY, 0);
             c.set(Calendar.MINUTE, 0);
             c.set(Calendar.SECOND, 0);
             c.set(Calendar.MILLISECOND, 0);
@@ -210,14 +209,14 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                     }
                 }
                 id = callLogCursor.getLong(id_index);
-                date = callLogCursor.getLong(date_index);
+                //Converting to IST
+                date = callLogCursor.getLong(date_index) +19800l;
                 number = callLogCursor.getString(number_index);
                 slot = mCallLogsHelper.getSlot(callLogCursor);
                 number = number.replace(" ", "");
 
-                //Converting to IST
-                c.setTimeInMillis(date + 19800l);
-                c.set(Calendar.HOUR, 0);
+                c.setTimeInMillis(date);
+                c.set(Calendar.HOUR_OF_DAY, 0);
                 c.set(Calendar.MINUTE, 0);
                 c.set(Calendar.SECOND, 0);
                 c.set(Calendar.MILLISECOND, 0);
@@ -292,6 +291,9 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                 //Log.d(tag,"Query = "+query);
                 mCallLogsHelper.executeQuery(query + "");
             } while (callLogCursor.moveToNext());
+            //Enter the last Entry
+            mCallLogsHelper.executeQuery(dateDurationModel.toString());
+            dateDurationModel.clear();
             callLogCursor.moveToPrevious();
             long indexed_id = callLogCursor.getLong(id_index);
             Log.d(TAG, "INDEXED ID = " + indexed_id);
@@ -633,7 +635,6 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         }
         managedCursor.close();
         //nameCache.clear();
-        mMappingHelper.close();
         //SharedPreferences mSharedPreferences = context.getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
         // mEditor = mSharedPreferences.edit();
         if(startDate==0l)
@@ -654,17 +655,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         long endTime = System.nanoTime();
         Log.d(TAG, "Initialize Map Took  = " + ((endTime - startTime) / 1000000) + "ms");
     }
-    private void updateLocalDetails()
-	{
-        Log.d(TAG, "updateLocalDetails");
 
-		long last_indexed_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
-        Log.d(TAG,"INDEXED ID = "+last_indexed_id);
-		CallLogsHelper mCallLogsHelper = new CallLogsHelper();
-		long new_id = mCallLogsHelper.updateLocalDatabase(last_indexed_id);
-        Log.d(TAG,"NEW ID = "+new_id);
-		mSharedPreferences.edit().putLong("INDEXED_ID", new_id).commit();
-	}
 
 
 
@@ -829,7 +820,6 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 			}
 		}
 		cursor.close();
-		mMappingHelper.close();
 		/*
 		 * for (Entry<String, SmsLogs> entry : smsMap.entrySet()) {
 		 * 

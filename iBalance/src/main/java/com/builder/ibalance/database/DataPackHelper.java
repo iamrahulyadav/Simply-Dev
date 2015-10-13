@@ -38,7 +38,6 @@ public class DataPackHelper {
 							// values
 
 		// 4. close
-		db.close();
 	}
 	//"DATA_PACK =   _id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
 	// + "TYPE INTEGER, "+ "DATA_CONSUMED FLOAT,  "+ "REMAINING INTEGER, " +"VALIDITY TEXT, "+"BALANCE FLOAT , " +"MESSAGE TEXT"+ " )";
@@ -73,7 +72,6 @@ public class DataPackHelper {
 		cursor.close();
 
 		// //Log.d("getAllUSSD Entries()", entries.toString());
-		myDataBase.close();
 		// return entries
 		return entries;
 	}
@@ -94,10 +92,6 @@ public class DataPackHelper {
 	}
 
 
-	public void close() {
-		mMySQLiteHelper.close();
-		
-	}
 }
 
 

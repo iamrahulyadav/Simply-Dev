@@ -76,7 +76,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
         db.execSQL(IbalanceContract.CREATE_SUSPICIOUS_TABLE);
         //Log.d("databse", "executed " + CREATE_SUSPICIOUS_TABLE);
-        db.close();
     }
     /**
      * Constructor should be private to prevent direct instantiation.

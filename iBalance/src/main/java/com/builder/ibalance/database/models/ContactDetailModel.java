@@ -34,6 +34,14 @@ public class ContactDetailModel implements Parcelable
         this.miss_count = miss_count;
     }
 
+    public ContactDetailModel(String number, String name, String carrier, String circle)
+    {
+        this.number = number;
+        this.name = name;
+        this.carrier = carrier;
+        this.circle = circle;
+    }
+
     public ContactDetailModel(String name, String carrier, String circle, String image_uri, float total_cost)
     {
         this.name = name;
@@ -54,7 +62,6 @@ public class ContactDetailModel implements Parcelable
         this.in_duration = in_duration;
         this.out_count = out_count;
         this.out_duration = out_duration;
-
         this.miss_count = miss_count;
         this.total_cost = total_cost;
     }

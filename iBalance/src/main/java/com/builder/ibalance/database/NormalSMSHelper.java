@@ -40,8 +40,6 @@ public class NormalSMSHelper {
 				values); // key/value -> keys = column names/ values = column
 							// values
 
-		// 4. close
-		db.close();
 	}
 
 	public List<NormalSMS> getAllEntries() {
@@ -74,7 +72,6 @@ public class NormalSMSHelper {
 		cursor.close();
 
 		// //Log.d("getAllUSSD Entries()", entries.toString());
-		myDataBase.close();
 		// return entries
 		return entries;
 	}
@@ -96,9 +93,6 @@ public class NormalSMSHelper {
 
 	
 
-	public void close() {
-		mMySQLiteHelper.close();
-		
-	}
+
 }
 
