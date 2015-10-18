@@ -12,4 +12,21 @@ public class Tuple
         string_val = s;
         int_val = i;
     }
+
+    public String getString_val()
+    {
+        return string_val;
+    }
+
+    public int getInt_val()
+    {
+        return int_val;
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return string_val+" : "+int_val+"\n";
+    }
 }

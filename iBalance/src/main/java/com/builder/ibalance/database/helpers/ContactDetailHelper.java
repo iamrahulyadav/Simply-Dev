@@ -57,6 +57,7 @@ public class ContactDetailHelper
         {
             m = new ContactDetailModel(phNumber,phNumber,"Unknown","Unknown",0);
         }
+        c.close();
         return m;
     }
 
@@ -115,5 +116,101 @@ public class ContactDetailHelper
         return m;
         }
         return new ContactDetailModel(phNumber,"Unknown","Unknown",null,0.0f);
+    }
+    //Returns in  secs
+    public int getOutDurationLocalSameCarrier(String sim_circle, String sim_carrier)
+    {
+        int total_duration = 0;
+        Cursor c = mSqlDB.rawQuery("SELECT SUM("
+                +IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION +") FROM " +
+                IbalanceContract.ContactDetailEntry.TABLE_NAME + " WHERE " +
+                IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE + " = \"" + sim_circle + "\" "
+                +" AND "
+                +IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER + " = \"" + sim_carrier + "\""
+                , null);
+        if(c.moveToFirst())
+        {
+            total_duration = c.getInt(0);
+        }
+        c.close();
+        return total_duration;
+    }
+
+    public int getOutDurationLocalDiffCarrier(String sim_circle, String sim_carrier)
+    {
+        int total_duration = 0;
+        Cursor c = mSqlDB.rawQuery("SELECT SUM("
+                +IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION +") FROM " +
+                IbalanceContract.ContactDetailEntry.TABLE_NAME + " WHERE " +
+                IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE + " = \"" + sim_circle + "\" "
+                +" AND "
+                +IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER + " != \"" + sim_carrier + "\""
+                , null);
+        if(c.moveToFirst())
+        {
+            total_duration = c.getInt(0);
+        }
+        c.close();
+        return total_duration;
+    }
+
+    public int getOutDurationSTDSameCarrier(String sim_circle, String sim_carrier)
+    {
+        int total_duration = 0;
+        Cursor c = mSqlDB.rawQuery("SELECT SUM("
+                +IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION +") FROM " +
+                IbalanceContract.ContactDetailEntry.TABLE_NAME + " WHERE " +
+                IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE + " != \"" + sim_circle + "\" "
+                +" AND "
+                +IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER + " = \"" + sim_carrier + "\""
+                , null);
+        if(c.moveToFirst())
+        {
+            total_duration = c.getInt(0);
+        }
+        c.close();
+        return total_duration;
+    }
+
+    public int getOutDurationSTDDiffCarrier(String sim_circle, String sim_carrier)
+    {
+        int total_duration = 0;
+        Cursor c = mSqlDB.rawQuery("SELECT SUM("
+                +IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION +") FROM " +
+                IbalanceContract.ContactDetailEntry.TABLE_NAME + " WHERE " +
+                IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE + " != \"" + sim_circle + "\" "
+                +" AND "
+                +IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER + " != \"" + sim_carrier + "\""
+                , null);
+        if(c.moveToFirst())
+        {
+            total_duration = c.getInt(0);
+        }
+        c.close();
+        return total_duration;
+    }
+
+    public String getName(String phNumber)
+    {
+        String name = "Unknown";
+        if (phNumber.startsWith("+91"))
+        {
+            phNumber = phNumber.substring(3);
+        }
+        if(phNumber.startsWith("0"))
+        {
+            phNumber = phNumber.substring(1);
+        }
+        phNumber = phNumber.replaceAll(" ","");
+        phNumber = phNumber.replaceAll("-", "");
+        Cursor c = mSqlDB.rawQuery("SELECT "+IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME+" FROM " +
+                IbalanceContract.ContactDetailEntry.TABLE_NAME + " WHERE " +
+                IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER + " = \"" + phNumber + "\"", null);
+        if(c.moveToFirst())
+        {
+            name = c.getString(0);
+        }
+        c.close();
+        return name;
     }
 }

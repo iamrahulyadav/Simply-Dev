@@ -33,7 +33,8 @@ import java.util.ArrayList;
 
 public class ContactDetailActivity extends Activity implements OnChartValueSelectedListener {
 	@Override
-	public boolean onNavigateUp() {
+	public boolean onNavigateUp()
+    {
 	    onBackPressed();
 	    return true;
 	}
@@ -42,7 +43,11 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 	ImageView contactPicture;
 	PieChart mChart;
     ContactDetailModel c;
-    @Override
+
+
+
+
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_contact_detail);
@@ -52,6 +57,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 		if(c!=null)
 		{
 
+            phnumber = c.number;
             //key = number values = name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,image_uri
 			number = (TextView)findViewById(R.id.contact_detail_number);
 			name  = (TextView)findViewById(R.id.contact_detail_name);

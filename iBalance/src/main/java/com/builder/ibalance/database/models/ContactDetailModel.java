@@ -95,38 +95,54 @@ public class ContactDetailModel implements Parcelable
     }
 
 
-        @Override
-        public String toString()
-        {
-            return
-                    "INSERT INTO " +
-                            IbalanceContract.ContactDetailEntry.TABLE_NAME +
-                            " ("+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_COUNT+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_DURATION+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_COUNT+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION+","+
-                            IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT+
-                            ") " +
-                            "VALUES " +
-                            "('"+number+"','"
-                            +name+"','"
-                            +carrier+"','"
-                            +circle+"','"
-                            +image_uri+"',"
-                            +in_count+","
-                            +in_duration+","
-                            +out_count+", "
-                            +out_duration+", "
-                            +miss_count
-                            +")";
-        }
+    @Override
+    public String toString()
+    {
+        return "ContactDetailModel{" +
+                "number='" + number + '\'' +
+                ", name='" + name + '\'' +
+                ", carrier='" + carrier + '\'' +
+                ", circle='" + circle + '\'' +
+                ", image_uri='" + image_uri + '\'' +
+                ", in_count=" + in_count +
+                ", in_duration=" + in_duration +
+                ", out_count=" + out_count +
+                ", out_duration=" + out_duration +
+                ", miss_count=" + miss_count +
+                ", total_cost=" + total_cost +
+                '}'+'\n';
+    }
 
+    public String toSQLString()
+    {
+        return
+                "INSERT INTO " +
+                        IbalanceContract.ContactDetailEntry.TABLE_NAME +
+                        " ("+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_COUNT+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_DURATION+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_COUNT+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION+","+
+                        IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT+
+                        ") " +
+                        "VALUES " +
+                        "('"+number+"','"
+                        +name+"','"
+                        +carrier+"','"
+                        +circle+"','"
+                        +image_uri+"',"
+                        +in_count+","
+                        +in_duration+","
+                        +out_count+", "
+                        +out_duration+", "
+                        +miss_count
+                        +")";
+    }
 
     protected ContactDetailModel(Parcel in)
     {

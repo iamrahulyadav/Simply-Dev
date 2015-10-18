@@ -111,7 +111,7 @@ public class UssdPopup extends Activity {
             Picasso.with(this).load(details.getImage_uri()).placeholder(R.drawable.default_contact_picture).into(contact_picture);
             contact_number.setText(details.getNumber());
             contact_carrier_circle.setText(details.getCarrier_circle());
-            contact_total_spent.setText(rupee_symbol+" "+String.format("%0.2f",details.getTotal_spent()));
+            contact_total_spent.setText(rupee_symbol+" "+String.format("%.2f",details.getTotal_spent()));
             contact_call_cost.setText("+ "+details.getCall_cost());
 			Toast.makeText(this,"SimSlot = "+details.getSim_slot(),Toast.LENGTH_LONG).show();
 			break;

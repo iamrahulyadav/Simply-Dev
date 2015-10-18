@@ -8,7 +8,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -22,31 +21,32 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.datainitializers.DataInitializer;
-import com.builder.ibalance.datainitializers.FilteredDataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
-import com.builder.ibalance.util.DataLoader;
+import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.builder.ibalance.util.RegexUpdater;
 import com.facebook.appevents.AppEventsLogger;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.KahunaAnalytics;
+import com.parse.ConfigCallback;
+import com.parse.ParseConfig;
+import com.parse.ParseException;
 
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 
 import de.greenrobot.event.EventBus;
 
-public class MainActivity extends Activity implements ActionBar.TabListener,
-		DataLoader,PreferenceChangeListener {
+public class MainActivity extends Activity implements ActionBar.TabListener,PreferenceChangeListener {
 	final String tag = MainActivity.class.getSimpleName();
 	SharedPreferences mSharedPreferences;
 	EditText input ;
@@ -59,10 +59,9 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 	//public static int adFrequency = -1;
 
 	 MainActivityAdapter mMainActivityAdapter;
-	public static MenuItem dateSelector = null;
 	ViewPager mViewPager;
-	float current_balance,minimum_balance;
-	DataInitializer mDataInitializer;
+	int PARSER_VERSION = 1;
+	int NEW_PARSER_VERSION = 1;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,8 +70,31 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 		dataIntializerCompleteEvent = EventBus.getDefault();
 		dataIntializerCompleteEvent.register(this);
 		mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-		current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE", (float)-1.0);
-		minimum_balance = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float)10.0);
+		PARSER_VERSION = mSharedPreferences.getInt("PARSER_VERSION",1);
+		ParseConfig.getInBackground(new ConfigCallback()
+		{
+			@Override
+			public void done(ParseConfig config, ParseException e)
+			{
+				if (e == null)
+				{
+					//Log.d(tag, "Yay! Config was fetched from the server.");
+				} else
+				{
+					Log.e(tag, "Failed to fetch. Using Cached Config.");
+					config = ParseConfig.getCurrentConfig();
+				}
+                if((config!=null))
+                {
+                    NEW_PARSER_VERSION = config.getInt("PARSER_VERSION");
+                    if (NEW_PARSER_VERSION > PARSER_VERSION)
+                    {
+                        new RegexUpdater().update(NEW_PARSER_VERSION);
+                    }
+                }
+				//Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
+			}
+		});
        /* appOpenCount = mSharedPreferences.getInt("APP_OPEN_COUNT", 0);
         appOpenCount++;
         Editor mEditor = mSharedPreferences.edit();
@@ -115,13 +137,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
         		}*//*
         }*/
 		
-		if(current_balance>0.0)
-		{
-		if(current_balance<minimum_balance)
-		{
-			createReminderDialog(this);
-		}
-		}
+
 	
 		
         
@@ -132,8 +148,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 		actionBar.setCustomView(R.layout.custom_actionbar_title); */
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the activity.
-		mMainActivityAdapter = new MainActivityAdapter(getFragmentManager(),
-				this);
+		mMainActivityAdapter = new MainActivityAdapter(getFragmentManager());
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -168,62 +183,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 		
 	}
 
-	private void createReminderDialog(Context context) {
-		AlertDialog.Builder alertbox = new AlertDialog.Builder(context);
-		TextView myMsg = new TextView(this);
-		myMsg.setText("\nLow Balance Alert\n\n Your Current Balance is Rs." + current_balance
-				+ "\n   Please Recharge to stay connected!\n");
-		myMsg.setGravity(Gravity.CENTER_HORIZONTAL);
-		alertbox.setView(myMsg);
-		Tracker t = ((MyApplication) getApplication()).getTracker(
-			    TrackerName.APP_TRACKER);
-		t.send(new HitBuilders.EventBuilder().setCategory("LOW_BALANCE")
-				.setAction(current_balance+"").setLabel("").build());
-
-		Apptentive.engage(this, "LOW_BALANCE");
-		FlurryAgent.logEvent("LOW_BALANCE");
-		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
-				"LOW_BALANCE", "current_balance");
-		// Set the message to display
-
-		// Set a positive/yes button and create a listener
-		alertbox.setNeutralButton("Okay", null);
-/*		alertbox.setPositiveButton("Yes",
-				new DialogInterface.OnClickListener() {
-
-					// Click listener
-
-					public void onClick(DialogInterface arg0, int arg1) {
-
-						 Toast.makeText(getApplicationContext(),
-						 "Recharge Feature is Coming Soon", Toast.LENGTH_LONG).show();
-						Intent i = new Intent(getApplicationContext(),
-								Recharge.class);
-						startActivity(i);
-					}
-
-				});
-
-		// Set a negative/no button and create a listener
-
-		alertbox.setNegativeButton("No", new DialogInterface.OnClickListener() {
-
-			// Click listener
-
-			public void onClick(DialogInterface arg0, int arg1) {
-
-				// Toast.makeText(getApplicationContext(),
-				// "'No' button clicked", Toast.LENGTH_SHORT).show();
-
-			}
-
-		});*/
-
-		// display box
-
-		alertbox.show();
-		
-	}
 
 	@Override
 	protected void onResume() {
@@ -243,7 +202,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 
 	 @Override
 	    protected void onStart() {
-		 	FilteredDataInitializer.mainActivityRunning = true;
 	        Log.d(tag, "onStart Main Activity");
 	        KahunaAnalytics.start(); 
 	        Apptentive.onStart(this);
@@ -258,6 +216,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 	    protected void onStop() {
 	       
 	        Log.d(tag, "Stopping Main Activity");
+			EventBus.getDefault().unregister(this);
 	        KahunaAnalytics.stop();
 
 	        Apptentive.onStop(this);
@@ -362,17 +321,8 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
                     setBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
                 }
                 //Log.d("CHART", setBal + " ");
-                Editor editor = mSharedPreferences.edit();
-                editor.putFloat("MINIMUM_BALANCE", (float) setBal);
-                editor.commit();
-                if (mMainActivityAdapter.getmBalanceFragment() != null && ((BalanceFragment) mMainActivityAdapter.getmBalanceFragment()).mLineChart != null)
-                {
-                    //Log.d("CHART", "Balance fragment not null" + " ");
-                    ((BalanceFragment) mMainActivityAdapter.getmBalanceFragment()).setLimitLine();
-                    ((BalanceFragment) mMainActivityAdapter.getmBalanceFragment()).mLineChart.notifyDataSetChanged();
-                    ((BalanceFragment) mMainActivityAdapter.getmBalanceFragment()).mLineChart.invalidate();
-                    //mMainActivityAdapter.notifyDataSetChanged();
-                }
+                mSharedPreferences.edit().putFloat("MINIMUM_BALANCE",  setBal).commit();
+                EventBus.getDefault().post(new MinimumBalanceMessage(setBal));
                 alert.dismiss();
             }
         });
@@ -410,22 +360,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener,
 
 public void onEvent(DataLoadingDone mDataLoadingDone)
 {
-    if(mMainActivityAdapter.getmBalanceFragment()!=null)
-    {
-        ((BalanceFragment)mMainActivityAdapter.getmBalanceFragment()).setPredictedDays(BalanceFragment.sim_slot);
-        mMainActivityAdapter.notifyDataSetChanged();
-    }
-    if(mMainActivityAdapter.getmCallPatternFragment()!=null)
-    {
 
-        ((CallPatternFragment) mMainActivityAdapter
-                .getmCallPatternFragment()).loadDataAsync(mMainActivityAdapter);
-    }
-    if(mMainActivityAdapter.getmContFragment()!=null)
-    {
-        ((ContactsFragment) mMainActivityAdapter
-                .getmContFragment()).loadDataAsync(mMainActivityAdapter);
-    }
     if(mMainActivityAdapter.getmRechargeFragment()!=null)
     {
         ((RechargeFragment) mMainActivityAdapter
@@ -433,12 +368,7 @@ public void onEvent(DataLoadingDone mDataLoadingDone)
     }
 
 }
-	@Override
-	public void dataLoaded() {
-		//Log.d(tag, "Data loaded!!!!!!!!!!!!!!!!!!!");
-		//exportData();
 
-	}
 	/*private boolean exportData() {
 		// DateDuration Data
 		CSVWriter writer = new CSVWriter();
@@ -602,8 +532,8 @@ public void onEvent(DataLoadingDone mDataLoadingDone)
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+        EventBus.getDefault().unregister(this);
 		DataInitializer.mainActivityRunning = false;
-		FilteredDataInitializer.mainActivityRunning = false;
 		/*if(mInterstitial!=null)
 		mInterstitial.destroy();*/
 	}
@@ -621,68 +551,6 @@ public void onEvent(DataLoadingDone mDataLoadingDone)
 		}
 	}
 
-/*	@Override
-	public void onInterstitialClicked(MoPubInterstitial arg0) {
-
-		  t.send(new HitBuilders.EventBuilder().setCategory("AD")
-  				.setAction("Clicked").setLabel("").build());
-
-  		Apptentive.engage(this, "AD_Clicked");
-  		FlurryAgent.logEvent("AD_Clicked");
-  		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "AD_Clicked",
-  				"");
-	}
-
-	@Override
-	public void onInterstitialDismissed(MoPubInterstitial arg0) {
-		 t.send(new HitBuilders.EventBuilder().setCategory("AD")
-	  				.setAction("Dismissed").setLabel("").build());
-
-	  		Apptentive.engage(this, "AD_Dismissed");
-	  		FlurryAgent.logEvent("AD_Dismissed");
-	  		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "AD_Dismissed",
-	  				"");
-	}
-
-	@Override
-	public void onInterstitialFailed(MoPubInterstitial arg0, MoPubErrorCode arg1) {
-		t.send(new HitBuilders.EventBuilder().setCategory("AD")
-				.setAction("Failed").setLabel("").build());
-
-		Apptentive.engage(this, "AD_Failed");
-		FlurryAgent.logEvent("AD_Failed");
-		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "AD_Failed",
-				"");
-	}
-
-	@Override
-	public void onInterstitialLoaded(MoPubInterstitial arg0) {
-		 if (arg0.isReady()) {
-			 //Log.d(tag, "ad Listener call back");
-			 if(adFrequency>-1 && appOpenCount>10 && appOpenCount%adFrequency==0 )
-	            mInterstitial.show();
-	          
-	        } else {
-	            // Other code
-	        }
-		
-	}
-
-	@Override
-	public void onInterstitialShown(MoPubInterstitial arg0) {
-		Tracker t = ((MyApplication) MyApplication.context).getTracker(
-			    TrackerName.APP_TRACKER);
-		t.send(new HitBuilders.EventBuilder()
-	    .setCategory("ADS")
-	    .setAction("SHOWN")
-	    .setLabel("Interstitial")
-	    .build());
-		Apptentive.engage(this, "AD_SHOWN");
-		FlurryAgent.logEvent("AD_SHOWN");
-		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "AD_SHOWN",
-				"");
-		
-	}*/
 
 
 

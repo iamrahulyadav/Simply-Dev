@@ -79,8 +79,8 @@ public class SplashscreenActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		
-		
+
+
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_splashscreen);
@@ -112,51 +112,8 @@ public class SplashscreenActivity extends Activity {
 		TextView tv = (TextView)findViewById(R.id.fullscreen_content);
 		tv.setTypeface(tf);
 		final SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
-
-
-			
-		
-
-        // This method will be executed once the timer is over
-        // Start your app main activity
-        ////Log.d("SPalsh",""+mSharedPreferences.getBoolean("WIZARD", false));
         new SimChecker().execute();
-        /*if (!mSharedPreferences.getBoolean("WIZARD", false))
-        {
-        startActivityForResult(new Intent(getApplicationContext(),
-                Wizard.class), 0);
-        finish();
-        }
-        //else
-        {
 
-
-        Boolean isEnabledAccess = isAccessibilityEnabled(accessibiltyID);
-        if (!isEnabledAccess)
-        {
-            //Log.d(TAG, "Accesibilty  Not Enabled");
-            ConstantsAndStatics.WAITING_FOR_SERVICE = true;
-            startActivity(new Intent(getApplicationContext(), ServiceEnableActivity.class));
-            finish();
-//	          				DataInitializer.initializeUSSDData(getApplicationContext());
-//	          	 			//mBalanceHelper.addDemoentries();
-//	          	 			startActivity(new Intent(getApplicationContext(),MainActivity.class));
-//	          	 			finish();
-        } else
-        {
-            //Log.d(TAG, "Accesibilty  Enabled!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            //mBalanceHelper.addDemoentries();
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
-            finish();
-        }
-
-        }
-		 
-		
-         // close this activity
-       //  finish();
-		 
-		*/
 
 	}
     class SimChecker extends AsyncTask<Void, Void, ArrayList<SimModel>>
@@ -169,20 +126,21 @@ public class SplashscreenActivity extends Activity {
         {
 
             SimModel.dual_type = mSharedPreferences.getInt("DUAL_SIM_TYPE", 0);
-            /*
-            long lastUpdateTime = mSharedPreferences.getLong("LAST_CALL_LOG_UPDATE_TIME", 0l);
-            (new CallLogsHelper()).updateLocalDatabase(lastUpdateTime);
-            mEditor.putLong("LAST_CALL_LOG_UPDATE_TIME", (new Date()).getTime());
-            mEditor.commit();*/
             DualSim mDualSimObject = new DualSim();
             //Pass previously known Type, this function will not return null
             GlobalData.globalSimList = mDualSimObject.getSimList(SimModel.dual_type );
-            if(SimModel.two_slots)
+            //If no sim card found there show error screen
+            if(GlobalData.globalSimList ==null)
+            {
+                return null;
+            }
+            if(SimModel.two_slots ||true)
             {
                 Constants.HAS_TWO_SLOTS = true;
                 if (SimModel.call_log_columns.isEmpty())
                 {
                     SimModel.call_log_columns = mDualSimObject.getDualCallLogColumn();
+                    Log.d(TAG,"call_log_columns :"+SimModel.call_log_columns.toString());
                     if (SimModel.call_log_columns.isEmpty())
                     {
                         //TODO Fall back to logical check
@@ -216,35 +174,42 @@ public class SplashscreenActivity extends Activity {
         {
 
             super.onPostExecute(sim_list);
-            DataInitializer mDataInitializer = new DataInitializer();
-            mDataInitializer.execute();
-            dual_sim_bar.setVisibility(View.GONE);
-            if (sim_list != null)
+            if(sim_list == null)
             {
-                mEditor.putInt("TYPE", SimModel.dual_type).commit();
-                Log.d(TAG+" Sim Info =",sim_list.toString());
+                startActivity(new Intent(SplashscreenActivity.this,NoSimActivity.class));
+                finish();
             }
             else
             {
-                Log.d(TAG + " Sim Info =", "Null");
-            }
-            Boolean isEnabledAccess = isAccessibilityEnabled(accessibiltyID);
-            if (!isEnabledAccess)
-            {
-                //Log.d(TAG, "Accesibilty  Not Enabled");
-                ConstantsAndStatics.WAITING_FOR_SERVICE = true;
-                startActivity(new Intent(getApplicationContext(), ServiceEnableActivity.class));
-                finish();
+                DataInitializer mDataInitializer = new DataInitializer();
+                mDataInitializer.execute();
+                dual_sim_bar.setVisibility(View.GONE);
+                if (sim_list != null)
+                {
+                    mEditor.putInt("TYPE", SimModel.dual_type).commit();
+                    Log.d(TAG + " Sim Info =", sim_list.toString());
+                } else
+                {
+                    Log.d(TAG + " Sim Info =", "Null");
+                }
+                Boolean isEnabledAccess = isAccessibilityEnabled(accessibiltyID);
+                if (!isEnabledAccess)
+                {
+                    //Log.d(TAG, "Accesibilty  Not Enabled");
+                    ConstantsAndStatics.WAITING_FOR_SERVICE = true;
+                    startActivity(new Intent(getApplicationContext(), ServiceEnableActivity.class));
+                    finish();
 //	          				DataInitializer.initializeUSSDData(getApplicationContext());
 //	          	 			//mBalanceHelper.addDemoentries();
 //	          	 			startActivity(new Intent(getApplicationContext(),MainActivity.class));
 //	          	 			finish();
-            } else
-            {
-                //Log.d(TAG, "Accesibilty  Enabled!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                //mBalanceHelper.addDemoentries();
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                finish();
+                } else
+                {
+                    //Log.d(TAG, "Accesibilty  Enabled!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    //mBalanceHelper.addDemoentries();
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                    finish();
+                }
             }
         }
 

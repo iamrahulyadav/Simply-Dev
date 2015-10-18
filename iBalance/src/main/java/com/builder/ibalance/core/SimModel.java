@@ -18,7 +18,40 @@ public class SimModel {
             " simSlot - "
             " dualType - "
             " supported - "*/
-    public String serial,imei,sim_imsi,network_imsi,carrier,carrier_display_name,circle,subscriber_id;
+    public String serial;
+    public String imei;
+    public String sim_imsi;
+    public String network_imsi;
+    public String carrier;
+    public String carrier_display_name;
+
+    public String getCircle()
+    {
+        return circle;
+    }
+
+    public String getSubscriber_id()
+    {
+        return subscriber_id;
+    }
+
+    public static ArrayList<String> getCall_log_columns()
+    {
+        return call_log_columns;
+    }
+
+    public static boolean isUses_subscription()
+    {
+        return uses_subscription;
+    }
+
+    public static String getDebugInfo()
+    {
+        return debugInfo;
+    }
+
+    public String circle;
+    public String subscriber_id;
        public     long subid;
     public static ArrayList<String> call_log_columns = new ArrayList<>();
     int simslot =0;

@@ -2,7 +2,6 @@ package com.builder.ibalance.adapters;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v13.app.FragmentStatePagerAdapter;
 
@@ -11,6 +10,7 @@ import com.builder.ibalance.CallPatternFragment;
 import com.builder.ibalance.ContactsFragment;
 import com.builder.ibalance.R;
 import com.builder.ibalance.RechargeFragment;
+import com.builder.ibalance.util.MyApplication;
 
 import java.util.Locale;
 
@@ -19,28 +19,7 @@ import java.util.Locale;
  * of the sections/tabs/pages.
  */
 public class MainActivityAdapter extends FragmentPagerAdapter  {
-	private Fragment mCallPatternFragment,mContFragment,mBalanceFragment,mRechargeFragment;
-
-	public Fragment getmBalanceFragment() {
-		return mBalanceFragment;
-	}
-
-	/**
-	 * @return the mContFragment
-	 */
-	public Fragment getmContFragment() {
-		return mContFragment;
-	}
-
-
-	public static int  pos = 0;
-	/**
-	 * @return the mCallPatternFragment
-	 */
-	public Fragment getmCallPatternFragment() {
-		return mCallPatternFragment;
-	}
-
+	private Fragment mRechargeFragment;
 
 	public Fragment getmRechargeFragment() {
 		return mRechargeFragment;
@@ -51,11 +30,9 @@ public class MainActivityAdapter extends FragmentPagerAdapter  {
 
 	int position = 0;
 	final String TAG = FragmentStatePagerAdapter.class.getSimpleName();
-	Context ctx;
 
-	public MainActivityAdapter(FragmentManager fm, Context ctx) {
+	public MainActivityAdapter(FragmentManager fm) {
 		super(fm);
-		this.ctx = ctx;
 	}
 
 	@Override
@@ -68,34 +45,15 @@ public class MainActivityAdapter extends FragmentPagerAdapter  {
 		switch (position) {
 		case 0:
 			this.position = 0;
-			if(mBalanceFragment==null)
-				{
-
-				//Log.d(TAG, "Creating New BalanceFragment");
-				mBalanceFragment = new BalanceFragment();
-				}
-			return mBalanceFragment;
+			return new BalanceFragment();
 		case 1:
 			this.position=1;
-
-			if(mCallPatternFragment==null)
-			{
-				//Log.d(TAG, "Creating New CallPattternFragment");
-				mCallPatternFragment= new CallPatternFragment();
-
-			}
-			return mCallPatternFragment;
+				return  new CallPatternFragment();
 
 			//return new CallPatternFragment();	
 		case 2:
 			this.position=2;
-			if(mContFragment==null)
-			{
-				//Log.d(TAG, "Creating New mContFragment");
-				mContFragment= new ContactsFragment();
-
-			}
-			return mContFragment;
+			return new ContactsFragment();
 			//return new ContactsFragment();	
 		case 3:
 			this.position=4;
@@ -122,14 +80,14 @@ public class MainActivityAdapter extends FragmentPagerAdapter  {
 		Locale l = Locale.getDefault();
 		switch (position) {
 		case 0:
-			return ctx.getResources().getString(R.string.title_section1)
+			return MyApplication.context.getResources().getString(R.string.title_section1)
 					.toUpperCase(l);
 		case 1:
-			return ctx.getString(R.string.title_section2).toUpperCase(l);
+			return MyApplication.context.getString(R.string.title_section2).toUpperCase(l);
 		case 2:
-			return ctx.getString(R.string.title_section3).toUpperCase(l);
+			return MyApplication.context.getString(R.string.title_section3).toUpperCase(l);
 		case 3:
-			return ctx.getString(R.string.title_section4).toUpperCase(l);
+			return MyApplication.context.getString(R.string.title_section4).toUpperCase(l);
 		}
 		return null;
 	}

@@ -36,6 +36,8 @@
         android:normalScreens="true"
         android:smallScreens="true" />
 
+    <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:name=".util.MyApplication"
         android:allowBackup="true"
@@ -57,13 +59,12 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
 
-<!--       IMPORTANT: Change "com.parse.tutorials.pushnotifications" to match your app's package name.
- -->
+<!--        IMPORTANT: Change "com.parse.tutorials.pushnotifications" to match your app's package name. -->
                 <category android:name="com.builder.ibalance" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name="com.builder.ibalance.util.ParsePushReceiver"
+            android:name=".util.ParsePushReceiver"
             android:exported="false" >
             <intent-filter>
                 <action android:name="com.parse.push.intent.RECEIVE" />
@@ -216,6 +217,13 @@
         </receiver>
 
         <service android:name="com.kahuna.sdk.KahunaPushService" />
+
+        <activity
+            android:name=".NoSimActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_no_sim"
+            android:theme="@style/FullscreenTheme" >
+        </activity>
     </application>
 
 </manifest>

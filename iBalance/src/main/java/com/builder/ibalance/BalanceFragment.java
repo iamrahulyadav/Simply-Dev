@@ -1,6 +1,7 @@
 package com.builder.ibalance;
 
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,6 +26,8 @@ import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.datainitializers.DataInitializer;
+import com.builder.ibalance.messages.DataLoadingDone;
+import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -55,6 +59,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import de.greenrobot.event.EventBus;
+
 public class BalanceFragment extends Fragment implements OnChartValueSelectedListener, OnClickListener{
 	final String tag = BalanceFragment.class.getSimpleName();
 	SharedPreferences mSharedPreferences;
@@ -66,6 +72,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 	ProgressBar balProgress;
 	ArrayList<String> xVals;
 	View rootView;
+    float current_balance,minimum_balance;
     static int sim_slot = 0;
 	public  List<NormalCall> ussdDataList = null;
 	@Override
@@ -111,11 +118,86 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         {
             sim_switch.setVisibility(View.GONE);
         }
-        getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier+" - "+(sim_slot+1));
+        String carrier = "Unknown";
+        try
+        {
+           carrier = GlobalData.globalSimList.get(sim_slot).carrier;
+
+            current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, (float)-1.0);
+            minimum_balance = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float)10.0);
+            if(current_balance>0.0)
+            {
+                if(current_balance<minimum_balance)
+                {
+                    createReminderDialog(this.getActivity());
+                }
+            }
+        }//Catch exception when no sim are detected
+        catch (Exception e)
+        {}
+        getActivity().getActionBar().setTitle(carrier+"-"+(sim_slot+1));
         new USSDLoader().execute(sim_slot);
 		return rootView;
 	}
-    class USSDLoader extends AsyncTask<Integer ,Void,Void>
+
+	private void createReminderDialog(Context context) {
+		AlertDialog.Builder alertbox = new AlertDialog.Builder(context);
+		TextView myMsg = new TextView(context);
+		myMsg.setText("\nLow Balance Alert\n\n Your Current Balance is Rs." + current_balance
+				+ "\n   Please Recharge to stay connected!\n");
+		myMsg.setGravity(Gravity.CENTER_HORIZONTAL);
+		alertbox.setView(myMsg);
+		Tracker t = ((MyApplication)context.getApplicationContext()).getTracker(
+				TrackerName.APP_TRACKER);
+		t.send(new HitBuilders.EventBuilder().setCategory("LOW_BALANCE")
+				.setAction(current_balance+"").setLabel("").build());
+
+		Apptentive.engage((MainActivity)context, "LOW_BALANCE");
+		FlurryAgent.logEvent("LOW_BALANCE");
+		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
+				"LOW_BALANCE", "current_balance");
+		// Set the message to display
+
+		// Set a positive/yes button and create a listener
+		alertbox.setNeutralButton("Okay", null);
+/*		alertbox.setPositiveButton("Yes",
+				new DialogInterface.OnClickListener() {
+
+					// Click listener
+
+					public void onClick(DialogInterface arg0, int arg1) {
+
+						 Toast.makeText(getApplicationContext(),
+						 "Recharge Feature is Coming Soon", Toast.LENGTH_LONG).show();
+						Intent i = new Intent(getApplicationContext(),
+								Recharge.class);
+						startActivity(i);
+					}
+
+				});
+
+		// Set a negative/no button and create a listener
+
+		alertbox.setNegativeButton("No", new DialogInterface.OnClickListener() {
+
+			// Click listener
+
+			public void onClick(DialogInterface arg0, int arg1) {
+
+				// Toast.makeText(getApplicationContext(),
+				// "'No' button clicked", Toast.LENGTH_SHORT).show();
+
+			}
+
+		});*/
+
+		// display box
+
+		alertbox.show();
+
+	}
+
+	class USSDLoader extends AsyncTask<Integer ,Void,Void>
     {
 
 
@@ -124,7 +206,10 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         {
             super.onPreExecute();
             rootView.findViewById(R.id.rootRL).setVisibility(View.GONE);
-            rootView.findViewById(R.id.sim_switch).setVisibility(View.GONE);
+            if(GlobalData.globalSimList.size()>=2)
+            {
+                rootView.findViewById(R.id.sim_switch).setVisibility(View.GONE);
+            }
             rootView.findViewById(R.id.ussd_progress).setVisibility(View.VISIBLE);
 
         }
@@ -142,12 +227,42 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
             super.onPostExecute(aVoid);
 
             rootView.findViewById(R.id.rootRL).setVisibility(View.VISIBLE);
-            rootView.findViewById(R.id.sim_switch).setVisibility(View.VISIBLE);
+            if(GlobalData.globalSimList.size()>=2)
+            {
+                rootView.findViewById(R.id.sim_switch).setVisibility(View.VISIBLE);
+            }
             rootView.findViewById(R.id.ussd_progress).setVisibility(View.GONE);
             intializeScreen(sim_slot);
         }
     }
-	void intializeScreen(int sim_slot)
+
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop()
+    {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    public void onEvent(DataLoadingDone m)
+    {
+        setPredictedDays(sim_slot);
+    }
+
+    public void onEvent(MinimumBalanceMessage m)
+    {
+        updateLimitLine(m.minimum_bal);
+        mLineChart.notifyDataSetChanged();
+        mLineChart.invalidate();
+    }
+    void intializeScreen(int sim_slot)
 	{
 		currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, mSharedPreferences.getFloat("CURRENT_BALANCE",(float)-1.0));
 		currData = mSharedPreferences.getFloat("CURRENT_DATA_"+sim_slot, mSharedPreferences.getFloat("CURRENT_DATA",(float)-1.0));
@@ -170,7 +285,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 			
 			@Override
 			public void onClick(View v) {
-				startActivity( new Intent(getActivity(), HistoryActivity.class));
+				startActivity( new Intent(MyApplication.context, HistoryActivity.class));
 			}
 		});
 		if(currBalance>-1.0)
@@ -300,7 +415,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		xaxis.setAvoidFirstLastClipping(true);
 	
 		
-		BalanceMarkerView mk =new BalanceMarkerView(this.getActivity(),R.layout.custom_marker_popup);
+		BalanceMarkerView mk =new BalanceMarkerView(MyApplication.context,R.layout.custom_marker_popup);
 
 		mLineChart.setMarkerView(mk);
 	}
@@ -358,20 +473,32 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 //		 ll2.setLineWidth(4f);
 //		 ll2.setLabelPosition(LimitLabelPosition.POS_RIGHT);
 //		 ll2.setTextSize(10f);
-		 setLimitLine();
+		if(mSharedPreferences==null)
+			mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
+		 updateLimitLine(mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0));
 		 mLineChart.getAxisRight().setEnabled(false);
 		 // set data
 		 mLineChart.setData(data);
 		
 
 	}
-	void setLimitLine() {
+
+	/**
+	 * Called when the fragment is no longer in use.  This is called
+	 * after {@link #onStop()} and before {@link #onDetach()}.
+	 */
+	@Override
+	public void onDestroy()
+	{
+		super.onDestroy();
+		MyApplication.getRefWatcher().watch(this);
+	}
+
+	void updateLimitLine(float minimum_bal) {
 		if(mLineChart!=null)
 		{YAxis leftAxis = mLineChart.getAxisLeft();
 		 leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-		 SharedPreferences mSharedPreferences = this.getActivity().getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
-		 float balance_reminder_value = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0); 
-		 LimitLine balanceReminderLine = new LimitLine(balance_reminder_value, "Minimum Balance = "+balance_reminder_value);
+		 LimitLine balanceReminderLine = new LimitLine(minimum_bal, "Minimum Balance = "+minimum_bal);
 		 balanceReminderLine.setLabelPosition(LimitLabelPosition.POS_RIGHT);
 		 balanceReminderLine.setTextSize(10f);
 		 balanceReminderLine.setLineWidth(2f);

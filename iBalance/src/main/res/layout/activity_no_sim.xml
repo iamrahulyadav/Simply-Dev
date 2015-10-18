@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical" android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:background="@color/white"
+    >
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/textView21"
+        android:layout_weight="0.25"/>
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:id="@+id/imageView7"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/no_sim_icon" />
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="0.25">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="No SIM Detected"
+            android:id="@+id/textView24"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textColor="#1ad3a2"
+            android:layout_weight="0.25"
+            android:textSize="30dp" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="SIM is not detected "
+            android:id="@+id/textView23"
+
+            android:textSize="15dp"
+            android:gravity="center_horizontal"
+            android:textColor="#89919191" />
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="or your phone might be in flight mode"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:textColor="#89919191"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+
+        android:orientation="vertical"
+
+
+        >
+
+
+
+    </LinearLayout>
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:text="RETRY"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/Retry_id"
+        android:textColor="#FFFFFF"
+        android:background="#1ad3a2"
+
+        />
+
+
+</LinearLayout>

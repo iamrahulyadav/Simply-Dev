@@ -25,7 +25,9 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/contact_picture"
         android:layout_toRightOf="@+id/contact_picture"
-        android:textSize="@dimen/contact_name" />
+        android:textSize="@dimen/contact_name"
+        android:layout_toLeftOf="@+id/slot"
+        android:layout_toStartOf="@+id/slot"/>
  
     <!-- contact_number -->
 
@@ -35,10 +37,11 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/contact_name"
         android:layout_marginTop="5dip"
-        android:layout_toLeftOf="@+id/toatal_duration"
         android:layout_toRightOf="@+id/contact_picture"
         android:textColor = "@color/dark_grey"
-        android:textSize="@dimen/contact_number" />
+        android:textSize="@dimen/contact_number"
+        android:layout_toLeftOf="@+id/days_ago"
+        android:layout_toStartOf="@+id/days_ago"/>
      
     <!-- Circleand state -->
 
@@ -50,7 +53,9 @@
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
         android:layout_toRightOf="@+id/contact_picture"
-        android:textSize="@dimen/circle" />
+        android:textSize="@dimen/circle"
+        android:layout_toLeftOf="@+id/slot"
+        android:layout_toStartOf="@+id/slot"/>
     
  <!-- Duration in HH::MM::SS format -->
 
@@ -58,20 +63,20 @@
         android:id="@+id/time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
         android:textColor = "@color/dark_grey"
-        android:text="00:00 pm" />
+        android:text="00:00 pm"
+        android:layout_alignBottom="@+id/call_rate"
+        android:layout_alignRight="@+id/days_ago"
+        android:layout_alignEnd="@+id/days_ago"/>
  <!-- Cost -->
 
     <TextView
         android:id="@+id/call_rate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/contact_picture"
-        android:layout_alignLeft="@+id/contact_number"
-        android:textColor = "@color/dark_grey"
         android:layout_below="@+id/call_cost"
+        android:layout_alignLeft="@+id/contact_name"
+        android:textColor = "@color/dark_grey"
         android:text="Call Rate: " />
 
     <TextView
@@ -87,9 +92,32 @@
         android:id="@+id/days_ago"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/time"
         android:textColor = "@color/dark_grey"
-        android:text="5 Days ago" />
- 
+        android:text="5 Days ago"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/time"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Balance: "
+        android:id="@+id/balance"
+        android:layout_below="@+id/call_rate"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/contact_name"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Sim: "
+        android:id="@+id/slot"
+        android:layout_alignBottom="@+id/contact_name"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignLeft="@+id/time"
+        android:layout_alignStart="@+id/time"/>
+
 </RelativeLayout>

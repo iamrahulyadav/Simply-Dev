@@ -85,7 +85,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
 	        toast.setView(toastRoot);
 	        toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL,
 	                0, 0);
-	        toast.setDuration(20000);
+	        toast.setDuration(Toast.LENGTH_LONG);
 	        toast.show();
 			Intent intent = new Intent(
 					android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);

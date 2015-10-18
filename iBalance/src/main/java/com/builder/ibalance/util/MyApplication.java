@@ -18,6 +18,8 @@ import com.parse.ParseException;
 import com.parse.ParseInstallation;
 import com.parse.ParsePush;
 import com.parse.SaveCallback;
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
 
 import java.util.HashMap;
 
@@ -26,13 +28,19 @@ public class MyApplication extends MultiDexApplication
 	public static Context context;
 	final String tag = MyApplication.class.getSimpleName();
 	private static final String PROPERTY_ID = "UA-62225498-2";
+
+    static RefWatcher refWatcher;
+	public static RefWatcher getRefWatcher() {
+		return  refWatcher;
+	}
+
     @Override
     public void onCreate() {
     	
         super.onCreate();
 		//Fabric.with(this, new Crashlytics());
 		context = this;
-
+		refWatcher = LeakCanary.install(this);
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
         //Log.d(tag, "Initializing Parse");

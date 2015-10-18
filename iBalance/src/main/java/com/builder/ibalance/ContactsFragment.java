@@ -20,12 +20,12 @@ import android.widget.ProgressBar;
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.CustomContactsAdapter;
-import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
 import com.builder.ibalance.database.helpers.IbalanceContract;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
+import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import de.greenrobot.event.EventBus;
 
 public class ContactsFragment extends Fragment implements OnItemClickListener {
 	final String TAG = "ContactsFragment";
@@ -62,8 +64,10 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 		 * dialog before initializing pDialog.setMessage("Loading...");
 		 * if(isVisible()) pDialog.show();
 		 */
+
 		if (DataInitializer.done == true) {
 			loadData();
+
 		}
 
 		// notifying list adapter about data changes
@@ -83,10 +87,23 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 
 	}
 
-	public void loadDataAsync(MainActivityAdapter mMainActivityAdapter) {
-		loadData();
-		mMainActivityAdapter.notifyDataSetChanged();
-	}
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+    public void onEvent(DataLoadingDone m)
+    {
+        loadData();
+    }
 
 	private void hidePDialog() {
 		if (pDialog != null) {
@@ -100,6 +117,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 
 		hidePDialog();
 		super.onDestroy();
+		MyApplication.getRefWatcher().watch(this);
 	}
 
 	@Override
@@ -123,11 +141,6 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 		super.onResume();
 	}
 
-	@Override
-	public void onStop() {
-		
-		super.onStop();
-	}
 
 	@Override
 	public void onPause() {
@@ -229,85 +242,6 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
             Collections.sort(contactsList, new customComparator());
             Log.d(TAG, "After Sorting" + contactsList.toString());
             return contactsList;
-
-			/*Log.d(TAG, "Contact Async Task Started");
-			if(contactsList==null )
-			{
-				Log.d(TAG, "Contact List is null Initializing");
-			}
-			else
-			{
-				Log.d(TAG, "Contact List is already exists");
-			}
-			if(contactsList!=null)
-				return contactsList;
-			contactsList = new ArrayList<ContactsModel>();
-			SQLiteDatabase readableDB = DatabaseManager.getInstance().getReadableDatabase();
-
-			Object[] values;
-			Cursor c = null;
-			String query = "";
-			// while(!DataInitializer.done);
-			// key = number values =
-			// name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,image_uri
-			for (Entry<String, Object[]> entry : DataInitializer.mainmap
-					.entrySet()) {
-				values = (Object[]) entry.getValue();
-				if (values[0] == null)
-					values[0] = entry.getKey().toString();
-				String[] st = new String[values.length + 1];
-				st[0] = (entry.getKey().toString());
-				int len = values.length;
-				// //Log.d("Contacts Loader","Len = "+len);
-				for (int i = 0; i < len; i++) {
-					try {
-						st[i + 1] = (values[i].toString());
-					} catch (Exception e) {
-						st[i + 1] = null;
-					}
-				}
-				query = "select sum(COST), sum(DURATION) from CALL where NUMBER = \'+91"
-						+ st[0] + "\'" + " OR NUMBER =\'" + st[0] + "\'";
-				// //Log.d("Contacts Loader", "Query = "+ query);
-
-				c = readableDB.rawQuery(query, null);
-				c.moveToFirst();
-				float callCost = (float) 0.0;
-				int duration = 0;
-				try {
-					callCost = c.getFloat(0);
-					duration = c.getInt(1);
-				} catch (NullPointerException e) {
-					e.printStackTrace();
-				}
-
-				// //Log.d("Contacts Loader","CallCost = "+callCost);
-				int totalOutsecs = Integer.parseInt(st[5]);
-				String total_duration_formatted = getTotalDurationFormatted(totalOutsecs);
-				// if((callCost - 0.0)<0.01)
-				if (st[0].length() < 10 || st[0].startsWith("1800")) {
-					callCost = 0;
-				} else {
-					SharedPreferences mSharedPreferences = MyApplication.context
-							.getSharedPreferences("USER_DATA",
-									Context.MODE_PRIVATE);
-					float call_rate = mSharedPreferences.getFloat("CALL_RATE",
-							1.7f);
-					callCost = (float) ((float) ((Integer.parseInt(st[5].toString()) - duration) * call_rate) / 100)
-							+ callCost;
-				}
-
-				// //Log.d("Contacts Loader","TotalDuration = "+total_duration_formatted);
-				contactsList
-						.add(new ContactsModel(st[1], st[0], st[7], st[8],
-								total_duration_formatted, totalOutsecs,
-								callCost, st[9]));
-				// s//Log.d("PAI", "ST[9] :: "+st[9]+" :: ST :: "+st);
-				c.close();
-			}
-			readableDB.close();
-			Collections.sort(contactsList, new customComparator());
-			return contactsList;*/
 		}
 
 		protected void onPostExecute(List<ContactDetailModel> contactsList1) {

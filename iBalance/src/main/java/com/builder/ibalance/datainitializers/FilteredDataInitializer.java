@@ -77,9 +77,20 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 	protected Integer doInBackground(Long... params) {
 
 		// Cache.clear();
-		//Log.d("DataInit", "InitializeMap");
+		Log.d(TAG, "Filtered Data Initializer");
+		Log.d(TAG, "From : "+(new Date(startDate).toString()));
+		Log.d(TAG, "to : " + (new Date(endDate).toString()));
 		dataLoaded = false;
+		contactDetailMap.clear();
+        if(mostCalled!=null)
+            mostCalled.clear();
+        if(carrierOutCount!=null)
+            carrierOutCount.clear();
+        if(circleOutDuration!=null)
+            circleOutDuration.clear();
         long clockStartTime = System.nanoTime();
+		//Just a Precaution, but it must not happen
+		while (DataInitializer.done==false);
         ContactDetailHelper mContactDetailHelper = new ContactDetailHelper();
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
         Cursor callLogCursor = mCallLogsHelper.getFilteredLocalCallLogs(startDate,endDate);
@@ -91,10 +102,13 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
         int type_index =callLogCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE);
         int number_index =callLogCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
 
-        String number,normalizedNumber;
+        String phNumber;
         if(!callLogCursor.moveToFirst())
         {
             callLogCursor.close();
+            mostCalled = new ArrayList<>();
+            circleOutDuration = new ArrayList<>();
+            carrierOutCount = new ArrayList<>();
             return 0;
         }
         Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
@@ -105,9 +119,8 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
             {
                 type = callLogCursor.getInt(type_index);
                 duration = callLogCursor.getInt(duration_index);
-                number = callLogCursor.getString(number_index);
-                number = number.replace(" ", "");
-                String phNumber = number;
+                phNumber = callLogCursor.getString(number_index);
+                phNumber = phNumber.replace(" ", "");
                 if (phNumber.startsWith("+91"))
                 {
                     phNumber = phNumber.substring(3);
@@ -166,7 +179,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
                 {
                     ctemp.add(temp.out_count);
                 }
-                ctemp = carrierMap.get(temp.circle);
+                ctemp = circleMap.get(temp.circle);
                 if(ctemp == null)
                 {
                     circleMap.put(temp.circle,new MutableInt(temp.out_duration));
@@ -181,23 +194,33 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
             carrierOutCount = new ArrayList<Tuple>();
             for (Map.Entry<String, MutableInt> entry : carrierMap.entrySet())
             {
-                carrierOutCount.add(new Tuple(entry.getKey(),entry.getValue().count));
+                if(entry.getValue().count == 0)
+                    continue;
+                carrierOutCount.add(new Tuple(entry.getKey(), entry.getValue().count));
             }
 
             circleOutDuration = new ArrayList<Tuple>();
             for (Map.Entry<String, MutableInt> entry : circleMap.entrySet())
             {
-                circleOutDuration.add(new Tuple(entry.getKey(), entry.getValue().count));
+                if(entry.getValue().count == 0)
+                    continue;
+                //Fastest way to ceil
+                circleOutDuration.add(new Tuple(entry.getKey(), ((entry.getValue().count+60-1)/60)));
             }
             mostCalled = new ArrayList<>();
             int len = mList.size();
+            int count= 0;
             for(int i=0;i<len;i++)
             {
                 //Take only top 5 or less
-                if(i>=5)
+                if(mList.get(i).out_count == 0)
+                    continue;
+                count++;
+                if(count>5)
                     break;
                 mostCalled.add(new Tuple(mList.get(i).name, mList.get(i).out_count));
             }
+            Log.d(TAG,"Total ContactDetail List = "+mList.toString());
             Log.d(TAG,"mostCalled List = "+mostCalled.toString());
             Log.d(TAG,"Carrier List = "+carrierOutCount.toString());
             Log.d(TAG, "Circle List = " + circleOutDuration.toString());

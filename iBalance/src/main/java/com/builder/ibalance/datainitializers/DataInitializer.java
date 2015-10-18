@@ -31,10 +31,8 @@ import com.builder.ibalance.util.MyApplication;
 
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -50,7 +48,8 @@ import de.greenrobot.event.EventBus;
 public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 	public static boolean mainActivityRunning = true;
 	//static Context context;
-	public static boolean done = false;
+	public static volatile boolean done = false;
+    int sim_slot = 0;
 	static MappingHelper mMappingHelper;
 	public class SmsLogs {
 		public Date date;
@@ -114,18 +113,17 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             //Copy the whole call log + create Main Map and Date Duration Map
             updateDetails();
 
-
-            //updateLocalDetails();
-			//Log.d("DataInit", "WORKING IN InitializeMap");
-			//InitializeMap(MyApplication.context);
-			//Log.d("DataInit", "WORKING IN updateWidgetInitially");
 			updateWidgetInitially(MyApplication.context);
 			done = true;
             long endTime = System.nanoTime();
             Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
+
 			//Log.d("DataInit", "WORKING IN InitializeSmsMap");
 			//InitializeSmsMap(MyApplication.context);
-
+            //updateLocalDetails();
+            //Log.d("DataInit", "WORKING IN InitializeMap");
+            //InitializeMap(MyApplication.context);
+            //Log.d("DataInit", "WORKING IN updateWidgetInitially");
 		}
 		return 0;
 	}
@@ -150,6 +148,8 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         int number_index =callLogCursor.getColumnIndex(CallLog.Calls.NUMBER);
         long date,id ;
         long curr_date = 0l;
+        //Update: did a better hack B-) sum it in a loop and if first time just insert else get and then add
+        int total_duration = 0;
         mMappingHelper = new MappingHelper();
 
         String number,normalizedNumber,query="",query_format = "INSERT INTO " +
@@ -276,6 +276,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 
                     case CallLog.Calls.OUTGOING_TYPE:
                         dateDurationModel.increment_out_count();
+                        total_duration += duration;
                         dateDurationModel.add_to_out_duration(duration);
                         contactDetail.increment_out_count();
                         contactDetail.add_to_out_duration(duration);
@@ -300,12 +301,15 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             Editor mEditor = mSharedPreferences.edit();
             mEditor.putLong("INDEXED_ID", indexed_id);
             mEditor.putBoolean("FIRST_TIME", false);
+            total_duration += mSharedPreferences.getInt("TOTAL_OUT_DURATION",0);
+            mEditor.putInt("TOTAL_OUT_DURATION", total_duration);
             mEditor.commit();
             callLogCursor.close();
             //Write All ContactDetails to Database
-            if(firstTime)
+            if (firstTime)
             {
                 Log.d(TAG,"Contacts Created = "+contactDetailMap.size());
+                //add total duration for first time
                 for (Entry<String, ContactDetailModel> entry : DataInitializer.contactDetailMap.entrySet())
                 {
                     mCallLogsHelper.insert(entry.getValue());
@@ -417,7 +421,9 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         }
         return contactDetail;
     }
-    public static void InitializeMap(Context context) {
+
+
+    /*public static void InitializeMap(Context context) {
         long startTime = System.nanoTime();
         SharedPreferences mSharedPreferences = context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
         Log.d(TAG,"InitializeMap");
@@ -430,8 +436,8 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             startDate = mSharedPreferences.getLong("CACHE_DATE", 0l);
             //Log.d("TEST", "Logging from "+startDate);
         }
-		/*mainmap.clear();
-		dateDurationMap.clear();*/
+		*//*mainmap.clear();
+		dateDurationMap.clear();*//*
         mMappingHelper = new MappingHelper();
         //  Long endDate = new IndianDate().getTime();
         //CallLog.Calls.DATE + ">? AND "+ CallLog.Calls.DATE + "<?", , String.valueOf(endDate)
@@ -447,11 +453,11 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                         IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+ " ASC"
                 );
         Log.d(TAG,"QUERY Returned "+managedCursor.getCount());
-		/*Cursor managedCursor = context.getContentResolver().query(
+		*//*Cursor managedCursor = context.getContentResolver().query(
 				CallLog.Calls.CONTENT_URI,
 				new String[] {CallLog.Calls.NUMBER,CallLog.Calls.DATE,CallLog.Calls.TYPE,CallLog.Calls.DURATION},
 				CallLog.Calls.DATE + ">?",
-				new String[] { String.valueOf(startDate)}, CallLog.Calls.DATE + " ASC");*/
+				new String[] { String.valueOf(startDate)}, CallLog.Calls.DATE + " ASC");*//*
         Editor mEditor = mSharedPreferences.edit();
         mEditor.putLong("CACHE_DATE", (new Date()).getTime());
         //Log.d("DataInit", managedCursor.getCount() + " ");
@@ -478,8 +484,8 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             if (name_image == null) {
                 name_image = new String[2];
                 name_image =  getContactName(phNumber).toArray(name_image);
-				/*name_image[0] =
-				name_image[1] = getContactsImage(phNumber);*/
+				*//*name_image[0] =
+				name_image[1] = getContactsImage(phNumber);*//*
 
                 if (name_image[0] == "")
                     name_image[0] = "Unknown";
@@ -654,7 +660,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 
         long endTime = System.nanoTime();
         Log.d(TAG, "Initialize Map Took  = " + ((endTime - startTime) / 1000000) + "ms");
-    }
+    }*/
 
 
 
@@ -671,32 +677,33 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
     }
 
 	private void updateWidgetInitially(Context ctx) {
+        //Todo make widget dependant on Sim
 		//Log.d("DataInit","Came to update  widget inittially "+ "iin Data initializer");
 		AppWidgetManager mgr=AppWidgetManager.getInstance(ctx);
 		
 		ComponentName thisWidget = new ComponentName(ctx,
 	    		BalanceWidget.class);
 	    SharedPreferences mSharedPreferences = ctx.getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
-	      float currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE", (float) -1.0);
-	      //Log.d("DataInit widget bal ", ""+ currBalance);
+	      float currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, (float) -1.0);
+	      Log.d("DataInit widget bal ", ""+ currBalance);
 	      // Set the text
 	      
 	      int predictedDays = -1 ;
       long firstDate = mSharedPreferences.getLong("FIRST_DATE", Long.parseLong("1420050619800"));
 	      
 	      int total_out_duration = mSharedPreferences.getInt("TOTAL_OUT_DURATION", 100);
-	      //Log.d(TAG, "Toatl OUT Duration = "+total_out_duration);
+	      Log.d(TAG, "Toatl OUT Duration = "+total_out_duration);
 	      
 	      float call_rate = mSharedPreferences.getFloat("CALL_RATE", (float)1.7);
-	      //Log.d(TAG, "CALL_RATE= "+call_rate);
+	      Log.d(TAG, "CALL_RATE= "+call_rate);
 	      
-	      int numberOfDays = (int)( (new Date().getTime() - firstDate) / (1000 * 60 * 60 * 24));
-	      //Log.d(TAG, "No of Days = "+ numberOfDays);
+	      int numberOfDays = (int)( (new Date().getTime()+19800l - firstDate) / (1000 * 60 * 60 * 24));
+	      Log.d(TAG, "No of Days = "+ numberOfDays);
 	      
 	      float total_cost_inPaise = total_out_duration*call_rate;
-	      //Log.d(TAG, "Toatal cost = "+total_cost_inPaise);
+	      Log.d(TAG, "Toatal cost = "+total_cost_inPaise);
 	       predictedDays = (int) (currBalance*numberOfDays/(total_cost_inPaise/100));
-	      //Log.d(TAG, "predicted DAys = "+predictedDays);
+	      Log.d(TAG, "predicted DAys = "+predictedDays);
 	      Editor mEditor = mSharedPreferences.edit();
 	      mEditor.putInt("PREDICTED_DAYS", predictedDays);
 	      mEditor.commit();
@@ -713,7 +720,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 	      {
 	    	  remoteViews.setTextViewText(R.id.widget_balance, ctx.getResources().getString(R.string.rupee_symbol)+" "+currBalance);
 	      }
-	      if(predictedDays == -1)
+	      if(predictedDays <= -1)
 	      {
 	    	  remoteViews.setTextViewText(R.id.widget_prediction, "Please make a call to update your Balance");
 	      }
@@ -803,7 +810,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 				}
 				String messageBody = cursor.getString(smsLen);
 				long messageLength = messageBody.length();
-				double numberOfMessages = messageLength / 153.0;
+				double numberOfMessages = messageLength / 153.0d;
 				double numberOfMessagesRoundedUp = Math.ceil(numberOfMessages);
 
 				totalMessages = (int) (totalMessages + numberOfMessagesRoundedUp);
@@ -835,20 +842,20 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 
 	public static void InitializeData() {
 		// carriers.clear();
-		carriers.put("AC", "AIRCEL");
+		carriers.put("AC", "Aircel");
 		carriers.put("AT", "Airtel");
 		carriers.put("CC", "BSNL");
 		carriers.put("DP", "MTNL");
-		carriers.put("ET", "Etisalat");
-		carriers.put("ID", "IDEA");
+		carriers.put("ET", "Etisalat-DB");
+		carriers.put("ID", "Idea");
 		carriers.put("LM", "Loop");
 		carriers.put("MT", "MTS");
 		carriers.put("PG", "PING CDMA");
-		carriers.put("RC", "Reliance");
+		carriers.put("RC", "Reliance-GSM");
 		carriers.put("SP", "Spice");
-		carriers.put("ST", "S Tel");
+		carriers.put("ST", "S-Tel");
 		carriers.put("T24", "T24");
-		carriers.put("TD", "TATA DOCOMO");
+		carriers.put("TD", "Tata-Docomo");
 		carriers.put("TI", "Tata Indicom");
 		carriers.put("UN", "Uninor");
 		carriers.put("VC", "Virgin");
@@ -857,26 +864,26 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 		// circle.clear();
 		circle.put("AP", "Andhra Pradesh");
 		circle.put("AS", "Assam");
-		circle.put("BR", "Bihar");
+		circle.put("BR", "Bihar-Jharkhand");
 		circle.put("CH", "Chennai");
-		circle.put("DL", "Delhi");
+		circle.put("DL", "Delhi-NCR");
 		circle.put("GJ", "Gujarat");
 		circle.put("HP", "Himachal Pradesh");
 		circle.put("HR", "Haryana");
-		circle.put("JK", "Jammu and Kashmir");
+		circle.put("JK", "Jammu-Kashmir");
 		circle.put("KL", "Kerala");
 		circle.put("KA", "Karnataka");
 		circle.put("KO", "Kolkata");
-		circle.put("MH", "Maharashtra");
-		circle.put("MP", "Madhya Pradesh");
+		circle.put("MH", "Maharashtra-Goa");
+		circle.put("MP", "Madhya Pradesh-Chattisgarh");
 		circle.put("MU", "Mumbai");
-		circle.put("NE", "Arunachal Pradesh (North East India)");
-		circle.put("OR", "Odisha");
+		circle.put("NE", "North East");
+		circle.put("OR", "Orissa");
 		circle.put("PB", "Punjab");
 		circle.put("RJ", "Rajasthan");
 		circle.put("TN", "Tamil Nadu");
-		circle.put("UE", "Uttar Pradesh (East)");
-		circle.put("UW", "Uttar Pradesh (West)");
+		circle.put("UE", "UP(EAST))");
+		circle.put("UW", "UP(WEST)-Uttarakhand");
 		circle.put("WB", "West Bengal");
 		circle.put("ZZ", "Customer Care (All Over India)");
 

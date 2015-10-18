@@ -1,9 +1,5 @@
 package com.builder.ibalance;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map.Entry;
-
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -18,61 +14,46 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.appsflyer.AppsFlyerLib;
 import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.MainActivityAdapter;
+import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.database.RechargeHelper;
+import com.builder.ibalance.database.helpers.ContactDetailHelper;
 import com.builder.ibalance.datainitializers.DataInitializer;
-import com.builder.ibalance.util.ConstantsAndStatics.MainMap;
+import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.melnykov.fab.FloatingActionButton;
 import com.parse.ParseObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class RechargeFragment extends Fragment implements OnClickListener {
-	@Override
-	public void onResume() {
-		Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(
-			    TrackerName.APP_TRACKER);
 
-			// Set screen name.
-			t.setScreenName("RechargeScreen");
-
-			// Send a screen view.
-			t.send(new HitBuilders.ScreenViewBuilder().build());
-			// Log the timed event when the user starts reading the article
-			// setting the third param to true creates a timed event
-
-			Apptentive.engage(this.getActivity(), "Recharge Screen");
-			FlurryAgent.logEvent("RechargeScreen", true);
-			AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Recharge Screen","");
-			// End the timed event, when the user navigates away from article
-
-			super.onResume();
-		}
-
-		@Override
-		public void onPause() {
-
-			FlurryAgent.endTimedEvent("RechargeScreen");
-			super.onPause();
-		}
 	View rootView;
 	final String TAG = RechargeFragment.class.getSimpleName();
 	HorizontalBarChart mChart;
 	TextView mTextView;
 	ProgressBar mProgressBar;
-	String userCircle,userCarrier; 
+	String userCircle,userCarrier;
+	FloatingActionButton sim_switch;
+	int sim_slot = 0;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.fragment_recharge, container,
 				false);
+		sim_slot = BalanceFragment.sim_slot;
 		//MainActivity.dateSelector.setVisible(false);
+		sim_switch = (FloatingActionButton) rootView.findViewById(R.id.sim_switch);
 		SharedPreferences mSharedPreferences = getActivity().getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 		 userCircle = mSharedPreferences.getString("CIRCLE", "Karnataka");
 		 userCarrier = mSharedPreferences.getString("CARRIER", "Airtel");
@@ -81,9 +62,38 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 		mTextView.append(userCarrier);
 		mTextView = (TextView) rootView.findViewById(R.id.summary_std_carrier);
 		mTextView.append(userCarrier);
+		if(GlobalData.globalSimList.size()>=2)
+		{
+			sim_switch.setVisibility(View.VISIBLE);
+			sim_switch.setOnClickListener(new OnClickListener()
+			{
+				@Override
+				public void onClick(View v)
+				{
+					if(sim_slot == 0)
+					{
+						BalanceFragment.sim_slot = 1;
+						sim_slot = 1;
+
+					}
+					else
+					{
+						BalanceFragment.sim_slot = 0;
+						sim_slot = 0;
+					}
+					Toast.makeText(MyApplication.context, "Switched to Sim " + (sim_slot + 1), Toast.LENGTH_LONG).show();
+					getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
+					loadData(sim_slot);
+				}
+			});
+		}
+		else
+		{
+			sim_switch.setVisibility(View.GONE);
+		}
 		if (DataInitializer.done == true) {
 			//Log.d(TAG, "Data Already loaded");
-			loadData();
+			loadData(sim_slot);
 
 		} else {
 			//Log.d(TAG, "Data Still Loading");
@@ -110,15 +120,39 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 		return rootView;
 	}
 	public void loadDataAsync(MainActivityAdapter mMainActivityAdapter) {
-		loadData();
+		loadData(sim_slot);
 		mMainActivityAdapter.notifyDataSetChanged();
 
 	}
 	
-	private void loadData() {
+	private void loadData(int sim_slot) {
 		
 		int total_outgoing_duration=0,outgoing_duration_local_same_carrier=0,outgoing_duration_std_same_carrier=0,outgoing_duration_local_diff_carrier=0,outgoing_duration_std_diff_carrier=0;
-		Object[] values = null;
+        String sim_carrier = "Airtel",sim_circle = "Karnataka";
+        try
+        {
+            SimModel mSimModel = GlobalData.globalSimList.get(sim_slot);
+            sim_carrier = mSimModel.getCarrier();
+            sim_circle = mSimModel.getCircle();
+        }
+        catch (Exception e)
+        {
+            //This should not happen
+            ParseObject pObj = new ParseObject("ERROR_LOGS");
+            pObj.put("PLACE","RechargeFragment_LoadData");
+                pObj.put("Object"," GlobalSimList :"+GlobalData.globalSimList.toString() );
+            pObj.saveEventually();
+        }
+        ContactDetailHelper mContactDetailHelper = new ContactDetailHelper();
+        outgoing_duration_local_same_carrier = mContactDetailHelper.getOutDurationLocalSameCarrier(sim_circle,sim_carrier);
+
+        outgoing_duration_local_diff_carrier = mContactDetailHelper.getOutDurationLocalDiffCarrier(sim_circle,sim_carrier);
+
+        outgoing_duration_std_same_carrier = mContactDetailHelper.getOutDurationSTDSameCarrier(sim_circle,sim_carrier);
+
+        outgoing_duration_std_diff_carrier = mContactDetailHelper.getOutDurationSTDDiffCarrier(sim_circle,sim_carrier);
+
+		/*Object[] values = null;
 		for (Entry<String, Object[]> entry : DataInitializer.mainmap.entrySet()) {
 			values = (Object[]) entry.getValue();
 			try{
@@ -164,7 +198,7 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 			}
 			
 		
-		}
+		}*/
 		mTextView = (TextView) rootView.findViewById(R.id.local_same);
 		mProgressBar = (ProgressBar) rootView.findViewById(R.id.local_same_wait);
 		if(outgoing_duration_local_same_carrier!=0)
@@ -315,5 +349,41 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 		}
 		return app_installed;
 	}
+
+    @Override
+    public void onPause() {
+
+        FlurryAgent.endTimedEvent("RechargeScreen");
+        super.onPause();
+    }
+    @Override
+    public void onResume() {
+        Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(
+                TrackerName.APP_TRACKER);
+
+        // Set screen name.
+        t.setScreenName("RechargeScreen");
+
+        // Send a screen view.
+        t.send(new HitBuilders.ScreenViewBuilder().build());
+        // Log the timed event when the user starts reading the article
+        // setting the third param to true creates a timed event
+
+        Apptentive.engage(this.getActivity(), "Recharge Screen");
+        FlurryAgent.logEvent("RechargeScreen", true);
+        AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Recharge Screen", "");
+        // End the timed event, when the user navigates away from article
+
+        super.onResume();
+    }
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+
+        MyApplication.getRefWatcher().watch(this);
+    }
+
+
 
 }

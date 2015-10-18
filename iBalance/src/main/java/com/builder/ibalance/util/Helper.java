@@ -70,7 +70,7 @@ public  class Helper {
         {
             Type listType = new TypeToken<ArrayList<SimModel>>(){}.getType();
             ArrayList<SimModel> sim_list = null;
-            String dual_sim_details = mSharedPreferences.getString("DUAL_SIM",null);
+            String dual_sim_details = mSharedPreferences.getString("DUAL_SIM","[]");
             Log.d(tag,dual_sim_details);
             try
             {

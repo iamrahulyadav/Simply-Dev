@@ -48,10 +48,13 @@ import com.builder.ibalance.parsers.USSDParser;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.builder.ibalance.util.RegexUpdater;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.parse.ConfigCallback;
 import com.parse.GetCallback;
+import com.parse.ParseConfig;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -79,7 +82,8 @@ public class RecorderUpdaterService extends AccessibilityService
     int sim_slot = 0;
     int duration = 0;
     String text;
-
+    int PARSER_VERSION = 1;
+    int NEW_PARSER_VERSION = 1;
     private void displayPopUp()
     {
 
@@ -114,7 +118,7 @@ public class RecorderUpdaterService extends AccessibilityService
                 mCallDetailsModel.setImage_uri(mDetails.image_uri);
                 mCallDetailsModel.setNumber(number);
 
-                mCallDetailsModel.setCarrier_circle(mDetails.carrier + ',' + mDetails.carrier);
+                mCallDetailsModel.setCarrier_circle(mDetails.carrier + ',' + mDetails.circle);
                 mCallDetailsModel.setTotal_spent(mDetails.total_cost);
                 popup_intent.putExtra("DATA", mCallDetailsModel);
                 popup_intent
@@ -604,6 +608,32 @@ public class RecorderUpdaterService extends AccessibilityService
                 } else// invalid USSD Message
                 {
                     // Log.d(TAG + "Updater", "invalid USSD");
+                    final SharedPreferences  mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+                    PARSER_VERSION = mSharedPreferences.getInt("PARSER_VERSION",1);
+                    ParseConfig.getInBackground(new ConfigCallback()
+                    {
+                        @Override
+                        public void done(ParseConfig config, ParseException e)
+                        {
+                            if (e == null)
+                            {
+                                //Log.d(tag, "Yay! Config was fetched from the server.");
+                            } else
+                            {
+                                Log.e(tag, "Failed to fetch. Using Cached Config.");
+                                config = ParseConfig.getCurrentConfig();
+                            }
+                            if(config!=null)
+                            {
+                                NEW_PARSER_VERSION = config.getInt("PARSER_VERSION");
+                                if (NEW_PARSER_VERSION > PARSER_VERSION)
+                                {
+                                    new RegexUpdater().update(NEW_PARSER_VERSION);
+                                }
+                            }
+                            //Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
+                        }
+                    });
                     ParseObject pObj = new ParseObject("Invalid_USSD");
                     pObj.put("DEVICE_ID",
                             sharedPreferences.getString("DEVICE_ID", "123456"));

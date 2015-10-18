@@ -59,9 +59,9 @@ public class DateDurationMapHelper
       builder.append("Out Duration "+": "+c.getFloat(3));
       builder.append("\n");
       temp = new DateDurationModel(
-              (int)Math.ceil(c.getInt(0)),
+              (int)Math.ceil(c.getFloat(0)),
               (int)Math.ceil(c.getFloat(1)/60),
-              (int)Math.ceil(c.getInt(2)),
+              (int)Math.ceil(c.getFloat(2)),
               (int)Math.ceil(c.getFloat(3)/60),
               c.getInt(4));
       avgDateDurationDetail.add(temp);

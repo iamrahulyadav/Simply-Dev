@@ -14,7 +14,8 @@
     <string name="toast_guide">Tap on \u25FC\u25FCSimply Recorder\u25FC\u25FC \n and switch ON the Service</string>
     <string name="title_activity_splashscreen">SplashscreenActivity</string>
     <string name="rupee_symbol">₹</string>
-
+    <!-- flurry_key  = AES IV for decryption -->
+    <string name ="flurry_key" >0x000102030405060708090A0B0C0D0E0F</string>
     <string-array name="analytics_period">
 
         <!-- <item>Today</item> -->
@@ -25,10 +26,10 @@
     <string-array name="carriers">
         <item>Airtel</item>
         <item>Vodafone</item>
-        <item>TATA DOCOMO</item>
-        <item>IDEA</item>
-        <item>AIRCEL</item>
-        <item>Reliance</item>
+        <item>Tata-Docomo</item>
+        <item>Idea</item>
+        <item>Aircel</item>
+        <item>Reliance-GSM</item>
         <item>BSNL</item>
         <item>MTNL</item>
         <item>MTS</item>
@@ -38,34 +39,35 @@
         <item>Videocon</item>
         <item>T24</item>
         <item>Loop</item>
-        <item>Tata Indicom</item>
-        <item>S Tel</item>
-        <item>Etisalat</item>
-        <item>PING CDMA</item>
+        <item>Tata-Indicom</item>
+        <item>S-Tel</item>
+        <item>Etisalat-DB</item>
+        <item>Reliance-CDMA</item>
     </string-array>
     <string-array name="circles">
         <item>Andhra Pradesh</item>
+        <item>Andaman Nicobar</item>
         <item>Assam</item>
-        <item>Bihar</item>
+        <item>Bihar-Jharkhand</item>
         <item>Chennai</item>
-        <item>Delhi</item>
+        <item>Delhi-NCR</item>
         <item>Gujarat</item>
         <item>Himachal Pradesh</item>
         <item>Haryana</item>
-        <item>Jammu and Kashmir</item>
+        <item>Jammu-Kashmir</item>
         <item>Kerala</item>
         <item>Karnataka</item>
         <item>Kolkata</item>
-        <item>Maharashtra</item>
-        <item>Madhya Pradesh</item>
+        <item>Maharashtra-Goa</item>
+        <item>Madhya Pradesh-Chattisgarh</item>
         <item>Mumbai</item>
-        <item>Arunachal Pradesh (North East India)</item>
-        <item>Odisha</item>
+        <item>North East</item>
+        <item>Orissa</item>
         <item>Punjab</item>
         <item>Rajasthan</item>
         <item>Tamil Nadu</item>
-        <item>Uttar Pradesh (East)</item>
-        <item>Uttar Pradesh (West)</item>
+        <item>UP(EAST)</item>
+        <item>UP(WEST)-Uttarakhand</item>
         <item>West Bengal</item>
     </string-array>
     <string-array name="sims">
@@ -78,5 +80,11 @@
     <string name="title_activity_service_enable">ServiceEnableActivity</string>
     <string name="title_activity_contact_us">ContactUs</string>
     <string name="title_activity_tutorial">Tutorial</string>
+
+    <string name="title_activity_no_sim">NoSimActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <!-- analytics key = AES key for decryption -->
+    <string name="analytics_key">0x000102030405060708090A0B0C0D0E0F</string>
 
 </resources>

@@ -44,16 +44,19 @@
 
     <TextView
         android:id="@+id/circle"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/contact_picture"
         android:layout_below="@id/contact_number"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
+        android:singleLine="true"
+        android:ellipsize="end"
         android:layout_toRightOf="@+id/contact_picture"
         android:textColor="@android:color/darker_gray" 
         android:textSize="@dimen/circle"
-         />
+        android:layout_alignRight="@+id/contact_number"
+        android:layout_alignEnd="@+id/contact_number"/>
     
  <!-- Duration in HH::MM::SS format -->
 

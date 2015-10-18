@@ -11,21 +11,42 @@ import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.database.models.NormalData;
 import com.builder.ibalance.database.models.NormalSMS;
 import com.builder.ibalance.util.ConstantsAndStatics.USSDMessageType;
+import com.builder.ibalance.util.Loki;
 import com.builder.ibalance.util.MyApplication;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.crypto.NoSuchPaddingException;
 
 public class USSDParser {
 	
 	final String TAG = USSDParser.class.getSimpleName();
 	USSDMessageType type;
 	DatabaseEntryBase details;
+    Loki mLoki;
 	public DatabaseEntryBase getDetails() {
 		return details;
 	}
-
+	public USSDParser()
+	{
+        try
+        {
+            mLoki = new Loki();
+        } catch (NoSuchAlgorithmException e)
+        {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e)
+        {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e)
+        {
+            e.printStackTrace();
+        }
+    }
 	public boolean parseMessage(String message)
 	{
 		if(parseForNormalCall(message))
@@ -58,7 +79,7 @@ public class USSDParser {
 		String lastNumber = "";
 		int count=0;
 		
-		String smsCost = "(Last SMS|SMS cost|SMS Cost|SMS COST|SMS charge from Main Bal):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
+		String smsCost = mLoki.getNormal_sms_smsCost();//"(Last SMS|SMS cost|SMS Cost|SMS COST|SMS charge from Main Bal):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
 		Pattern pcc;
 		Matcher mcc;
 		 pcc = Pattern.compile(smsCost);
@@ -71,7 +92,7 @@ public class USSDParser {
 	
 		boolean flag=false;
 		// get the remaining balance
-		String smsBal = "(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|RemainingSMSBal|Account Balance is):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
+		String smsBal = mLoki.getNormal_sms_smsBal1();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|RemainingSMSBal|Account Balance is):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
 		pcc = Pattern.compile(smsBal);
 		mcc = pcc.matcher(message);
 		if (mcc.find()) {
@@ -83,7 +104,7 @@ public class USSDParser {
 		
 		{
 			//Rs not optional overide the previous
-			smsBal = "(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Main Bal:):?\\s*Rs\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
+			smsBal = mLoki.getNormal_sms_smsBal2();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Main Bal:):?\\s*Rs\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
 			pcc = Pattern.compile(smsBal);
 			mcc = pcc.matcher(message);
 			if (mcc.find()) {
@@ -130,7 +151,7 @@ public class USSDParser {
 		//Data Session Charge:Rs 0. Bal Rs.0.01. Vol Used :0.00 MB. Data Left: 749 MB. Val :24/05/2015.
 		//Your last call of 10Kb was charged from 50MBFREE.Remaining Balance 46Mb 806Kb. Your Main Account Balance: 15.155
 		try{
-		String dataUsedRegex =  "[usage|Vol_Used|last data session Usage|VOL|Vol|vol|USAGE|Usage|Vol Used|vol used|VOL USED|InternetUsage|DataUsage|Data_Usage|Data\\-Usage|Consumed volume|Consumed_volume|ConsumedVolume|Vol_Used|Volume Used|Vol\\-Used][\\s+]?:?[\\s+]?(\\d+\\.\\d+)[\\s+]?(MB|Mb)";
+		String dataUsedRegex =  mLoki.getData_pack_dataUsedRegex();//"[usage|Vol_Used|last data session Usage|VOL|Vol|vol|USAGE|Usage|Vol Used|vol used|VOL USED|InternetUsage|DataUsage|Data_Usage|Data\\-Usage|Consumed volume|Consumed_volume|ConsumedVolume|Vol_Used|Volume Used|Vol\\-Used][\\s+]?:?[\\s+]?(\\d+\\.\\d+)[\\s+]?(MB|Mb)";
 		Pattern pcc;
 		Matcher mcc;
 		 pcc = Pattern.compile(dataUsedRegex);
@@ -140,7 +161,7 @@ public class USSDParser {
 			count++;
 			//Log.d(TAG+" DATA ", "Found Data Pack Consumed " + data_consumed);
 		}
-		String bsnlDataUsedRegex = "Your last call of (\\d+)Mb|MB\\s*(\\d+)Kb|KB";
+		String bsnlDataUsedRegex = mLoki.getData_pack_bsnlDataUsedRegex1();//"Your last call of (\\d+)Mb|MB\\s*(\\d+)Kb|KB";
 		pcc = Pattern.compile(bsnlDataUsedRegex);
 		 mcc = pcc.matcher(message);
 		 if (mcc.find()) {
@@ -151,7 +172,7 @@ public class USSDParser {
 			}
 		 else
 		 {
-			  bsnlDataUsedRegex = "Your last call of\\s*(\\d+)Kb|KB";
+			  bsnlDataUsedRegex = mLoki.getData_pack_bsnlDataUsedRegex2();//"Your last call of\\s*(\\d+)Kb|KB";
 				pcc = Pattern.compile(bsnlDataUsedRegex);
 				 mcc = pcc.matcher(message);
 				 if (mcc.find()) {
@@ -161,7 +182,7 @@ public class USSDParser {
 						System.out.println(TAG+" DATA BSNL"+ "Found Data Pack Consumed " + data_consumed);
 					}
 		 }
-		String dataLeftRegex = "(Bal|BAL|bal|Data Left|DATA LEFT|data left|Available 3G Pack Benefit|Available 2G Pack Benefit|Freebie_bal|Data_Left)\\s*:?\\s*(\\d+\\.?\\d*)\\s?MB";
+		String dataLeftRegex = mLoki.getData_pack_dataLeftRegex();//"(Bal|BAL|bal|Data Left|DATA LEFT|data left|Available 3G Pack Benefit|Available 2G Pack Benefit|Freebie_bal|Data_Left)\\s*:?\\s*(\\d+\\.?\\d*)\\s?MB";
 		pcc = Pattern.compile(dataLeftRegex);
 		 mcc = pcc.matcher(message);
 		if (mcc.find()) {
@@ -170,7 +191,7 @@ public class USSDParser {
 			//Log.d(TAG+" DATA ", "Found Data Pack Left " + data_left);
 		}
 		//Your last call of 10Kb was charged from 50MBFREE.Remaining Balance 46Mb 806Kb. Your Main Account Balance: 15.155
-		String bsnlDataLeftRegex = "Remaining Balance (\\d+)(Mb|MB)\\s*(\\d+)Kb|KB";
+		String bsnlDataLeftRegex = mLoki.getData_pack_bsnlDataLeftRegex1();//"Remaining Balance (\\d+)(Mb|MB)\\s*(\\d+)Kb|KB";
 		pcc = Pattern.compile(bsnlDataLeftRegex);
 		 mcc = pcc.matcher(message);
 		 if (mcc.find()) {
@@ -183,7 +204,7 @@ public class USSDParser {
 			}
 		 else
 		 {
-			 bsnlDataLeftRegex = "Remaining Balance\\s*(\\d+)Kb|KB";
+			 bsnlDataLeftRegex = mLoki.getData_pack_bsnlDataLeftRegex2();//"Remaining Balance\\s*(\\d+)Kb|KB";
 				pcc = Pattern.compile(bsnlDataLeftRegex);
 				 mcc = pcc.matcher(message);
 				 if (mcc.find()) {
@@ -196,7 +217,7 @@ public class USSDParser {
 		
 		// get the remaining balance there are two different types to get main balance 
 		 boolean flag = false;
-			String remBalanceRegex = "(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|Main Account Balance)\\s*:?\\s*(Rs)?\\s*[\\.]?=?\\s*(\\d+\\.\\d+)";
+			String remBalanceRegex = mLoki.getData_pack_remBalanceRegex1();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|Main Account Balance)\\s*:?\\s*(Rs)?\\s*[\\.]?=?\\s*(\\d+\\.\\d+)";
 			pcc = Pattern.compile(remBalanceRegex);
 			mcc = pcc.matcher(message);
 			if (mcc.find()) {
@@ -206,7 +227,7 @@ public class USSDParser {
 				System.out.println(TAG +" DATA "+ "Found DataPack Rs bal " + bal.toString());
 			}
 			//hack to the problem posed by BSNL
-			 remBalanceRegex = "(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|Main Account Balance)\\s*:?\\s*(Rs)\\s*[\\.]?=?\\s*(\\d+\\.\\d+)";
+			 remBalanceRegex = mLoki.getData_pack_remBalanceRegex2();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|Main Account Balance)\\s*:?\\s*(Rs)\\s*[\\.]?=?\\s*(\\d+\\.\\d+)";
 			pcc = Pattern.compile(remBalanceRegex);
 			mcc = pcc.matcher(message);
 			if (mcc.find()) {
@@ -217,7 +238,7 @@ public class USSDParser {
 				System.out.println(TAG +" DATA "+ "Found Hack DataPack Rs bal " + bal.toString());
 			}
 		else{
-		String INRremBalanceRegex = "(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left)\\s*:?\\s*R?s?\\s*[\\.]?=?\\s*(\\d+\\.\\d+)\\s*INR";
+		String INRremBalanceRegex = mLoki.getData_pack_INRremBalanceRegex();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left)\\s*:?\\s*R?s?\\s*[\\.]?=?\\s*(\\d+\\.\\d+)\\s*INR";
 		pcc = Pattern.compile(INRremBalanceRegex);
 		mcc = pcc.matcher(message);
 		if (mcc.find()) {
@@ -226,7 +247,7 @@ public class USSDParser {
 			//Log.d(TAG +" DATA ", "Found DataPack INR bal " + bal.toString());
 		}
 		}
-		String validityRegex = "(Val|val|VAL|Pack_exp|can be used till|Val till)\\s*:?\\s*(\\d\\d/\\d\\d/\\d\\d\\d\\d|\\d\\d\\-\\d\\d\\-\\d\\d\\d\\d|\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d|[a-zA-Z]{3}\\s\\d\\d\\s\\d\\d\\d\\d)";
+		String validityRegex = mLoki.getData_pack_validityRegex();//"(Val|val|VAL|Pack_exp|can be used till|Val till)\\s*:?\\s*(\\d\\d/\\d\\d/\\d\\d\\d\\d|\\d\\d\\-\\d\\d\\-\\d\\d\\d\\d|\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d|[a-zA-Z]{3}\\s\\d\\d\\s\\d\\d\\d\\d)";
 		pcc = Pattern.compile(validityRegex);
 		mcc = pcc.matcher(message);
 		String validity = "Unknown";
@@ -262,7 +283,7 @@ public class USSDParser {
 	private boolean parseForNormalCall(String message) {
 		int secs = 0, count = 0;
 		Float bal = (float) 0.0, callCost = (float) 0.0;
-		Long time = (new Date()).getTime();
+		Long time = (new Date()).getTime()+19800l;//to ist
 		//Log.d(TAG+" CALL", "parseForNormalCall");
 		//Log.d(TAG+" CALL" + "from service", message);
 		//Log.d(TAG+" CALL" + "time from service", time.toString());
@@ -276,7 +297,7 @@ public class USSDParser {
 		//Your last call cost Rs.0.660,talk time used 0:0:44,main balance left 25.258.null
 		try{
 			
-			String callCostRegex = "(Call|call|Voice|voice|VOICE|Last|LAST|last)?_?\\s*(Deduction:CORE BAL|Call charged from:Main Bal|Charge|call cost|CALL COST|Call Cost|charge|cost|Cost|COST|CHRG|CHARGE|from Main Bal|CHRG:main_cost|Usage|USAGE|usage)\\s*:?\\s*R?s?\\s*-?:?[\\.=]?\\s*(\\d+\\.\\d+)";
+			String callCostRegex = mLoki.getNormal_call_costRegex();//"(Call|call|Voice|voice|VOICE|Last|LAST|last)?_?\\s*(Deduction:CORE BAL|Call charged from:Main Bal|Charge|call cost|CALL COST|Call Cost|charge|cost|Cost|COST|CHRG|CHARGE|from Main Bal|CHRG:main_cost|Usage|USAGE|usage)\\s*:?\\s*R?s?\\s*-?:?[\\.=]?\\s*(\\d+\\.\\d+)";
 			 pcc = Pattern.compile(callCostRegex);
 			 mcc = pcc.matcher(message);
 
@@ -288,7 +309,7 @@ public class USSDParser {
 			}
 			boolean flag=false;
 			// get the remaining balance
-			String remBalanceRegex =  "(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Current bal is|BAL_LEFT: main|BAL_LEFT:main|BAL_LEFT : main|BAL_LEFT :main|Balance :Talktime|Remaing Main Account Bal)\\s*:?-?\\s?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)\\s*(INR)?";
+			String remBalanceRegex = mLoki.getNormal_call_remBalanceRegex(); //"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Current bal is|BAL_LEFT: main|BAL_LEFT:main|BAL_LEFT : main|BAL_LEFT :main|Balance :Talktime|Remaing Main Account Bal)\\s*:?-?\\s?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)\\s*(INR)?";
 			pcc = Pattern.compile(remBalanceRegex);
 			mcc = pcc.matcher(message);
 			if (mcc.find()) {
@@ -300,7 +321,7 @@ public class USSDParser {
 			
 			{
 				//Rs not optional overide the previous
-				remBalanceRegex = "(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Main Bal:|BAL_LEFT: main|BAL_LEFT:main|BAL_LEFT : main|BAL_LEFT :main|Balance :Talktime):?\\s*Rs\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
+				remBalanceRegex = mLoki.getNormal_call_remBalanceRegex2();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Main Bal:|BAL_LEFT: main|BAL_LEFT:main|BAL_LEFT : main|BAL_LEFT :main|Balance :Talktime):?\\s*Rs\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
 				pcc = Pattern.compile(remBalanceRegex);
 				mcc = pcc.matcher(message);
 				if (mcc.find()) {
@@ -312,7 +333,7 @@ public class USSDParser {
 			}
 			if(message.contains("Remaining bal after the call: Main Bal")|| message.contains("RemainingBal:CORE BAL"))
 			{
-				 remBalanceRegex =  "(Remaining bal after the call: Main Bal|RemainingBal:CORE BAL):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
+				 remBalanceRegex =  mLoki.getNormal_call_remBalanceRegex3();//"(Remaining bal after the call: Main Bal|RemainingBal:CORE BAL):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
 				pcc = Pattern.compile(remBalanceRegex);
 				mcc = pcc.matcher(message);
 				if (mcc.find()) {
@@ -325,7 +346,7 @@ public class USSDParser {
 			}
 			if(message.contains("Available Main Bal"))
 			{
-				 remBalanceRegex =  "(Available Main Bal|AVAILABLE MAIN BAL|available main bal):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
+				 remBalanceRegex = mLoki.getNormal_call_remBalanceRegex4(); //"(Available Main Bal|AVAILABLE MAIN BAL|available main bal):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
 					pcc = Pattern.compile(remBalanceRegex);
 					mcc = pcc.matcher(message);
 					if (mcc.find()) {
@@ -339,7 +360,7 @@ public class USSDParser {
 			//Call_Durn : 00:00:51,
 			 // get the call duration
 			
-				String callDurationRegex = "\\d+:\\d+:\\d+";
+				String callDurationRegex = mLoki.getNormal_call_callDurationRegex1();//"\\d+:\\d+:\\d+";
 
 				pcc = Pattern.compile(callDurationRegex);
 				mcc = pcc.matcher(message);
@@ -359,7 +380,7 @@ public class USSDParser {
 					count++;
 				} else {
 
-					callDurationRegex = "(duration|Duration|DURATION|DURN|durn|DUR|dur|Dur|Call_Durn:):?\\s*(\\d+)\\s*(Sec|sec|SEC)(s|S)?";
+					callDurationRegex = mLoki.getNormal_call_callDurationRegex2();//"(duration|Duration|DURATION|DURN|durn|DUR|dur|Dur|Call_Durn:):?\\s*(\\d+)\\s*(Sec|sec|SEC)(s|S)?";
 					pcc = Pattern.compile(callDurationRegex);
 					mcc = pcc.matcher(message);
 					if (mcc.find()) {
@@ -371,7 +392,7 @@ public class USSDParser {
 				}
 				if(secs>36000)
 				{
-					callDurationRegex = "(duration|Duration|DURATION|DURN|durn|DUR|dur|Dur|Call_Durn:):?\\s*(\\d+)\\s*(Sec|sec|SEC)(s|S)?";
+					callDurationRegex = mLoki.getNormal_call_callDurationRegex3();//"(duration|Duration|DURATION|DURN|durn|DUR|dur|Dur|Call_Durn:):?\\s*(\\d+)\\s*(Sec|sec|SEC)(s|S)?";
 					pcc = Pattern.compile(callDurationRegex);
 					mcc = pcc.matcher(message);
 					if (mcc.find()) {
@@ -414,7 +435,7 @@ public class USSDParser {
 		//docomo Data Session Charge:Rs 0.10. Bal Rs.6.23. Vol Used :0.00 MB. .
 		//Session date:19.05.2015, Session cost: 0.96INR, Consumed volume: 0.232MB, Current Balance: 27.10INR. Dial *121# for Internet Packs.
 			try{
-			String costRegex = "[Data|DATA|data]?(Session|session|SESSION)\\s*(Charge|charge|cost|Cost|CHRG|CHARGE)\\s*:?\\s?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)[INR]?";
+			String costRegex = mLoki.getNormal_data_costRegex();//"[Data|DATA|data]?(Session|session|SESSION)\\s*(Charge|charge|cost|Cost|CHRG|CHARGE)\\s*:?\\s?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)[INR]?";
 			 pcc = Pattern.compile(costRegex);
 			 mcc = pcc.matcher(message);
 
@@ -425,7 +446,7 @@ public class USSDParser {
 				// System.out.println("Airtel call cost: " + mcc.group(1));
 			}
 			
-			String dataConsumedRegex = "(DataUsage|Data_Usage|Data-Usage|Consumed volume|Consumed_volume|ConsumedVolume|Vol Used|Vol_Used|Volume Used|Vol-Used)\\s*:?\\s*(\\d+\\.\\d+)\\s?(MB|mb|Mb)";
+			String dataConsumedRegex = mLoki.getNormal_data_dataConsumedRegex();//"(DataUsage|Data_Usage|Data-Usage|Consumed volume|Consumed_volume|ConsumedVolume|Vol Used|Vol_Used|Volume Used|Vol-Used)\\s*:?\\s*(\\d+\\.\\d+)\\s?(MB|mb|Mb)";
 			pcc = Pattern.compile(dataConsumedRegex);
 			 mcc = pcc.matcher(message);
 
@@ -442,7 +463,7 @@ public class USSDParser {
 			
 
 			// get the remaining balance
-			String remBalanceRegex = "(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left)\\s*?:?\\s*?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
+			String remBalanceRegex = mLoki.getNormal_data_remBalanceRegex();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left)\\s*?:?\\s*?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
 			pcc = Pattern.compile(remBalanceRegex);
 			mcc = pcc.matcher(message);
 			if (mcc.find()) {
