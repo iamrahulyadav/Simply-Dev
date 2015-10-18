@@ -6,9 +6,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Typeface;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.CallLog;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -32,6 +38,7 @@ import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.parse.ParseObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +55,8 @@ public class SplashscreenActivity extends Activity {
 	final int SPLASH_TIME_OUT = 1000;
 	String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";//to check if service is on
     Helper.SharedPreferenceHelper mSharedPreferenceHelper = new Helper.SharedPreferenceHelper();
-    ProgressBar dual_sim_bar;	@Override
+    ProgressBar dual_sim_bar;
+    @Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 	  super.onWindowFocusChanged(hasFocus);
 	  if (hasFocus) {
@@ -111,7 +119,8 @@ public class SplashscreenActivity extends Activity {
 		Typeface tf =Typeface.createFromAsset(getResources().getAssets(),"Roboto-Regular.ttf"); 
 		TextView tv = (TextView)findViewById(R.id.fullscreen_content);
 		tv.setTypeface(tf);
-		final SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
+		final SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+
         new SimChecker().execute();
 
 
@@ -192,6 +201,40 @@ public class SplashscreenActivity extends Activity {
                 {
                     Log.d(TAG + " Sim Info =", "Null");
                 }
+                boolean first_app_launch = mSharedPreferences.getBoolean("FIRST_APP_LAUNCH",true);
+                if(first_app_launch)
+                {
+                   TelephonyManager manager = (TelephonyManager) (MyApplication.context.getSystemService(TELEPHONY_SERVICE));
+                    ParseObject pObj = new ParseObject("SIMPLY_USERS");
+                    pObj.put("DEVICE_ID",
+                            manager.getDeviceId());
+                    for(SimModel m:sim_list)
+                    {
+                        pObj.put("CARRIER_"+m.getSimslot(), m.getCarrier());
+                        pObj.put("CIRCLE_"+m.getSimslot(),m.getCircle());
+                    }
+                    String phNumber = manager.getLine1Number();
+                    if(phNumber!=null)
+                    {
+                        pObj.put("NUMBER",phNumber);
+                    }
+                    pObj.put("MODEL",android.os.Build.MODEL);
+                    pObj.put("MANUFACTURER",android.os.Build.MANUFACTURER);
+                    pObj.put("ANDROID_VERSION", Build.VERSION.SDK_INT);
+                    pObj.put("TWO_SLOTS",SimModel.isTwo_slots());
+                    pObj.put("DUAL_SIM", !Constants.IS_SINGLE_SIM);
+                    pObj.put("CALLLOG_COLUMNS",SimModel.call_log_columns.toString());
+                    pObj.put("SAMPLE_CALLLOGS", getCallLogs());
+                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    Location loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                    pObj.put("LOCATION",loc.toString());
+                    pObj.put("APP_VERSION", BuildConfig.VERSION_CODE);
+                    SharedPreferences.Editor editor =mSharedPreferences.edit();
+                    editor.putInt("APP_VERSION", BuildConfig.VERSION_CODE);
+                    editor.putBoolean("FIRST_APP_LAUNCH",false);
+                    pObj.put("DUAL_SIM_LOGS",SimModel.debugInfo);
+                    pObj.saveEventually();
+                }
                 Boolean isEnabledAccess = isAccessibilityEnabled(accessibiltyID);
                 if (!isEnabledAccess)
                 {
@@ -214,7 +257,30 @@ public class SplashscreenActivity extends Activity {
         }
 
     }
-	private Boolean isAccessibilityEnabled(String id) {
+
+    private String getCallLogs()
+    {
+        StringBuilder details = new StringBuilder();
+        Cursor managedCursor = this.getContentResolver().query(CallLog.Calls.CONTENT_URI,null,null,null, CallLog.Calls.DATE + " DESC");
+        details.append("CallLogInfo DB\n");
+        int c=managedCursor.getColumnCount(),i=0;
+        for( i=0;i<2;i++)
+        {
+            if(managedCursor.moveToNext())
+            {
+                for( i=0;i<c;i++)
+                {
+                    details.append(managedCursor.getColumnName(i)+ ":");
+                    details.append(managedCursor.getString(i));
+                    details.append('\n');
+                }
+            }
+
+        }
+        return details.toString();
+    }
+
+    private Boolean isAccessibilityEnabled(String id) {
 		AccessibilityManager mAccessibilityManager = (AccessibilityManager) this.getSystemService(Context.ACCESSIBILITY_SERVICE);
 		//Log.d(TAG,"Checking for: "+id);
 		List<AccessibilityServiceInfo> runningServices = mAccessibilityManager.getEnabledAccessibilityServiceList(AccessibilityEvent.TYPES_ALL_MASK);

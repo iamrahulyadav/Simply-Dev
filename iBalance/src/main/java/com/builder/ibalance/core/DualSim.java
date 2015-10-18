@@ -39,110 +39,138 @@ public class DualSim
     SharedPreferenceHelper mSharedPreferenceHelper = new SharedPreferenceHelper();
     String[] knownSerial = new String[]{"-1","-1"};
     boolean sim_details_known = false;
-
+    StringBuilder debugInfo = new StringBuilder();
     public ArrayList<SimModel> getSimList(int type) //provide a short cut if already sim details are fetched
     {
-        checkDualSim();
+
         if (mTelephonyManager == null)
             mTelephonyManager = (TelephonyManager) MyApplication.context.getSystemService(Context.TELEPHONY_SERVICE);
         if (type == 0)//don't know the type start afresh
         {
             toastHelper("Detecting Fresh");
+            debugInfo.append("Detecting Fresh\n");
+            debugInfo.append(checkDualSim() + "\n\n");
             sim_details_known = false; //details no yet known
             sim_list.clear();
             Log.d(tag, "getSimList");
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) //API 22,Yay Dual Sim Support
+            try
             {
-                Log.d(tag, "getSimListForLolipop");
-                SimModel.dual_type = Constants.TYPE_LOLIPOP;
-                getSimListForLolipop(sim_details_known);
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) //API 22,Yay Dual Sim Support
+                {
+                    Log.d(tag, "getSimListForLolipop");
+                    debugInfo.append("GOT Lolipop\n");
+                    SimModel.dual_type = Constants.TYPE_LOLIPOP;
+                    getSimListForLolipop(sim_details_known);
 
+                } else if (hasSubscriptionManager())
+                {
+                    debugInfo.append("GOT SUBSCRIPTIONMANAGER\n");
+                    SimModel.dual_type = Constants.TYPE_SUBSCRIPTION;
+                    getSimListForSubscriptionManager(sim_details_known);
+                    //java.util.List<android.telephony.SubInfoRecord> android.telephony.SubscriptionManager.getSubInfoUsingSlotId(int)
+                } else if (com.mediatek.compatibility.gemini.GeminiSupport.isGeminiFeatureEnabled())
+                {
+                    debugInfo.append("GOT MEDIATEK\n");
+                    SimModel.dual_type = Constants.TYPE_MEDIATEK;
+                    getSimListforMediaTek(sim_details_known);
+
+                } else if (isTypeGemini())
+                {
+                    debugInfo.append("GOT GEMINI\n");
+                    SimModel.dual_type = Constants.TYPE_GEMINI;
+                    getSimListForGemini(sim_details_known);
+
+                } else if (isTypeDuosOne())
+                {
+                    debugInfo.append("GOT DUOSONE\n");
+                    SimModel.dual_type = Constants.TYPE_DUOS_ONE;
+                    getSimListForDuosoOne(sim_details_known);
+
+                } else if (isTypeDuosTwo())
+                {
+
+                    debugInfo.append("GOT DUOTWO\n");
+                    SimModel.dual_type = Constants.TYPE_DUOS_TWO;
+                    getSimListForDuosTwo(sim_details_known);
+
+                } else if (isTypeDuosDs())
+                {
+                    debugInfo.append("GOT DUOSDS\n");
+                    SimModel.dual_type = Constants.TYPE_DUOS_DS;
+                    getSimListForDuosDs(sim_details_known);
+
+                } else if (isTypeNexus())
+                {
+                    debugInfo.append("GOT NEXUS\n");
+                    SimModel.dual_type = Constants.TYPE_NEXUS;
+                    getSimListForNexus(sim_details_known);
+
+                } else if (isTypeKarbonn())
+                {
+
+                    debugInfo.append("GOT KARBONN\n");
+                    SimModel.dual_type = Constants.TYPE_KARBONN;
+                    getSimListForKarbonn(sim_details_known);
+
+                } else if (isTypeXiaomi())
+                {
+
+                    debugInfo.append("GOT XIAOMI\n");
+                    SimModel.dual_type = Constants.TYPE_XIAOMI;
+                    getSimListForXiaomi(sim_details_known);
+
+                } else if (isTypeAsus())
+                {
+                    debugInfo.append("GOT ASUS\n");
+                    SimModel.dual_type = Constants.TYPE_ASUS;
+                    getSimListForAsus(sim_details_known);
+
+                } else if (isTypeMoto())
+                {
+                    debugInfo.append("GOT MOTO\n");
+                    SimModel.dual_type = Constants.TYPE_MOTO;
+                    getSimListForMoto(sim_details_known);
+
+                } else if (isTypeSamsungRIL())
+                {
+                    debugInfo.append("GOT SAMSUNGRIL\n");
+                    SimModel.dual_type = Constants.TYPE_SAMSUNG_RIL;
+                    getSimListForSamsungRIL(sim_details_known);
+
+                } else if (isTypeMicromaxBolt())
+                {
+                    debugInfo.append("GOT MICROMAXBOLT\n");
+                    SimModel.dual_type = Constants.TYPE_MICROMAX_BOLT;
+                    getSimListForMicromaxBolt(sim_details_known);
+                }
             }
-            else if (hasSubscriptionManager())
+            catch (Exception e)
             {
-                SimModel.dual_type = Constants.TYPE_SUBSCRIPTION;
-                getSimListForSubscriptionManager(sim_details_known);
-                //java.util.List<android.telephony.SubInfoRecord> android.telephony.SubscriptionManager.getSubInfoUsingSlotId(int)
-            }
-            else if (com.mediatek.compatibility.gemini.GeminiSupport.isGeminiFeatureEnabled())
-            {
-                SimModel.dual_type = Constants.TYPE_MEDIATEK;
-                getSimListforMediaTek(sim_details_known);
-
-            } else if (isTypeGemini())
-            {
-                SimModel.dual_type = Constants.TYPE_GEMINI;
-                getSimListForGemini(sim_details_known);
-
-            } else if (isTypeDuosOne())
-            {
-                SimModel.dual_type = Constants.TYPE_DUOS_ONE;
-                getSimListForDuosoOne(sim_details_known);
-
-            } else if (isTypeDuosTwo())
-            {
-                SimModel.dual_type = Constants.TYPE_DUOS_TWO;
-                getSimListForDuosTwo(sim_details_known);
-
-            } else if (isTypeDuosDs())
-            {
-                SimModel.dual_type = Constants.TYPE_DUOS_DS;
-                getSimListForDuosDs(sim_details_known);
-
-            } else if (isTypeNexus())
-            {
-                SimModel.dual_type = Constants.TYPE_NEXUS;
-                getSimListForNexus(sim_details_known);
-
-            } else if (isTypeKarbonn())
-            {
-                SimModel.dual_type = Constants.TYPE_KARBONN;
-                getSimListForKarbonn(sim_details_known);
-
-            } else if (isTypeXiaomi())
-            {
-                SimModel.dual_type = Constants.TYPE_XIAOMI;
-                getSimListForXiaomi(sim_details_known);
-
-            } else if (isTypeAsus())
-            {
-                SimModel.dual_type = Constants.TYPE_ASUS;
-                getSimListForAsus(sim_details_known);
-
-            } else if (isTypeMoto())
-            {
-                SimModel.dual_type = Constants.TYPE_MOTO;
-                getSimListForMoto(sim_details_known);
-
-            }
-            else if(isTypeSamsungRIL())
-            {
-                SimModel.dual_type = Constants.TYPE_SAMSUNG_RIL;
-                getSimListForSamsungRIL(sim_details_known);
-
-            }
-            else if(isTypeMicromaxBolt())
-            {
-                SimModel.dual_type = Constants.TYPE_MICROMAX_BOLT;
-                getSimListForMicromaxBolt(sim_details_known);
+                debugInfo.append(e.getStackTrace());
             }
             if(sim_list.isEmpty() || SimModel.dual_type == Constants.TYPE_UNKNOWN)
             {
                 //Consider this as Single Sim
+                debugInfo.append(" SIMLIST WAS EMPTY\n");
                 SimModel.dual_type = Constants.TYPE_SINGLE_SIM;
+                debugInfo.append("FALLING BACK TO SINGLE_SIM\n");
                 getSimListForSingleSim(sim_details_known);
 
             }
+
             //If the Sim List is still empty iit means the phone is in flight mode or doesnt have sims
             //Try to use the old sim details
             //If no old SimDetails exist then show error screen
             if(sim_list.isEmpty())
             {
+                debugInfo.append("SIM LIST IS STILL EMPTY means Flight Mode\n");
                 sim_list = mSharedPreferenceHelper.getDualSimDetails();
 
                 if(sim_list.isEmpty())
                 {
                     SimModel.two_slots = false;
+                    debugInfo.append("Flight Mode or No Sim Confirmed\n");
+                    SimModel.debugInfo = debugInfo.toString();
                     return null;
                     // Show error Screen from Splash Screen
                 }
@@ -153,6 +181,8 @@ public class DualSim
         else
         {
             sim_list = mSharedPreferenceHelper.getDualSimDetails();
+            debugInfo.append("SIM From Prefs TYPE = "+type+"\n");
+            debugInfo.append("SIM DETAILS = "+sim_list.toString()+"\n");
             if(sim_list.isEmpty())
                 getSimList(0);
             if(SimModel.dual_type == Constants.TYPE_SINGLE_SIM)
@@ -236,7 +266,7 @@ public class DualSim
 
         }
 
-
+        SimModel.debugInfo = debugInfo.append(sim_list.toString()).toString();
         return sim_list;
     }
 
@@ -2021,7 +2051,7 @@ public class DualSim
     }
 
 
-    public final void checkDualSim() //for Debug only
+    public final String checkDualSim() //for Debug only
     {
         Log.d(tag, "Testing Dual SIM Support");
         StringBuilder mStringBuilder = new StringBuilder("Debuf Info :");
@@ -2035,8 +2065,8 @@ public class DualSim
                 String str6 = arrayOfString2[n];
                 if (ReflectionHelper.classExists(str5 + str6))
                 {
-                    System.out.println("c  Class  found : " + str5 + str6);
-                    mStringBuilder.append("c  Class  found : " + str5 + str6);
+                    //System.out.println("c  Class  found : " + str5 + str6);
+                    mStringBuilder.append("c  Class  found : " + str5 + str6+"\n");
                 }
             }
         }
@@ -2048,8 +2078,8 @@ public class DualSim
             if (localObject != null)
             {
                 String str4 = localObject.getClass().getName();
-                System.out.println("o  Object found : " + str4 + " by context.getSystemService(\"" + str3 + "\")");
-                mStringBuilder.append("o  Object found : " + str4 + " by context.getSystemService(\"" + str3 + "\")");
+                //System.out.println("o  Object found : " + str4 + " by context.getSystemService(\"" + str3 + "\")");
+                mStringBuilder.append("o  Object found : " + str4 + " by context.getSystemService(\"" + str3 + "\")"+"\n");
             }
         }
         String[] arrayOfString4 = {"android.telephony.TelephonyManager", "com.mediatek.telephony.TelephonyManagerEx", "android.telephony.MSimTelephonyManager", "android.telephony.MultiSimTelephonyManager", "android.telephony.SubscriptionManager"};
@@ -2059,36 +2089,36 @@ public class DualSim
             Method localMethod4 = ReflectionHelper.getMethod(null, str2, "getDefault", new Object[0]);
             if (localMethod4 != null)
             {
-                System.out.println("m  static method found : " + localMethod4.toGenericString());
-                mStringBuilder.append("m  static method found : " + localMethod4.toGenericString());
+                //System.out.println("m  static method found : " + localMethod4.toGenericString());
+                mStringBuilder.append("m  static method found : " + localMethod4.toGenericString()+"\n");
             }
             Object[] arrayOfObject3 = new Object[1];
             arrayOfObject3[0] = Integer.valueOf(1);
             Method localMethod5 = ReflectionHelper.getMethod(null, str2, "getDefault", arrayOfObject3);
             if (localMethod5 != null)
             {
-                System.out.println("m  static method found : " + localMethod5.toGenericString());
-                mStringBuilder.append("m  static method found : " + localMethod5.toGenericString());
+              //  System.out.println("m  static method found : " + localMethod5.toGenericString());
+                mStringBuilder.append("m  static method found : " + localMethod5.toGenericString()+"\n");
             }
             Object[] arrayOfObject4 = new Object[1];
             arrayOfObject4[0] = Long.valueOf(1L);
             Method localMethod6 = ReflectionHelper.getMethod(null, str2, "getDefault", arrayOfObject4);
             if (localMethod6 != null)
             {
-                System.out.println("m  static method found : " + localMethod6.toGenericString());
-                mStringBuilder.append("m  static method found : " + localMethod6.toGenericString());
+                //System.out.println("m  static method found : " + localMethod6.toGenericString());
+                mStringBuilder.append("m  static method found : " + localMethod6.toGenericString()+"\n");
             }
             Method localMethod7 = ReflectionHelper.getMethod(null, str2, "getActiveSubInfoList", new Object[0]);
             if (localMethod7 != null)
             {
-                System.out.println("m  static method found : " + localMethod7.toGenericString());
-                mStringBuilder.append("m  static method found : " + localMethod7.toGenericString());
+                //System.out.println("m  static method found : " + localMethod7.toGenericString());
+                mStringBuilder.append("m  static method found : " + localMethod7.toGenericString()+"\n");
             }
             Method localMethod8 = ReflectionHelper.getMethod(null, str2, "getActivatedSubInfoList", new Object[0]);
             if (localMethod8 != null)
             {
-                System.out.println("m  static method found : " + localMethod8.toGenericString());
-                mStringBuilder.append("m  static method found : " + localMethod8.toGenericString());
+                //System.out.println("m  static method found : " + localMethod8.toGenericString());
+                mStringBuilder.append("m  static method found : " + localMethod8.toGenericString()+"\n");
             }
         }
         String[] arrayOfString5 = {"getDefault", "getSimOperator", "getSimOperatorGemini", "getSimSerialNumber", "getSimSerialNumberDs"};
@@ -2099,27 +2129,27 @@ public class DualSim
             Method localMethod1 = ReflectionHelper.getMethod(localTelephonyManager, null, str1, new Object[0]);
             if (localMethod1 != null)
             {
-                System.out.println("m  TelMan method found : " + localMethod1.toGenericString());
-                mStringBuilder.append("m  TelMan method found : " + localMethod1.toGenericString());
+                //System.out.println("m  TelMan method found : " + localMethod1.toGenericString());
+                mStringBuilder.append("m  TelMan method found : " + localMethod1.toGenericString()+"\n");
             }
             Object[] arrayOfObject1 = new Object[1];
             arrayOfObject1[0] = Integer.valueOf(1);
             Method localMethod2 = ReflectionHelper.getMethod(localTelephonyManager, null, str1, arrayOfObject1);
             if (localMethod2 != null)
             {
-                System.out.println("m  TelMan method found : " + localMethod2.toGenericString());
-                mStringBuilder.append("m  TelMan method found : " + localMethod2.toGenericString());
+                //System.out.println("m  TelMan method found : " + localMethod2.toGenericString());
+                mStringBuilder.append("m  TelMan method found : " + localMethod2.toGenericString()+"\n");
             }
             Object[] arrayOfObject2 = new Object[1];
             arrayOfObject2[0] = Long.valueOf(1L);
             Method localMethod3 = ReflectionHelper.getMethod(localTelephonyManager, null, str1, arrayOfObject2);
             if (localMethod3 != null)
             {
-                System.out.println("m  TelMan method found : " + localMethod3.toGenericString());
-                mStringBuilder.append("m  TelMan method found : " + localMethod3.toGenericString());
+               // System.out.println("m  TelMan method found : " + localMethod3.toGenericString());
+                mStringBuilder.append("m  TelMan method found : " + localMethod3.toGenericString()+"\n");
             }
         }
-        SimModel.debugInfo = mStringBuilder.toString();
+       return mStringBuilder.toString();
     }
 
     public ArrayList<String> getDualCallLogColumn()

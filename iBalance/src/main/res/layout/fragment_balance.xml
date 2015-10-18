@@ -109,7 +109,7 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="No balance track"
+                android:text="No balance tracked"
                 android:padding="25dp"
                 android:id="@+id/text_no_track"
                 android:gravity="center"
@@ -130,13 +130,11 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="Tracking will start after you make a call"
+                android:text="Tracking will start after you make a call, if it doesn't then please contact our user support :) "
                 android:id="@+id/textView22"
                 android:padding="25dp"
                 android:layout_below="@+id/imageView6"
                 android:gravity="center"
-
-
                 android:textSize="20dp"
                 android:textColor="#1ad3a2" />
 
