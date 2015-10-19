@@ -674,6 +674,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 		super.onPostExecute(result);
     Log.d(TAG, "POSTING DataLoadingDone Event");
         EventBus.getDefault().post(new DataLoadingDone());
+        new SmsDataInitializer().execute();
     }
 
 	private void updateWidgetInitially(Context ctx) {

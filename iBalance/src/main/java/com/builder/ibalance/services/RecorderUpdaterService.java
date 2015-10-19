@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
 import android.os.Message;
 import android.telephony.TelephonyManager;
@@ -27,6 +26,7 @@ import android.widget.Toast;
 
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.BalanceWidget;
+import com.builder.ibalance.BuildConfig;
 import com.builder.ibalance.MainActivity;
 import com.builder.ibalance.R;
 import com.builder.ibalance.UssdPopup;
@@ -608,7 +608,8 @@ public class RecorderUpdaterService extends AccessibilityService
                 } else// invalid USSD Message
                 {
                     // Log.d(TAG + "Updater", "invalid USSD");
-                    final SharedPreferences  mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+
+                    final SharedPreferences  mSharedPreferences = getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE);
                     PARSER_VERSION = mSharedPreferences.getInt("PARSER_VERSION",1);
                     ParseConfig.getInBackground(new ConfigCallback()
                     {
@@ -779,32 +780,23 @@ public class RecorderUpdaterService extends AccessibilityService
             TelephonyManager mtelTelephonyManager = (TelephonyManager) this
                     .getSystemService(Context.TELEPHONY_SERVICE);
             ParseQuery<ParseObject> query = ParseQuery
-                    .getQuery("IBALANCE_USERS");
+                    .getQuery("SERVICE_STATUS");
             query.whereEqualTo("DEVICE_ID", mtelTelephonyManager.getDeviceId());
             // Retrieve the object by Device id
 
             query.addDescendingOrder("createdAt");
             query.getFirstInBackground(new GetCallback<ParseObject>()
             {
-                public void done(ParseObject user, ParseException e)
+                public void done(ParseObject service_status, ParseException e)
                 {
                     if (e == null)
                     {
                         // Now let's update it pl
                         Log.d(TAG, "Service On");
-                        try
-                        {
-                            user.put(
-                                    "VERSION",
-                                    getApplicationContext()
-                                            .getPackageManager()
-                                            .getPackageInfo(getPackageName(), 0).versionName);
-                        } catch (NameNotFoundException e1)
-                        {
-                            e1.printStackTrace();
-                        }
-                        user.put("SERVICE_STATUS", "ON");
-                        user.saveEventually();
+                        service_status.put("APP_VERSION", BuildConfig.VERSION_CODE);
+                        service_status.put("SERVICE_STATUS", "ON");
+                        service_status.increment("SERVICE_TOGGLE_COUNT");
+                        service_status.saveEventually();
                     }
                 }
             });

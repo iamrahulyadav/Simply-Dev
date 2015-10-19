@@ -207,7 +207,7 @@ public class SimModel {
     {
         return simslot;
     }
-    String getDualTypeName(int dual_type)
+    static String getDualTypeName(int dual_type)
     {
         switch (dual_type)
         {

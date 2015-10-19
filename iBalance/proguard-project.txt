@@ -48,6 +48,11 @@
 -libraryjars /libs/picasso-2.5.0.jar
 -libraryjars /libs/AF-Android-SDK-v2.3.1.17.jar
 -libraryjars /libs/Kahuna.jar
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
+    **[] $VALUES;
+    public *;
+    }
 # Keep public classes and methods.
 #-keepclassmembers class com.mopub.** { public *; }
 #-keep public class com.mopub.**

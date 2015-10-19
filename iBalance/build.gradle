@@ -50,7 +50,7 @@ dependencies {
     compile files('libs/Kahuna.jar')
     compile files('libs/mpandroidchartlibrary-2-0-9.jar')
     compile files('libs/Parse-1.8.2.jar')
-    compile files('libs/picasso-2.5.0.jar')
+    compile 'com.github.bumptech.glide:glide:3.6.1'
     compile('com.crashlytics.sdk.android:crashlytics:2.4.0@aar') {
         transitive = true;
         compile 'com.google.android.gms:play-services:+'

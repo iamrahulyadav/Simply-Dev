@@ -70,7 +70,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener,Pref
 		dataIntializerCompleteEvent = EventBus.getDefault();
 		dataIntializerCompleteEvent.register(this);
 		mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-		PARSER_VERSION = mSharedPreferences.getInt("PARSER_VERSION",1);
+		PARSER_VERSION =  getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION",1);
 		ParseConfig.getInBackground(new ConfigCallback()
 		{
 			@Override

@@ -275,7 +275,7 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 		boolean isWhatsappInstalled = whatsappInstalledOrNot();
 		Intent sendIntent = new Intent();
 		sendIntent.setAction(Intent.ACTION_SEND);
-		
+		//ToDo change Link
 		switch (v.getId()) {
 		case R.id.whatsapp_share_button:
 			sendIntent.putExtra(Intent.EXTRA_TEXT, "Have a complete control of your prepaid Balance and stay protected from unauthorized deduction.\nTry out \"Simply\":\nhttps://play.google.com/store/apps/details?id=com.builder.ibalance ");

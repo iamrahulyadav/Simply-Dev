@@ -15,6 +15,7 @@ import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.bumptech.glide.Glide;
 import com.flurry.android.FlurryAgent;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
@@ -27,7 +28,6 @@ import com.github.mikephil.charting.utils.Highlight;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.KahunaAnalytics;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -81,7 +81,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
             if(c.image_uri!=null)
             {
                 contactPicture = (ImageView) findViewById(R.id.contact_detail_picture);
-                Picasso.with(this).load(c.image_uri).into(contactPicture);
+                Glide.with(this).load(c.image_uri).into(contactPicture);
             }
 		}
 

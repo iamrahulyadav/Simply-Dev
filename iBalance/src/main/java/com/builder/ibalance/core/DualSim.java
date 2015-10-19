@@ -58,88 +58,88 @@ public class DualSim
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) //API 22,Yay Dual Sim Support
                 {
                     Log.d(tag, "getSimListForLolipop");
-                    debugInfo.append("GOT Lolipop\n");
+                    debugInfo.append("GOT " + Constants.TYPE_LOLIPOP + "\n");
                     SimModel.dual_type = Constants.TYPE_LOLIPOP;
                     getSimListForLolipop(sim_details_known);
 
                 } else if (hasSubscriptionManager())
                 {
-                    debugInfo.append("GOT SUBSCRIPTIONMANAGER\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_SUBSCRIPTION) + "\n");
                     SimModel.dual_type = Constants.TYPE_SUBSCRIPTION;
                     getSimListForSubscriptionManager(sim_details_known);
                     //java.util.List<android.telephony.SubInfoRecord> android.telephony.SubscriptionManager.getSubInfoUsingSlotId(int)
                 } else if (com.mediatek.compatibility.gemini.GeminiSupport.isGeminiFeatureEnabled())
                 {
-                    debugInfo.append("GOT MEDIATEK\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_MEDIATEK )+ "\n");
                     SimModel.dual_type = Constants.TYPE_MEDIATEK;
                     getSimListforMediaTek(sim_details_known);
 
                 } else if (isTypeGemini())
                 {
-                    debugInfo.append("GOT GEMINI\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_GEMINI)+ "\n");
                     SimModel.dual_type = Constants.TYPE_GEMINI;
                     getSimListForGemini(sim_details_known);
-
-                } else if (isTypeDuosOne())
-                {
-                    debugInfo.append("GOT DUOSONE\n");
-                    SimModel.dual_type = Constants.TYPE_DUOS_ONE;
-                    getSimListForDuosoOne(sim_details_known);
 
                 } else if (isTypeDuosTwo())
                 {
 
-                    debugInfo.append("GOT DUOTWO\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_DUOS_TWO )+ "\n");
                     SimModel.dual_type = Constants.TYPE_DUOS_TWO;
                     getSimListForDuosTwo(sim_details_known);
 
-                } else if (isTypeDuosDs())
+                }  else if (isTypeDuosDs())
                 {
-                    debugInfo.append("GOT DUOSDS\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_DUOS_DS )+ "\n");
                     SimModel.dual_type = Constants.TYPE_DUOS_DS;
                     getSimListForDuosDs(sim_details_known);
 
+                } else if (isTypeDuosOne())
+                {
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_DUOS_ONE )+ "\n");
+                    SimModel.dual_type = Constants.TYPE_DUOS_ONE;
+                    getSimListForDuosoOne(sim_details_known);
+
                 } else if (isTypeNexus())
                 {
-                    debugInfo.append("GOT NEXUS\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_NEXUS)+ "\n");
                     SimModel.dual_type = Constants.TYPE_NEXUS;
                     getSimListForNexus(sim_details_known);
 
                 } else if (isTypeKarbonn())
                 {
 
-                    debugInfo.append("GOT KARBONN\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_KARBONN )+ "\n");
                     SimModel.dual_type = Constants.TYPE_KARBONN;
                     getSimListForKarbonn(sim_details_known);
 
                 } else if (isTypeXiaomi())
                 {
 
-                    debugInfo.append("GOT XIAOMI\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_XIAOMI )+ "\n");
                     SimModel.dual_type = Constants.TYPE_XIAOMI;
                     getSimListForXiaomi(sim_details_known);
 
                 } else if (isTypeAsus())
                 {
-                    debugInfo.append("GOT ASUS\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_ASUS )+ "\n");
                     SimModel.dual_type = Constants.TYPE_ASUS;
                     getSimListForAsus(sim_details_known);
 
                 } else if (isTypeMoto())
                 {
-                    debugInfo.append("GOT MOTO\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_MOTO)+ "\n");
                     SimModel.dual_type = Constants.TYPE_MOTO;
                     getSimListForMoto(sim_details_known);
 
                 } else if (isTypeSamsungRIL())
                 {
-                    debugInfo.append("GOT SAMSUNGRIL\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_SAMSUNG_RIL )+ "\n");
                     SimModel.dual_type = Constants.TYPE_SAMSUNG_RIL;
                     getSimListForSamsungRIL(sim_details_known);
 
                 } else if (isTypeMicromaxBolt())
                 {
-                    debugInfo.append("GOT MICROMAXBOLT\n");
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_MICROMAX_BOLT )+ "\n");
                     SimModel.dual_type = Constants.TYPE_MICROMAX_BOLT;
                     getSimListForMicromaxBolt(sim_details_known);
                 }
@@ -285,7 +285,7 @@ public class DualSim
     private void getSimListForMicromaxBolt(boolean sim_details_known)
     {
 
-        String serial0 = null, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial0 = null, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle;
         String serial1 = null;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
@@ -312,9 +312,9 @@ public class DualSim
         {
             Object[] empty_parameter = new Object[0];
             serial0 = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumber", empty_parameter);
+            imei0 = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", empty_parameter);
             if (serial0 != null && !serial0.equals(""))
             {
-                imei = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", empty_parameter);
                 network_imsi = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getNetworkOperator", empty_parameter);
                 sim_imsi = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getSimOperator", empty_parameter);
                 carrier_display_name = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getNetworkOperatorName", empty_parameter);
@@ -329,7 +329,7 @@ public class DualSim
                 circle = carrier_circle.get(1);
                 mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
                         .serial(serial0)
-                        .imei(imei)
+                        .imei(imei0)
                         .carrier_display_name(carrier_display_name)
                         .circle(circle)
                         .network_imsi(network_imsi)
@@ -343,12 +343,12 @@ public class DualSim
         if (dualTelephonyManager != null)
         {
             Object[] empty_parameter = new Object[0];
-            imei = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", empty_parameter);
-            if (imei == null)
+            imei1 = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", empty_parameter);
+            if (imei1 == null || imei0.equals(imei1))
             {
                 SimModel.two_slots = false;
                 //If there is only one slot then there is no need for checking Sim Serial
-                toastHelper("Single Sim" + imei);
+                //toastHelper("Single Sim" + imei1);
             } else
             {
                 serial1 = (String) ReflectionHelper.getObject(dualTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumber", empty_parameter);
@@ -369,7 +369,7 @@ public class DualSim
                     circle = carrier_circle.get(1);
                     mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
                             .serial(serial1)
-                            .imei(imei)
+                            .imei(imei1)
                             .carrier_display_name(carrier_display_name)
                             .circle(circle)
                             .network_imsi(network_imsi)
@@ -394,7 +394,7 @@ public class DualSim
 
     private void getSimListForSamsungRIL(boolean sim_details_known)
     {
-        String serial0 = null, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial0 = null, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle;
         String serial1 = null;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
@@ -462,9 +462,9 @@ public class DualSim
         {
             Object[] empty_parameter = new Object[0];
             serial0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimSerialNumber", empty_parameter);
+            imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
             if (serial0 != null && !serial0.isEmpty())
             {
-                imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
                 network_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getNetworkOperator", empty_parameter);
                 sim_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimOperator", empty_parameter);
                 carrier_display_name = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getNetworkOperatorName", empty_parameter);
@@ -479,7 +479,7 @@ public class DualSim
                 circle = carrier_circle.get(1);
                 mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
                         .serial(serial0)
-                        .imei(imei)
+                        .imei(imei0)
                         .carrier_display_name(carrier_display_name)
                         .circle(circle)
                         .network_imsi(network_imsi)
@@ -506,18 +506,17 @@ public class DualSim
         if (multiSimTelephonyManager != null)
         {
             Object[] empty_parameter = new Object[0];
-            imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
-            if (imei == null)
+            imei1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
+            if (imei1 == null || imei0.equals(imei1))
             {
                 SimModel.two_slots = false;
                 //If there is only one slot then there is no need for checking Sim Serial
-                toastHelper("Has Single  Slot" + imei);
+                //toastHelper("Has Single  Slot" + imei1);
             } else
             {
                 serial1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimSerialNumber", empty_parameter);
                 if (serial1 != null && !serial1.isEmpty())
                 {
-                    imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
                     network_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getNetworkOperator", empty_parameter);
                     sim_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimOperator", empty_parameter);
                     carrier_display_name = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getNetworkOperatorName", empty_parameter);
@@ -532,7 +531,7 @@ public class DualSim
                     circle = carrier_circle.get(1);
                     mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
                             .serial(serial1)
-                            .imei(imei)
+                            .imei(imei1)
                             .carrier_display_name(carrier_display_name)
                             .circle(circle)
                             .network_imsi(network_imsi)
@@ -646,7 +645,7 @@ public class DualSim
             imei0 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getDeviceId", parameter);
             parameter[0] = 1;
             imei1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getDeviceId", parameter);
-            if(imei0!=null && imei1!=null)
+            if(imei0!=null && imei1!=null && !imei0.equals(imei1))
             {
                 Constants.HAS_TWO_SLOTS = true;
                 SimModel.two_slots = true;
@@ -733,7 +732,7 @@ public class DualSim
 
     private void getSimListForGemini(boolean sim_details_known)
     {
-        String serial[] = new String[2], imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial[] = new String[2], imei[] = {"",""}, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
         if (mTelephonyManager == null)
@@ -756,8 +755,8 @@ public class DualSim
         for (int i = 0; i < 2; i++)
         {
             parameter[0] = i;
-            imei = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getDeviceIdGemini", parameter);
-            if (imei == null)
+            imei[i] = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getDeviceIdGemini", parameter);
+            if (imei[i] == null || imei[0]==imei[1])
             {
                 SimModel.two_slots = false;
                 //If there is only one slot then there is no need for checking Sim Serial
@@ -781,7 +780,7 @@ public class DualSim
                     circle = carrier_circle.get(1);
                     mSimModel = new SimModel.Builder(-1, i, sim_imsi, carrier)
                             .serial(serial[i])
-                            .imei(imei)
+                            .imei(imei[i])
                             .carrier_display_name(carrier_display_name)
                             .circle(circle)
                             .network_imsi(network_imsi)
@@ -815,7 +814,7 @@ public class DualSim
 
     private void getSimListForKarbonn(boolean sim_details_known)
     {
-        String serial0, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial0, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle;
         String serial1 = null;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
@@ -839,7 +838,7 @@ public class DualSim
         serial0 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumber", parameter);
         if (serial0 != null)
         {
-            imei = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", parameter);
+            imei0 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", parameter);
             network_imsi = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getNetworkOperator", parameter);
             sim_imsi = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimOperator", parameter);
             carrier_display_name = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getNetworkOperatorName", parameter);
@@ -854,7 +853,7 @@ public class DualSim
             circle = carrier_circle.get(1);
             mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
                     .serial(serial0)
-                    .imei(imei)
+                    .imei(imei0)
                     .carrier_display_name(carrier_display_name)
                     .circle(circle)
                     .network_imsi(network_imsi)
@@ -863,12 +862,12 @@ public class DualSim
         }
         //do the same for sim 2
         parameter[0] = 1;
-        imei = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", parameter);
-        if (imei == null)
+        imei1 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", parameter);
+        if (imei1 == null || imei0.equals(imei1))
         {
             SimModel.two_slots = false;
             //If there is only one slot then there is no need for checking Sim Serial
-            toastHelper("Single Sim" + imei);
+            //toastHelper("Single Sim" + imei1);
         } else
         {
             serial1 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumber", parameter);
@@ -889,7 +888,7 @@ public class DualSim
                 circle = carrier_circle.get(1);
                 mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
                         .serial(serial1)
-                        .imei(imei)
+                        .imei(imei1)
                         .carrier_display_name(carrier_display_name)
                         .circle(circle)
                         .network_imsi(network_imsi)
@@ -927,15 +926,113 @@ public class DualSim
 
     private void getSimListForDuosoOne( boolean sim_details_known)
     {
-        String serial0, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
-        String serial1;
+        String serial0 = null, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial1 = null;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
-        if(sim_details_known)
+        Object[] empty_parameter = new Object[0];
+        Object[] parameters = new Object[1];
+        String telephonyClassString = "android.telephony.MSimTelephonyManager";
+        if(sim_details_known) //already known then just check serials
         {
 
+            Object mSimTelephonyManager = ReflectionHelper.getObject(null, telephonyClassString, "getDefault", empty_parameter);
+
+            parameters[0] = 0;
+            serial0 = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getSimSerialNumber", parameters);
+            if(hasChanged(serial0,0))
+                getSimList(0);
+
+            parameters[0] = 1;
+            serial1 = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getSimSerialNumber", parameters);
+            if(hasChanged(serial1,1))
+                getSimList(0);
+            return; // Everything as it was eaelier
+
         }
-        //TODO : see whats happening in this
+
+        Object mSimTelephonyManager = ReflectionHelper.getObject(null, telephonyClassString, "getDefault", empty_parameter);
+        if (mSimTelephonyManager != null)
+        {
+            parameters[0] = 0;
+            serial0 = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getSimSerialNumber", parameters);
+            imei0 = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getDeviceId", parameters);
+            if (serial0 != null && !serial0.equals(""))
+            {
+
+                network_imsi = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getNetworkOperator", parameters);
+                sim_imsi = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getSimOperator", parameters);
+                carrier_display_name = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getNetworkOperatorName", parameters);
+                if (network_imsi == null) //Network IMSi might not be available when the sim state is not ready
+                    network_imsi = sim_imsi;
+                carrier_circle = getCarrierCirclefromIMSI(network_imsi);
+                if (carrier_circle == null)
+                {
+                    getCarrierCircleManually();
+                }
+                carrier = carrier_circle.get(0);
+                circle = carrier_circle.get(1);
+                mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
+                        .serial(serial0)
+                        .imei(imei0)
+                        .carrier_display_name(carrier_display_name)
+                        .circle(circle)
+                        .network_imsi(network_imsi)
+                        .build();
+                sim_list.add(mSimModel);
+            }
+        }
+        //for sim 2
+
+        if (mSimTelephonyManager != null)
+        {
+            parameters[0] = 1;
+            imei1 = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getDeviceId", parameters);
+            if (imei1 == null || imei0.equals(imei1))
+            {
+                SimModel.two_slots = false;
+                //If there is only one slot then there is no need for checking Sim Serial
+                // toastHelper("Single Sim" + imei1);
+            } else
+            {
+                serial1 = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getSimSerialNumber", parameters);
+                if (serial1 != null && !serial1.equals(""))
+                {
+
+                    network_imsi = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getNetworkOperator", parameters);
+                    sim_imsi = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getSimOperator", parameters);
+                    carrier_display_name = (String) ReflectionHelper.getObject(mSimTelephonyManager, telephonyClassString, "getNetworkOperatorName", parameters);
+                    if (network_imsi == null) //Network IMSi might not be available when the sim state is not ready
+                        network_imsi = sim_imsi;
+                    carrier_circle = getCarrierCirclefromIMSI(network_imsi);
+                    if (carrier_circle == null)
+                    {
+                        getCarrierCircleManually();
+                    }
+                    carrier = carrier_circle.get(0);
+                    circle = carrier_circle.get(1);
+                    mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
+                            .serial(serial1)
+                            .imei(imei1)
+                            .carrier_display_name(carrier_display_name)
+                            .circle(circle)
+                            .network_imsi(network_imsi)
+                            .build();
+                    sim_list.add(mSimModel);
+                }
+            }
+        }
+
+        if (serial0 == null || serial1 == null) //if any one is null it means only one sim is inserted
+            Constants.IS_SINGLE_SIM = true;
+        else
+        {
+            Constants.IS_SINGLE_SIM = false;
+        }
+        if (serial0 == null && serial1 == null) //Both sim serials are null Sims might not be inserted
+        {
+            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+        }
 
     }
 
@@ -957,7 +1054,7 @@ public class DualSim
 
     private void getSimListForDuosTwo(boolean sim_details_known)
     {
-        String serial0 = null, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial0 = null, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle;
         String serial1 = null;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
@@ -984,9 +1081,9 @@ public class DualSim
         {
             Object[] empty_parameter = new Object[0];
             serial0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getSimSerialNumber", empty_parameter);
+            imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getDeviceId", empty_parameter);
             if (serial0 != null && !serial0.equals(""))
             {
-                imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getDeviceId", empty_parameter);
                 network_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getNetworkOperator", empty_parameter);
                 sim_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getSimOperator", empty_parameter);
                 carrier_display_name = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getNetworkOperatorName", empty_parameter);
@@ -1001,7 +1098,7 @@ public class DualSim
                 circle = carrier_circle.get(1);
                 mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
                         .serial(serial0)
-                        .imei(imei)
+                        .imei(imei0)
                         .carrier_display_name(carrier_display_name)
                         .circle(circle)
                         .network_imsi(network_imsi)
@@ -1015,12 +1112,12 @@ public class DualSim
         if (multiSimTelephonyManager != null)
         {
             Object[] empty_parameter = new Object[0];
-            imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getDeviceId", empty_parameter);
-            if (imei == null)
+            imei1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getDeviceId", empty_parameter);
+            if (imei1 == null || imei0.equals(imei1))
             {
                 SimModel.two_slots = false;
                 //If there is only one slot then there is no need for checking Sim Serial
-                toastHelper("Single Sim" + imei);
+                //toastHelper("Single Sim" + imei1);
             } else
             {
                 serial1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getSimSerialNumber", empty_parameter);
@@ -1041,7 +1138,7 @@ public class DualSim
                     circle = carrier_circle.get(1);
                     mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
                             .serial(serial1)
-                            .imei(imei)
+                            .imei(imei1)
                             .carrier_display_name(carrier_display_name)
                             .circle(circle)
                             .network_imsi(network_imsi)
@@ -1081,7 +1178,7 @@ public class DualSim
 
     private void getSimListForDuosDs(boolean sim_details_known)
     {
-        String serial0 = null, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial0 = null, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle;
         String serial1 = null;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
@@ -1108,9 +1205,9 @@ public class DualSim
         {
             Object[] empty_parameter = new Object[0];
             serial0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getSimSerialNumber", empty_parameter);
+            imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getDeviceIdDs", parameters);
             if (serial0 != null && !serial0.equals(""))
             {
-                imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getDeviceIdDs", parameters);
                 network_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getNetworkOperator", empty_parameter);
                 sim_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getSimOperator", empty_parameter);
                 carrier_display_name = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getNetworkOperatorName", empty_parameter);
@@ -1125,7 +1222,7 @@ public class DualSim
                 circle = carrier_circle.get(1);
                 mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
                         .serial(serial0)
-                        .imei(imei)
+                        .imei(imei0)
                         .carrier_display_name(carrier_display_name)
                         .circle(circle)
                         .network_imsi(network_imsi)
@@ -1139,12 +1236,12 @@ public class DualSim
         if (multiSimTelephonyManager != null)
         {
             Object[] empty_parameter = new Object[0];
-            imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getDeviceIdDs", parameters);
-            if (imei == null)
+            imei1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getDeviceIdDs", parameters);
+            if (imei1 == null || imei0.equals(imei1))
             {
                 SimModel.two_slots = false;
                 //If there is only one slot then there is no need for checking Sim Serial
-                toastHelper("Single Sim" + imei);
+                //toastHelper("Single Sim" + imei1);
             } else
             {
                 serial1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, "android.telephony.MultiSimTelephonyManager", "getSimSerialNumber", empty_parameter);
@@ -1165,7 +1262,7 @@ public class DualSim
                     circle = carrier_circle.get(1);
                     mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
                             .serial(serial1)
-                            .imei(imei)
+                            .imei(imei1)
                             .carrier_display_name(carrier_display_name)
                             .circle(circle)
                             .network_imsi(network_imsi)
@@ -1194,7 +1291,7 @@ public class DualSim
 
     private void getSimListForXiaomi(boolean sim_details_known)
     {
-        String serial0, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial0, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle;
         String serial1 = null;
         long simId0 = 1,simId1 =2;
         SimModel.uses_subscription = true;
@@ -1237,9 +1334,9 @@ public class DualSim
         }
         parameter[0] = 0;
         serial0 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getSimSerialNumber", parameter);
+        imei0 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
         if (serial0 != null && !serial0.equals(""))
         {
-            imei = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
             network_imsi = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getNetworkOperator", parameter);
             sim_imsi = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getSimOperator", parameter);
             carrier_display_name = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getNetworkOperatorName", parameter);
@@ -1256,7 +1353,7 @@ public class DualSim
             circle = carrier_circle.get(1);
             mSimModel = new SimModel.Builder(simId0, 0, sim_imsi, carrier)
                     .serial(serial0)
-                    .imei(imei)
+                    .imei(imei0)
                     .carrier_display_name(carrier_display_name)
                     .circle(circle)
                     .network_imsi(network_imsi)
@@ -1265,13 +1362,13 @@ public class DualSim
         }
         //do the same for sim 2
         parameter[0] = 1;
-        imei = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
-        Log.d(tag, imei + "");
-        if (imei == null)
+        imei1 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
+        // Log.d(tag, imei + "");
+        if (imei1 == null || imei0.equals(imei1))
         {
             SimModel.two_slots = false;
             //If there is only one slot then there is no need for checking Sim Serial
-            toastHelper("Single Sim" + imei);
+            //toastHelper("Single Sim" + imei1);
         } else
         {
             serial1 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getSimSerialNumber", parameter);
@@ -1293,7 +1390,7 @@ public class DualSim
                 simId1 = (long) ReflectionHelper.getObject(null, "miui.telephony.SimInfoManager", "getSimIdBySlotId", simIdParameters);
                 mSimModel = new SimModel.Builder(simId1, 1, sim_imsi, carrier)
                         .serial(serial1)
-                        .imei(imei)
+                        .imei(imei1)
                         .carrier_display_name(carrier_display_name)
                         .circle(circle)
                         .network_imsi(network_imsi)
@@ -1340,7 +1437,7 @@ public class DualSim
     private void getSimListForAsus(boolean sim_details_known)
     {
         //This ne needs a subscriber_id also as the call log uses a part of subsriber_id as sim_index
-        String serial0 = null, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle,subscriber_id;
+        String serial0 = null, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle,subscriber_id;
         String serial1 = null;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
@@ -1375,9 +1472,9 @@ public class DualSim
                 Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
             }
             serial0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimSerialNumber", empty_parameter);
+            imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
             if (serial0 != null && !serial0.equals(""))
             {
-                imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
                 network_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getNetworkOperator", empty_parameter);
                 sim_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimOperator", empty_parameter);
                 carrier_display_name = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getNetworkOperatorName", empty_parameter);
@@ -1393,7 +1490,7 @@ public class DualSim
                 circle = carrier_circle.get(1);
                 mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
                         .serial(serial0)
-                        .imei(imei)
+                        .imei(imei0)
                         .carrier_display_name(carrier_display_name)
                         .circle(circle)
                         .network_imsi(network_imsi)
@@ -1415,18 +1512,17 @@ public class DualSim
                 Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
             }
             Object[] empty_parameter = new Object[0];
-            imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
-            if (imei == null)
+            imei1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
+            if (imei1== null || imei0.equals(imei1))
             {
                 SimModel.two_slots = false;
                 //If there is only one slot then there is no need for checking Sim Serial
-                toastHelper("Single Sim" + imei);
+                //toastHelper("Single Sim" + imei1);
             } else
             {
                 serial1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimSerialNumber", empty_parameter);
                 if (serial1 != null && !serial1.equals(""))
                 {
-                    imei = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
                     network_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getNetworkOperator", empty_parameter);
                     sim_imsi = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimOperator", empty_parameter);
                     carrier_display_name = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getNetworkOperatorName", empty_parameter);
@@ -1442,7 +1538,7 @@ public class DualSim
                     circle = carrier_circle.get(1);
                     mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
                             .serial(serial1)
-                            .imei(imei)
+                            .imei(imei1)
                             .carrier_display_name(carrier_display_name)
                             .circle(circle)
                             .network_imsi(network_imsi)
@@ -1477,7 +1573,7 @@ public class DualSim
 
     private void getSimListForMoto(boolean sim_details_known)
     {
-        String serial0, imei, sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial0, imei0="",imei1="", sim_imsi, network_imsi=null, carrier, carrier_display_name, circle;
         String serial1 = null;
         SimModel mSimModel;
         ArrayList<String> carrier_circle;
@@ -1499,9 +1595,9 @@ public class DualSim
         }
         parameter[0] = 0;
         serial0 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getSimSerialNumber", parameter);
+        imei0 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
         if (serial0 != null && !serial0.equals(""))
         {
-            imei = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
             network_imsi = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getNetworkOperator", parameter);
             sim_imsi = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getSimOperator", parameter);
             carrier_display_name = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getNetworkOperatorName", parameter);
@@ -1516,7 +1612,7 @@ public class DualSim
             circle = carrier_circle.get(1);
             mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
                     .serial(serial0)
-                    .imei(imei)
+                    .imei(imei0)
                     .carrier_display_name(carrier_display_name)
                     .circle(circle)
                     .network_imsi(network_imsi)
@@ -1525,13 +1621,13 @@ public class DualSim
         }
         //do the same for sim 2
         parameter[0] = 1;
-        imei = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
-        Log.d(tag, imei + "");
-        if (imei == null)
+        imei1 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
+        //Log.d(tag, imei + "");
+        if (imei1 == null || imei0.equals(imei1))
         {
             SimModel.two_slots = false;
             //If there is only one slot then there is no need for checking Sim Serial
-            toastHelper("Single Sim" + imei);
+            //toastHelper("Single Sim" + imei1);
         } else
         {
             serial1 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getSimSerialNumber", parameter);
@@ -1551,7 +1647,7 @@ public class DualSim
                 circle = carrier_circle.get(1);
                 mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
                         .serial(serial1)
-                        .imei(imei)
+                        .imei(imei1)
                         .carrier_display_name(carrier_display_name)
                         .circle(circle)
                         .network_imsi(network_imsi)
@@ -1583,9 +1679,97 @@ public class DualSim
 
     private void getSimListForNexus(boolean sim_details_known)
     {
-        if(sim_details_known)
+        String serial0, imei0="",imei1="", sim_imsi, network_imsi, carrier, carrier_display_name, circle;
+        String serial1 = null;
+        SimModel mSimModel;
+        ArrayList<String> carrier_circle;
+        if (mTelephonyManager == null)
+            mTelephonyManager = (TelephonyManager) MyApplication.context.getSystemService(Context.TELEPHONY_SERVICE);
+        Object[] parameter = new Object[1];
+        if(sim_details_known) //already known then just check serials
         {
+            parameter[0] = Long.valueOf(0l);
+            serial0 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumber", parameter);
+            if(hasChanged(serial0,0))
+                getSimList(0);
+            parameter[0] = Long.valueOf(1l);
+            serial1 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumber", parameter);
+            if(hasChanged(serial1,1))
+                getSimList(0);
+            return; // Everything as it was eaelier
 
+        }
+        parameter[0] = Long.valueOf(0l);
+        serial0 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumber", parameter);
+        imei0 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", parameter);
+        if (serial0 != null)
+        {
+            network_imsi = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getNetworkOperator", parameter);
+            sim_imsi = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimOperator", parameter);
+            carrier_display_name = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getNetworkOperatorName", parameter);
+            if (network_imsi == null) //Network IMSi might not be available when the sim state is not ready
+                network_imsi = sim_imsi;
+            carrier_circle = getCarrierCirclefromIMSI(network_imsi);
+            if (carrier_circle == null)
+            {
+                getCarrierCircleManually();
+            }
+            carrier = carrier_circle.get(0);
+            circle = carrier_circle.get(1);
+            mSimModel = new SimModel.Builder(-1, 0, sim_imsi, carrier)
+                    .serial(serial0)
+                    .imei(imei0)
+                    .carrier_display_name(carrier_display_name)
+                    .circle(circle)
+                    .network_imsi(network_imsi)
+                    .build();
+            sim_list.add(mSimModel);
+        }
+        //do the same for sim 2
+        parameter[0] = Long.valueOf(1l);
+        imei1 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getDeviceId", parameter);
+        if (imei1 == null || imei0.equals(imei1))
+        {
+            SimModel.two_slots = false;
+            //If there is only one slot then there is no need for checking Sim Serial
+            //toastHelper("Single Sim" + imei1);
+        } else
+        {
+            serial1 = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumber", parameter);
+            if (serial1 != null)
+            {
+
+                network_imsi = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getNetworkOperator", parameter);
+                sim_imsi = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimOperator", parameter);
+                carrier_display_name = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getNetworkOperatorName", parameter);
+                if (network_imsi == null)
+                    network_imsi = sim_imsi;
+                carrier_circle = getCarrierCirclefromIMSI(network_imsi);
+                if (carrier_circle == null)
+                {
+                    getCarrierCircleManually();
+                }
+                carrier = carrier_circle.get(0);
+                circle = carrier_circle.get(1);
+                mSimModel = new SimModel.Builder(-1, 1, sim_imsi, carrier)
+                        .serial(serial1)
+                        .imei(imei1)
+                        .carrier_display_name(carrier_display_name)
+                        .circle(circle)
+                        .network_imsi(network_imsi)
+                        .build();
+                sim_list.add(mSimModel);
+            }
+        }
+        if (serial0 == null || serial1 == null)
+            Constants.IS_SINGLE_SIM = true;
+        else
+        {
+            Constants.IS_SINGLE_SIM = false;
+        }
+        if (serial0 == null && serial1 == null) //Both sim serials are null Sims might not be inserted
+        {
+            SimModel.dual_type = Constants.TYPE_UNKNOWN;
         }
 
     }
@@ -1630,12 +1814,9 @@ public class DualSim
                     .network_imsi(network_imsi)
                     .build();
             sim_list.add(mSimModel);
-        } else
-        {
-            Constants.HAS_TWO_SLOTS = false;
-            SimModel.two_slots = false;
-            getCarrierCircleManually();
         }
+        Constants.HAS_TWO_SLOTS = false;
+        SimModel.two_slots = false;
         Constants.IS_SINGLE_SIM = true;
     }
 
@@ -1702,7 +1883,7 @@ public class DualSim
             imei0 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getDeviceId", parameter);
             parameter[0] = 1;
             imei1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getDeviceId", parameter);
-            if(imei0!=null && imei1!=null)
+            if(imei0!=null && imei1!=null && !imei0.equals(imei1))
             {
                 Constants.HAS_TWO_SLOTS = true;
                 SimModel.two_slots = true;
@@ -1838,6 +2019,7 @@ public class DualSim
         TelephonyManagerEx mediaTekTelephonyManager = new TelephonyManagerEx(MyApplication.context);
         String imsi0 = "", imsi1 = "", serial0 = null, serial1 = null;
         long subId0=-1,subId1=-1;
+        String imei0,imei1;
         if(sim_details_known) //already known then just check serials
         {
             serial0 =mediaTekTelephonyManager.getSimSerialNumber(0);
@@ -1856,6 +2038,7 @@ public class DualSim
         subIdParameters[0] = MyApplication.context;
         subIdParameters[1] = 0;
         serial0 = mediaTekTelephonyManager.getSimSerialNumber(0);
+        imei0 = mediaTekTelephonyManager.getSimSerialNumber(0);
         if (serial0 != null && !serial0.equals(""))
         {
             imsi0 = mediaTekTelephonyManager.getNetworkOperator(0);
@@ -1876,13 +2059,13 @@ public class DualSim
                     .network_imsi(mediaTekTelephonyManager.getSimOperator(0))
                     .carrier_display_name(mediaTekTelephonyManager.getNetworkOperatorName(0))
                     .imei(mediaTekTelephonyManager.getDeviceId(0))
-                    .serial(mediaTekTelephonyManager.getSimSerialNumber(0))
+                    .serial(imei0)
                     .circle(carrier_circle.get(1))
                     .build();
             sim_list.add(mSimModel);
         }
-        String imei = mediaTekTelephonyManager.getDeviceId(1);
-        if (imei == null)
+        imei1 = mediaTekTelephonyManager.getDeviceId(1);
+        if (imei1 == null || imei0.equals(imei1))
         {
             SimModel.two_slots = false;
         } else
@@ -2097,7 +2280,7 @@ public class DualSim
             Method localMethod5 = ReflectionHelper.getMethod(null, str2, "getDefault", arrayOfObject3);
             if (localMethod5 != null)
             {
-              //  System.out.println("m  static method found : " + localMethod5.toGenericString());
+                //  System.out.println("m  static method found : " + localMethod5.toGenericString());
                 mStringBuilder.append("m  static method found : " + localMethod5.toGenericString()+"\n");
             }
             Object[] arrayOfObject4 = new Object[1];
@@ -2145,11 +2328,11 @@ public class DualSim
             Method localMethod3 = ReflectionHelper.getMethod(localTelephonyManager, null, str1, arrayOfObject2);
             if (localMethod3 != null)
             {
-               // System.out.println("m  TelMan method found : " + localMethod3.toGenericString());
+                // System.out.println("m  TelMan method found : " + localMethod3.toGenericString());
                 mStringBuilder.append("m  TelMan method found : " + localMethod3.toGenericString()+"\n");
             }
         }
-       return mStringBuilder.toString();
+        return mStringBuilder.toString();
     }
 
     public ArrayList<String> getDualCallLogColumn()

@@ -17,11 +17,11 @@ import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.services.CallDetailsModel;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.bumptech.glide.Glide;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.KahunaAnalytics;
-import com.squareup.picasso.Picasso;
 
 public class UssdPopup extends Activity {
 	TextView field1,field2,field3,field4,head1,head2,head3,head4;
@@ -108,7 +108,7 @@ public class UssdPopup extends Activity {
 			field4.setText(call_rate);
 
             contact_name.setText(details.getName());
-            Picasso.with(this).load(details.getImage_uri()).placeholder(R.drawable.default_contact_picture).into(contact_picture);
+            Glide.with(this).load(details.getImage_uri()).placeholder(R.drawable.default_contact_picture).into(contact_picture);
             contact_number.setText(details.getNumber());
             contact_carrier_circle.setText(details.getCarrier_circle());
             contact_total_spent.setText(rupee_symbol+" "+String.format("%.2f",details.getTotal_spent()));

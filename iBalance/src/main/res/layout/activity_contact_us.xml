@@ -100,9 +100,10 @@
         android:layout_height="100dp"
         android:layout_weight=".33"
         android:orientation="horizontal"
-        android:id="@+id/chat_contact"
+        android:id="@+id/share_debug_button"
         android:background="@drawable/button_selector">
 
+        <!-- Todo Change to gear ICon -->
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -115,7 +116,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:layout_gravity="center"
-            android:text="Chat Now"
+            android:text="Share Debug Info"
             android:layout_weight="1"
             android:textSize="20dp" />
     </LinearLayout>
