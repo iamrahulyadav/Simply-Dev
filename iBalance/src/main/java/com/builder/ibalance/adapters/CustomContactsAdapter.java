@@ -28,6 +28,7 @@ public class CustomContactsAdapter extends BaseAdapter {
     private LayoutInflater inflater;
     private List<ContactDetailModel> contactItems;
     Typeface tf;
+    CircleTransform mCircleTransform = new CircleTransform(MyApplication.context);
     public CustomContactsAdapter(List<ContactDetailModel> contactItems) {
     	  inflater = (LayoutInflater)MyApplication.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     	tf = Typeface.createFromAsset(MyApplication.context.getResources().getAssets(), "Roboto-Regular.ttf");
@@ -77,13 +78,13 @@ public class CustomContactsAdapter extends BaseAdapter {
         // thumbnail image
         //thumbNail.setImageUrl(m.getThumbnailUrl(), imageLoader);
         String image_uri = m.image_uri;
-       CircleTransform mCircleTransform = new CircleTransform(convertView.getContext());
+
         if (image_uri!=null) {
         	//Log.d("PAI", image_uri);
         	Glide.with(convertView.getContext()).load(image_uri).transform(mCircleTransform).into(contactPicture);
         }
         else
-        	contactPicture.setImageResource( R.drawable.default_contact_picture);
+            Glide.with(convertView.getContext()).load(R.drawable.default_contact_picture).transform(mCircleTransform).into(contactPicture);
        
         
         // Name
