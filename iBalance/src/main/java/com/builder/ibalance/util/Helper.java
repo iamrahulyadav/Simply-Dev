@@ -1,8 +1,12 @@
 package com.builder.ibalance.util;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -36,6 +40,32 @@ public  class Helper {
 
         });
 
+    }
+   public static boolean contactExists(String number)
+    {
+        Uri lookupUri = Uri.withAppendedPath(
+                ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+                Uri.encode(number));
+        String[] mPhoneNumberProjection = { ContactsContract.PhoneLookup._ID, ContactsContract.PhoneLookup.NUMBER};
+        Cursor cur = MyApplication.context.getContentResolver().query(lookupUri,mPhoneNumberProjection, null, null, null);
+        try {
+            if (cur.moveToFirst()) {
+                return true;
+            }
+        } finally {
+            if (cur != null)
+                cur.close();
+        }
+        return false;
+    }
+    public static Intent openWhatsApp( String number,String deviceID) {
+/// number is the phone number
+        Uri mUri = Uri.parse("smsto:+" + number);
+        Intent mIntent = new Intent(Intent.ACTION_SENDTO, mUri);
+        mIntent.setPackage("com.whatsapp");
+        mIntent.putExtra("sms_body", deviceID);
+        mIntent.putExtra("chat", true);
+        return  mIntent;
     }
     public static class SharedPreferenceHelper
     {

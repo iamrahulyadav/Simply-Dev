@@ -10,11 +10,14 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Contacts;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -29,6 +32,7 @@ import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.GlobalData;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -75,7 +79,8 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
     float current_balance,minimum_balance;
     static int sim_slot = 0;
 	public  List<NormalCall> ussdDataList = null;
-	@Override
+    Button contactUsButton;
+    @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		Typeface tf =  Typeface.createFromAsset(getResources().getAssets(), "Roboto-Regular.ttf");
@@ -92,6 +97,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		dataTextView = (TextView) rootView.findViewById(R.id.dataView);
 		dataTextView.setTypeface(tf);
 		balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
+        contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
         mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
         if(GlobalData.globalSimList.size()>=2)
         {
@@ -279,8 +285,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 			balanceTextView.setText(getResources().getString(R.string.rupee_symbol)+" --.--" );
 		else
 		balanceTextView.setText(getResources().getString(R.string.rupee_symbol)+" "+ currBalance);
-		/*balance_DetailsButton = (Button) rootView.findViewById(R.id.detail_button);
-		balance_DetailsButton.setOnClickListener(this);*/
+
 		balance_layout.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
@@ -298,18 +303,41 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		{
 			setData();
 		}
-		
+		else
+        {
+            contactUsButton.setOnClickListener(new OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    if (!Helper.contactExists("+919739663487"))
+                    {
+                        Log.d(tag, "Whatsapp contact not found adding contact");
+                        Intent addContactIntent = new Intent(Contacts.Intents.Insert.ACTION, Contacts.People.CONTENT_URI);
+                        addContactIntent.putExtra(Contacts.Intents.Insert.NAME, "Simply App Support"); // an example, there is other data available
+                        addContactIntent.putExtra(Contacts.Intents.Insert.PHONE, "+919739663487");
+                        startActivity(addContactIntent);
+                    } else
+                    {
+                        //Sending Device Id doesn't work
+                        startActivity(Helper.openWhatsApp("+919739663487", ""));
+                    }
+                }
+            });
+        }
 		if(currData>0.0)
 		{
 			dataTextView.setText(currData+"MB");
 		}
-		dataTextView.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				//Toast.makeText(getActivity(), "This Feature is  in Build!", Toast.LENGTH_SHORT).show();
-			}
-		});
+		dataTextView.setOnClickListener(new View.OnClickListener()
+        {
+
+            @Override
+            public void onClick(View v)
+            {
+                //Toast.makeText(getActivity(), "This Feature is  in Build!", Toast.LENGTH_SHORT).show();
+            }
+        });
 	}
 	@Override
 	public void onResume() {

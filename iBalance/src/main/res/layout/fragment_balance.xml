@@ -6,6 +6,7 @@
     android:layout_height="match_parent" >
     <LinearLayout
         android:id="@+id/rootRL"
+        android:visibility="gone"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_gravity="center"
@@ -152,7 +153,7 @@
                     android:layout_height="wrap_content"
                     style="@style/ussd_popup_button"
                     android:text="Contant Us"
-                    android:id="@+id/button3"
+                    android:id="@+id/bal_contact_us"
                     android:layout_gravity="center_horizontal"
                     />
 
