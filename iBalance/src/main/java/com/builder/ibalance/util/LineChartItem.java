@@ -70,10 +70,10 @@ public class LineChartItem extends ChartItem {
         xAxis.setTypeface(tf);
 
         YAxis leftAxis = holder.chart.getAxisLeft();
-        leftAxis.setLabelCount(5);
+        leftAxis.setLabelCount(5,true);
         leftAxis.setTypeface(tf);
         YAxis rightAxis = holder.chart.getAxisRight();
-        rightAxis.setLabelCount(5);
+        rightAxis.setLabelCount(5,true);
         rightAxis.setDrawGridLines(false);
         rightAxis.setTypeface(tf);
         // set data

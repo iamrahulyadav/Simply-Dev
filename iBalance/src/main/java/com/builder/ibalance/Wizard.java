@@ -21,7 +21,6 @@ import com.builder.ibalance.database.MappingHelper;
 import com.builder.ibalance.util.AdvertisingIdClient;
 import com.builder.ibalance.util.AdvertisingIdClient.AdInfo;
 import com.builder.ibalance.util.MyApplication;
-import com.kahuna.sdk.KahunaAnalytics;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class Wizard extends Activity {
 			            AdInfo adInfo = AdvertisingIdClient.getAdvertisingIdInfo(MyApplication.context);
 			            advertisingId = adInfo.getId();
 			        } catch (Exception e) {
-			            e.printStackTrace();                            
+			           //V10e.printStackTrace();
 			        }                       
 			    }
 			}).start();
@@ -311,14 +310,12 @@ public class Wizard extends Activity {
 	   @Override
 	    protected void onStart() {
 	        super.onStart();
-	        KahunaAnalytics.start();
 	        // Your Code Here
 	    }
 
 	    @Override
 	    protected void onStop() {
 	        super.onStop();
-	        KahunaAnalytics.stop();
 	        // Your Code Here
 	    } 
 

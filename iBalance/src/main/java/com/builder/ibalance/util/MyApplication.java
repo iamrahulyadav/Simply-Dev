@@ -4,24 +4,24 @@ import android.content.Context;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
-import com.apptentive.android.sdk.Apptentive;
+import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.R;
+import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
-import com.kahuna.sdk.KahunaAnalytics;
-import com.kahuna.sdk.KahunaUserCredentialKeys;
+import com.kahuna.sdk.EmptyCredentialsException;
+import com.kahuna.sdk.IKahunaUserCredentials;
+import com.kahuna.sdk.KahunaUserCredentials;
+import com.kahuna.sdk.Kahuna;
 import com.parse.Parse;
-import com.parse.ParseException;
-import com.parse.ParseInstallation;
-import com.parse.ParsePush;
-import com.parse.SaveCallback;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
 import java.util.HashMap;
+
+import io.fabric.sdk.android.Fabric;
 
 public class MyApplication extends MultiDexApplication
 {
@@ -38,7 +38,7 @@ public class MyApplication extends MultiDexApplication
     public void onCreate() {
     	
         super.onCreate();
-		//Fabric.with(this, new Crashlytics());
+		Fabric.with(this, new Crashlytics());
 		context = this;
 		refWatcher = LeakCanary.install(this);
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
@@ -46,34 +46,27 @@ public class MyApplication extends MultiDexApplication
         //Log.d(tag, "Initializing Parse");
         Parse.enableLocalDatastore(this);
         Parse.initialize(this, "UDKaBRgXs4lSZoTyUbUFtEDcCoFjnVHYkt8M7xvW", "7Sf6euqZUq30EqN9YDjOgwZTD4uSYm9En7pqH7Ax");
-        //AppsFlyerLib.setAppsFlyerKey("M3yd5JZJrEjPSSvFggiwME");
+        AppsFlyerLib.setAppsFlyerKey("M3yd5JZJrEjPSSvFggiwME");
 
 
         String deviceId =mtelTelephonyManager.getDeviceId(); 
-        //String number =mtelTelephonyManager.getLine1Number() ; 
-        KahunaAnalytics.onAppCreate(this, "3e512234b35542f4b42f7cc05f4c047a", "88008162879"); 
-        KahunaAnalytics.setUserCredential(KahunaUserCredentialKeys.USER_ID_KEY, 
-        		deviceId);
+        //String number =mtelTelephonyManager.getLine1Number() ;
+
+        Kahuna.getInstance().onAppCreate(this, "3e512234b35542f4b42f7cc05f4c047a", null);
+        IKahunaUserCredentials newCreds = Kahuna.getInstance().createUserCredentials();
+        newCreds.add(KahunaUserCredentials.USERNAME_KEY, deviceId);
+        try
+        {
+            Kahuna.getInstance().login(newCreds);
+        } catch (EmptyCredentialsException e)
+        {
+            //e.printStackTrace();
+        }
         //Log.d(tag, "Parse Initialization DONE!!!");
         //Configure GA
      // configure Flurry
         FlurryAgent.setLogEnabled(false);
         FlurryAgent.init(this, "7R65ZKFNW9CPSNGS4XNK");
-       //AppsFlyerLib.setCurrencyCode("INR");
-        //AppsFlyerLib.setUseHTTPFalback(true);
-        //Log.d(tag, "Flurry Configured");
-        ParsePush.subscribeInBackground("", new SaveCallback() {
-        	  @Override
-        	  public void done(ParseException e) {
-        	    if (e == null) {
-        	          String deviceToken = (String) ParseInstallation.getCurrentInstallation().get("deviceToken");
-        	            Apptentive.addParsePushIntegration(getApplicationContext(), deviceToken);
-        	      Log.d("com.parse.push", "successfully subscribed to the broadcast channel.");
-        	    } else {
-        	      Log.e("com.parse.push", "failed to subscribe for push", e);
-        	    }
-        	  }
-        	});
     }
 	@Override
 	public void attachBaseContext(Context base) {

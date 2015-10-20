@@ -38,7 +38,7 @@ public class BalanceWidget extends AppWidgetProvider {
 	     catch(Exception e)
 	     {
 	    	 remoteViews.setTextViewText(R.id.widget_balance, "0.0");
-	    	 e.printStackTrace();
+	    	//V10e.printStackTrace();
 	     }
 	      // Register an onClickListener
 	      Intent intent = new Intent(context, SplashscreenActivity.class);

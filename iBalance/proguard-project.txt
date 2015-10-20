@@ -38,16 +38,7 @@
 
 	
 -keepattributes LineNumberTable
--injars      bin/classes
--injars      libs
--outjars     bin/classes-processed.jar
--libraryjars /libs/
--libraryjars /libs/FlurryAnalytics-5.3.0.jar
--libraryjars /libs/mpandroidchartlibrary-2-0-9.jar
--libraryjars /libs/Parse-1.8.2.jar
--libraryjars /libs/picasso-2.5.0.jar
--libraryjars /libs/AF-Android-SDK-v2.3.1.17.jar
--libraryjars /libs/Kahuna.jar
+-keepattributes *Annotation*
 -keep public class * implements com.bumptech.glide.module.GlideModule
 -keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
     **[] $VALUES;
@@ -64,6 +55,10 @@
 #-keep class * extends com.mopub.mobileads.CustomEventRewardedVideo {}
 
 # Support for Android Advertiser ID.
+-keepclassmembers class ** {
+    public void onEvent*(**);
+}
+-keepclasseswithmembers class com.kahuna.sdk.** {*;}
 -keep class com.google.android.gms.common.GooglePlayServicesUtil {*;}
 -keep class com.google.android.gms.ads.identifier.AdvertisingIdClient {*;}
 -keep class com.google.android.gms.ads.identifier.AdvertisingIdClient$Info {*;}
@@ -76,16 +71,26 @@
 -keep class com.mopub.mobileads.** {*;}
 -keep class com.millennialmedia.android.** {*;}
 -keep class com.millennialmedia.google.** {*;}
+-keep class com.mediatek.compatibility.gemini.** {*;}
+-keepclasseswithmembers class com.kahuna.** {*;}
 -dontwarn com.flurry.sdk.*
 -dontwarn com.parse.*
 -dontwarn com.squareup.okhttp.*
 -dontwarn com.github.mikephil.*
 -dontwarn com.millennialmedia.**
 -dontwarn com.nuance.**
--keepattributes *Annotation*
+-dontwarn com.mediatek.compatibility.gemini.**
+-dontwarn com.google.android.gms.internal.*
+-dontwarn com.kahuna.**
 -keep public class com.google.vending.licensing.ILicensingService
 -keep public class com.android.vending.licensing.ILicensingService
-
+-keepattributes Signature
+-keep class sun.misc.Unsafe { *; }
+-keep class com.builder.ibalance.core.SimModel.** { *; }
+-keep class com.builder.ibalance.messages.SmsData.** { *; }
+-keep public class com.github.mikephil.charting.animation.* {
+    public protected *;
+}
 # For native methods, see http://proguard.sourceforge.net/manual/examples.html#native
 -keepclasseswithmembernames class * {
     native <methods>;

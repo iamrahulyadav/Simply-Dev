@@ -31,7 +31,7 @@ public class DateDurationMapHelper
 
  public ArrayList<DateDurationModel> getCallPatterDetails(long startDate, long endDate)
  {
-     Log.d(tag,"Querying from "+ (new Date(startDate)).toString() +" to "+(new Date(endDate)).toString());
+    //V10Log.d(tag,"Querying from "+ (new Date(startDate)).toString() +" to "+(new Date(endDate)).toString());
   ArrayList<DateDurationModel> avgDateDurationDetail = new ArrayList<>();
      String query = "SELECT AVG(" + IbalanceContract.DateDurationEntry.COLUMN_NAME_IN_COUNT
              + ") , AVG ("+IbalanceContract.DateDurationEntry.COLUMN_NAME_IN_DURATION
@@ -42,12 +42,12 @@ public class DateDurationMapHelper
              +" WHERE "+ IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE +">="+startDate
              +" AND "+ IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE +"<="+endDate
              + " GROUP BY " + IbalanceContract.DateDurationEntry.COLUMN_NAME_WEEK_DAY;
-     Log.d(tag,"Query = "+query);
+    //V10Log.d(tag,"Query = "+query);
   Cursor c = mSqlDB.rawQuery(query, null);
 
   DateDurationModel temp;
     //0 - in_count 1 - inDuration secs 2- out_c 3-out_d secs 4-day_of_the_WEEK
-     Log.d(tag,"Columns Returned = "+ c.getCount());
+    //V10Log.d(tag,"Columns Returned = "+ c.getCount());
      StringBuilder builder = new StringBuilder();
 
   while(c.moveToNext())
@@ -66,7 +66,7 @@ public class DateDurationMapHelper
               c.getInt(4));
       avgDateDurationDetail.add(temp);
   }
-     Log.d(tag, builder.toString());
+    //V10Log.d(tag, builder.toString());
      c.close();
   return avgDateDurationDetail;
  }

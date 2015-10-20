@@ -94,7 +94,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
         ContactDetailHelper mContactDetailHelper = new ContactDetailHelper();
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
         Cursor callLogCursor = mCallLogsHelper.getFilteredLocalCallLogs(startDate,endDate);
-        Log.d(TAG, "Number of Rows = " + callLogCursor.getCount());
+       //V10Log.d(TAG, "Number of Rows = " + callLogCursor.getCount());
         int slot,duration,type;
         Calendar c =Calendar.getInstance();
         ContactDetailModel contactDetail;
@@ -111,7 +111,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
             carrierOutCount = new ArrayList<>();
             return 0;
         }
-        Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
+       //V10Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
         try
         {
 
@@ -160,7 +160,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
             }
 
             //Process all the ContactDetails
-            Log.d(TAG, "Contacts Created = " + contactDetailMap.size());
+           //V10Log.d(TAG, "Contacts Created = " + contactDetailMap.size());
 
             List<ContactDetailModel> mList = new ArrayList<>();
             Map<String, MutableInt> carrierMap = new TreeMap<String, MutableInt>();
@@ -220,16 +220,16 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
                     break;
                 mostCalled.add(new Tuple(mList.get(i).name, mList.get(i).out_count));
             }
-            Log.d(TAG,"Total ContactDetail List = "+mList.toString());
-            Log.d(TAG,"mostCalled List = "+mostCalled.toString());
-            Log.d(TAG,"Carrier List = "+carrierOutCount.toString());
-            Log.d(TAG, "Circle List = " + circleOutDuration.toString());
+           //V10Log.d(TAG,"Total ContactDetail List = "+mList.toString());
+           //V10Log.d(TAG,"mostCalled List = "+mostCalled.toString());
+           //V10Log.d(TAG,"Carrier List = "+carrierOutCount.toString());
+           //V10Log.d(TAG, "Circle List = " + circleOutDuration.toString());
             long endTime = System.nanoTime();
-            Log.d(TAG, "Filtered Data Took  = " + ((endTime - clockStartTime) / 1000000) + "ms");
+           //V10Log.d(TAG, "Filtered Data Took  = " + ((endTime - clockStartTime) / 1000000) + "ms");
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
         finally
         {

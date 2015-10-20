@@ -35,7 +35,7 @@ public class IMSIHelper
     {
         if (mSqlDB == null)
         {
-            Log.d(tag, "mSqlDB is null");
+           //V10Log.d(tag, "mSqlDB is null");
             return null;
         } else
         {

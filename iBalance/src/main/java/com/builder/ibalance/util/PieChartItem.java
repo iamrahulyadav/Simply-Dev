@@ -11,10 +11,9 @@ import android.widget.TextView;
 import com.builder.ibalance.R;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.Legend.LegendPosition;
 import com.github.mikephil.charting.data.ChartData;
 import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.utils.PercentFormatter;
+import com.github.mikephil.charting.formatter.PercentFormatter;
 
 public class PieChartItem extends ChartItem {
 	 ViewHolder holder = null;
@@ -65,9 +64,10 @@ public class PieChartItem extends ChartItem {
         holder.chart.setCenterText("Most\nCalled");
         holder.chart.setCenterTextColor(Color.GRAY);
         holder.chart.setCenterTextSize(16f);
+        holder.chart.setExtraOffsets(5, 10, 5, 10);
         holder.chart.setUsePercentValues(true);
         holder.chart.setRotationEnabled(false);
-        holder.chart.setTouchEnabled(true);
+        holder.chart.setTouchEnabled(false);
         
       
         mChartData.setValueFormatter(new PercentFormatter());
@@ -83,6 +83,7 @@ public class PieChartItem extends ChartItem {
 
         // do not forget to refresh the chart
         // holder.chart.invalidate();
+
         holder.chart.animateXY(900, 900);
 
         return convertView;

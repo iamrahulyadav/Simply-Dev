@@ -38,13 +38,13 @@ public class USSDParser {
             mLoki = new Loki();
         } catch (NoSuchAlgorithmException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (NoSuchPaddingException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (NoSuchProviderException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
     }
 	public boolean parseMessage(String message)
@@ -165,7 +165,7 @@ public class USSDParser {
 		pcc = Pattern.compile(bsnlDataUsedRegex);
 		 mcc = pcc.matcher(message);
 		 if (mcc.find()) {
-			 System.out.println("Group 2 "+mcc.group(2));
+			//V10System.out.println("Group 2 "+mcc.group(2));
 				data_consumed = Float.parseFloat(mcc.group(1))+(Float.parseFloat(mcc.group(2))/1000);
 				count++;
 				System.out.println(TAG+" DATA BSNL"+ "Found Data Pack Consumed " + data_consumed);
@@ -196,8 +196,8 @@ public class USSDParser {
 		 mcc = pcc.matcher(message);
 		 if (mcc.find()) {
 
-			 System.out.println("Group 1 "+mcc.group(1));
-			 System.out.println("Group 2 "+mcc.group(3));
+			//V10System.out.println("Group 1 "+mcc.group(1));
+			//V10System.out.println("Group 2 "+mcc.group(3));
 			 data_left = Float.parseFloat(mcc.group(1))+(Float.parseFloat(mcc.group(3))/1000);
 				count++;
 				System.out.println(TAG+" DATA BSNL"+ "Found Data Pack data_left " + data_left);
@@ -453,7 +453,7 @@ public class USSDParser {
 			if (mcc.find()) {
 				data_consumed = Float.parseFloat(mcc.group(2));
 				count++;
-				System.out.println(TAG+" DATA "+ "Found Normal Data Consumed " + data_consumed);
+				//System.out.println(TAG+" DATA "+ "Found Normal Data Consumed " + data_consumed);
 
 				//Log.d(TAG+" DATA", "Found Normal Data Consumed " + data_consumed);
 				// System.out.println("Airtel call cost: " + mcc.group(1));

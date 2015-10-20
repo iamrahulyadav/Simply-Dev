@@ -44,7 +44,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     void createTables()
     {
         SQLiteDatabase db = this.getWritableDatabase();
-        Log.d(tag, "OnCreate =" + IbalanceContract.CREATE_CALL_LOG_TABLE);
+       //V10Log.d(tag, "OnCreate =" + IbalanceContract.CREATE_CALL_LOG_TABLE);
         db.execSQL(IbalanceContract.CREATE_CALL_LOG_TABLE);
 
         // create books table
@@ -84,20 +84,20 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private DatabaseManager(Context context) {
 
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        Log.d(tag, "DatabaseManager");
+       //V10Log.d(tag, "DatabaseManager");
         try {
             createDataBase();
         }
         catch (IOException e)
         {
-            Log.d(tag,"Failed to Create Databse");
-            e.printStackTrace();
+           //V10Log.d(tag,"Failed to Create Databse");
+           //V10e.printStackTrace();
         }
 
     }
 
     public void createDataBase() throws IOException {
-        Log.d(tag,"createDataBase");
+       //V10Log.d(tag,"createDataBase");
         boolean dbExist = checkDataBase(DATABASE_NAME);
 
         if (dbExist) {
@@ -121,8 +121,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
             }
             catch (IOException e)
             {
-                Log.d(tag,"CopyingFailed Check Assets");//what did you screw up???
-                e.printStackTrace();
+               //V10Log.d(tag,"CopyingFailed Check Assets");//what did you screw up???
+               //V10e.printStackTrace();
             }
             //Create TABLEs Here
 
@@ -143,7 +143,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
             File dbfile = new File(myPath);
             checkdb = dbfile.exists();
         } catch (SQLiteException e) {
-            System.out.println("Database doesn't exist");
+           //V10System.out.println("Database doesn't exist");
         }
 
         return checkdb;
@@ -157,7 +157,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private void copyDataBase() throws IOException {
         //Log.d(TAG, "copy started");
         // Open your local db as the input stream
-        Log.d(tag,"copyDataBase");
+       //V10Log.d(tag,"copyDataBase");
         if(checkDataBase(OLD_DATABASE_NAME))
         {
             try
@@ -295,8 +295,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
         catch (IOException e)
         {
-            Log.d(tag,"CopyingFailed Check Assets");//what did you screw up???
-            e.printStackTrace();
+           //V10Log.d(tag,"CopyingFailed Check Assets");//what did you screw up???
+           //V10e.printStackTrace();
         }
         BalanceHelper mBalanceHelper = new BalanceHelper();
         for(NormalCall temp:tempList)

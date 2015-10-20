@@ -11,7 +11,6 @@ import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Contacts;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +23,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.datainitializers.DataInitializer;
@@ -49,8 +46,8 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.Highlight;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.melnykov.fab.FloatingActionButton;
@@ -156,12 +153,9 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		Tracker t = ((MyApplication)context.getApplicationContext()).getTracker(
 				TrackerName.APP_TRACKER);
 		t.send(new HitBuilders.EventBuilder().setCategory("LOW_BALANCE")
-				.setAction(current_balance+"").setLabel("").build());
-
-		Apptentive.engage((MainActivity)context, "LOW_BALANCE");
+				.setAction(current_balance + "").setLabel("").build());
 		FlurryAgent.logEvent("LOW_BALANCE");
-		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
-				"LOW_BALANCE", "current_balance");
+		//AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "LOW_BALANCE", "current_balance");
 		// Set the message to display
 
 		// Set a positive/yes button and create a listener
@@ -312,7 +306,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                 {
                     if (!Helper.contactExists("+919739663487"))
                     {
-                        Log.d(tag, "Whatsapp contact not found adding contact");
+                       //V10Log.d(tag, "Whatsapp contact not found adding contact");
                         Intent addContactIntent = new Intent(Contacts.Intents.Insert.ACTION, Contacts.People.CONTENT_URI);
                         addContactIntent.putExtra(Contacts.Intents.Insert.NAME, "Simply App Support"); // an example, there is other data available
                         addContactIntent.putExtra(Contacts.Intents.Insert.PHONE, "+919739663487");
@@ -352,12 +346,10 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 			// Send a screen view.
 			t.send(new HitBuilders.ScreenViewBuilder().build());
 			// Capture author info & user status
-
-			Apptentive.engage(this.getActivity(), "BalanceScreen");
 			//Log the timed event when the user starts reading the article
 			//setting the third param to true creates a timed event
 			FlurryAgent.logEvent("BalanceScreen", true);
-			AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Balance Screen","");
+			//V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Balance Screen","");
 			 
 			// End the timed event, when the user navigates away from article
 
@@ -527,7 +519,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		{YAxis leftAxis = mLineChart.getAxisLeft();
 		 leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
 		 LimitLine balanceReminderLine = new LimitLine(minimum_bal, "Minimum Balance = "+minimum_bal);
-		 balanceReminderLine.setLabelPosition(LimitLabelPosition.POS_RIGHT);
+		 balanceReminderLine.setLabelPosition(LimitLabelPosition.RIGHT_TOP);
 		 balanceReminderLine.setTextSize(10f);
 		 balanceReminderLine.setLineWidth(2f);
 		 leftAxis.addLimitLine(balanceReminderLine);
@@ -550,13 +542,21 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 	        tvContent = (TextView) findViewById(R.id.tvContent);
 	    }
 
-	    // callbacks everytime the MarkerView is redrawn, can be used to update the
-	    // content (user-interface)
-	    @Override
-	    public void refreshContent(Entry e, int dataSetIndex) {
-	        tvContent.setText("Time:" +xVals.get(e.getXIndex())+"\nBalance: "+e.getVal() ); // set the entry-value as the display text
-	        
-	    }
+		/**
+		 * This method enables a specified custom MarkerView to update it's content everytime the MarkerView is redrawn.
+		 *
+		 * @param e         The Entry the MarkerView belongs to. This can also be any subclass of Entry, like BarEntry or
+		 *                  CandleEntry, simply cast it at runtime.
+		 * @param highlight the highlight object contains information about the highlighted value such as it's dataset-index, the
+		 */
+		// callbacks everytime the MarkerView is redrawn, can be used to update the
+		// content (user-interface)
+		@Override
+		public void refreshContent(Entry e, Highlight highlight)
+		{
+			tvContent.setText("Time:" +xVals.get(e.getXIndex())+"\nBalance: "+e.getVal() ); // set the entry-value as the display text
+		}
+
 
 	    @Override
 	    public int getXOffset() {

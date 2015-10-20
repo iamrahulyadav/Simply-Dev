@@ -4,11 +4,9 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.builder.ibalance.R;
-import com.builder.ibalance.BalanceFragment.BalanceMarkerView;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.MarkerView;
 import com.github.mikephil.charting.components.XAxis;
@@ -17,6 +15,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.ChartData;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.highlight.Highlight;
 
 public class BarChartItem extends ChartItem {
 	 ViewHolder holder = null;
@@ -73,11 +72,11 @@ public class BarChartItem extends ChartItem {
         xAxis.setDrawAxisLine(true);
         xAxis.setTypeface(tf);
         YAxis leftAxis = holder.chart.getAxisLeft();
-        leftAxis.setLabelCount(5);
+        leftAxis.setLabelCount(5,true);
         leftAxis.setSpaceTop(20f);
         leftAxis.setTypeface(tf);
         YAxis rightAxis = holder.chart.getAxisRight();
-        rightAxis.setLabelCount(5);
+        rightAxis.setLabelCount(5,true);
         rightAxis.setSpaceTop(20f);
         rightAxis.setTypeface(tf);
         
@@ -105,14 +104,24 @@ public class BarChartItem extends ChartItem {
             tvContent = (TextView) findViewById(R.id.bar_popup);
         }
 
+        /**
+         * This method enables a specified custom MarkerView to update it's content everytime the MarkerView is redrawn.
+         *
+         * @param e         The Entry the MarkerView belongs to. This can also be any subclass of Entry, like BarEntry or
+         *                  CandleEntry, simply cast it at runtime.
+         * @param highlight the highlight object contains information about the highlighted value such as it's dataset-index, the
+         */
         // callbacks everytime the MarkerView is redrawn, can be used to update the
         // content (user-interface)
-        
         @Override
-        public void refreshContent(Entry e, int dataSetIndex) {
+        public void refreshContent(Entry e, Highlight highlight)
+        {
             tvContent.setText(e.getVal()+""); // set the entry-value as the display text
-            
         }
+
+
+        
+
 
         @Override
         public int getXOffset() {

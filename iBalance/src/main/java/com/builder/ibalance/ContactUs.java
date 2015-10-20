@@ -7,16 +7,13 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Contacts;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.flurry.android.FlurryAgent;
-import com.kahuna.sdk.KahunaAnalytics;
+import com.kahuna.sdk.Kahuna;
 
 public class ContactUs extends Activity implements OnClickListener
 {
@@ -28,8 +25,7 @@ public class ContactUs extends Activity implements OnClickListener
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_us);
-        Apptentive.engage(this, "Contact US");
-        AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Contact Us", "");
+       //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Contact Us", "");
         conNumber = (View) findViewById(R.id.whatapp_contact);
         conMail = (View) findViewById(R.id.mail_contact);
         debuginfo = (View) findViewById(R.id.share_debug_button);
@@ -52,7 +48,7 @@ public class ContactUs extends Activity implements OnClickListener
     Apptentive.setUnreadMessagesListener(
   		  new UnreadMessagesListener() {
   		    public void onUnreadMessageCountChanged(final int unreadMessages) {
-  		     Log.d("Shabaz Apptentive ", "unread messages  = "+unreadMessages);
+  		    //V10Log.d("Shabaz Apptentive ", "unread messages  = "+unreadMessages);
   		    }
   		  }
   		);
@@ -65,7 +61,7 @@ public class ContactUs extends Activity implements OnClickListener
     {
         FlurryAgent.logEvent("ContactUs", true);
         super.onStart();
-        KahunaAnalytics.start();
+        Kahuna.getInstance().start();
     }
 
 
@@ -74,7 +70,7 @@ public class ContactUs extends Activity implements OnClickListener
     {
         FlurryAgent.endTimedEvent("ContactUs");
         super.onStop();
-        KahunaAnalytics.stop();
+        Kahuna.getInstance().stop();
     }
 
 
@@ -89,7 +85,7 @@ public class ContactUs extends Activity implements OnClickListener
                 //Intent intent = new Intent(Intent.ACTION_DIAL);
                 if (!Helper.contactExists("+919739663487"))
                 {
-                    Log.d(tag, "Whatsapp contact not found adding contact");
+                   //V10Log.d(tag, "Whatsapp contact not found adding contact");
                     Intent addContactIntent = new Intent(Contacts.Intents.Insert.ACTION, Contacts.People.CONTENT_URI);
                     addContactIntent.putExtra(Contacts.Intents.Insert.NAME, "Simply App Support"); // an example, there is other data available
                     addContactIntent.putExtra(Contacts.Intents.Insert.PHONE, "+919739663487");
@@ -125,7 +121,7 @@ public class ContactUs extends Activity implements OnClickListener
                 }
 
                 sendIntent.setAction(Intent.ACTION_SEND);
-                String sendString = "-----Support Info---------\n" + deviceId + "--------------------------------g";
+                String sendString = "-----Support Info-------\n" + deviceId + "\n-----------------------";
                 sendIntent.setType("text/plain");
                 sendIntent.putExtra(Intent.EXTRA_TEXT, sendString);
                 startActivity(sendIntent);

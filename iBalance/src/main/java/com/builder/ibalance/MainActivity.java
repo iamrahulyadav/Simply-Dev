@@ -23,10 +23,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.datainitializers.DataInitializer;
-import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -36,21 +34,17 @@ import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.kahuna.sdk.KahunaAnalytics;
+import com.kahuna.sdk.Kahuna;
 import com.parse.ConfigCallback;
 import com.parse.ParseConfig;
 import com.parse.ParseException;
 
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-
 import de.greenrobot.event.EventBus;
 
-public class MainActivity extends Activity implements ActionBar.TabListener,PreferenceChangeListener {
+public class MainActivity extends Activity implements ActionBar.TabListener {
 	final String tag = MainActivity.class.getSimpleName();
 	SharedPreferences mSharedPreferences;
 	EditText input ;
-	EventBus dataIntializerCompleteEvent;
 	//MoPubInterstitial mInterstitial;
 	Tracker t = ((MyApplication)MyApplication.context).getTracker(
 		    TrackerName.APP_TRACKER);
@@ -66,9 +60,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener,Pref
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		dataIntializerCompleteEvent = EventBus.getDefault();
-		dataIntializerCompleteEvent.register(this);
 		mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 		PARSER_VERSION =  getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION",1);
 		ParseConfig.getInBackground(new ConfigCallback()
@@ -95,52 +86,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener,Pref
 				//Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
 			}
 		});
-       /* appOpenCount = mSharedPreferences.getInt("APP_OPEN_COUNT", 0);
-        appOpenCount++;
-        Editor mEditor = mSharedPreferences.edit();
-        mEditor.putInt("APP_OPEN_COUNT", appOpenCount);
-        mEditor.commit();
-        if(appOpenCount%10 == 0)
-        {
-		ParseConfig.getInBackground(new ConfigCallback() {
-			  @Override
-			  public void done(ParseConfig config, ParseException e) {
-				  if (e == null) {
-				      //Log.d(tag, "Yay! Config was fetched from the server.");
-				    } else {
-				      Log.e(tag, "Failed to fetch. Using Cached Config.");
-				      config = ParseConfig.getCurrentConfig();
-				    }
-				  adFrequency = config.getInt("adFrequency");
-			    //Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
-			  }
-			});
-        }
-        else
-        {
-        	adFrequency = ParseConfig.getCurrentConfig().getInt("adFrequency");
-        }
-        //Log.d(tag, "App Open Count = "+ appOpenCount);
-        if(adFrequency>0)
-        if((appOpenCount%adFrequency)==0)
-        {
-        	//Log.d(tag, "Showing Add");
-        	*//*mInterstitial = new MoPubInterstitial(MainActivity.this, "37f5fbea1a5847d894ad27f15729d20e");
-            mInterstitial.setInterstitialAdListener(MainActivity.this);
-            mInterstitial.load();*//*
-        }
-        else
-        {
-        	*//*if(mInterstitial!=null)
-        		{
-        		mInterstitial.destroy();
-        		}*//*
-        }*/
-		
 
-	
-		
-        
 		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);/*
@@ -202,9 +148,8 @@ public class MainActivity extends Activity implements ActionBar.TabListener,Pref
 
 	 @Override
 	    protected void onStart() {
-	        Log.d(tag, "onStart Main Activity");
-	        KahunaAnalytics.start(); 
-	        Apptentive.onStart(this);
+	       //V10Log.d(tag, "onStart Main Activity");
+         Kahuna.getInstance().start();
 	        FlurryAgent.logEvent("MainScreen", true);
 	      //Get an Analytics tracker to report app starts and uncaught exceptions etc.
 	        GoogleAnalytics.getInstance(this).reportActivityStart(this);
@@ -214,12 +159,9 @@ public class MainActivity extends Activity implements ActionBar.TabListener,Pref
 
 	    @Override
 	    protected void onStop() {
-	       
-	        Log.d(tag, "Stopping Main Activity");
-			EventBus.getDefault().unregister(this);
-	        KahunaAnalytics.stop();
 
-	        Apptentive.onStop(this);
+	       //V10Log.d(tag, "Stopping Main Activity");
+	        Kahuna.getInstance().stop();
 	        FlurryAgent.endTimedEvent("MainScreen");
 	      //Stop the analytics tracking
 	        GoogleAnalytics.getInstance(this).reportActivityStop(this);
@@ -265,8 +207,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener,Pref
 		case R.id.rate:
 			t.send(new HitBuilders.EventBuilder().setCategory("RATE")
 					.setAction("Rate").setLabel("").build());
-
-			Apptentive.engage(this, "Rate");
 			FlurryAgent.logEvent("Rate");
 			AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
 					"Rate", "");
@@ -358,200 +298,13 @@ public class MainActivity extends Activity implements ActionBar.TabListener,Pref
 	}
 
 
-public void onEvent(DataLoadingDone mDataLoadingDone)
-{
-
-    if(mMainActivityAdapter.getmRechargeFragment()!=null)
-    {
-        ((RechargeFragment) mMainActivityAdapter
-                .getmRechargeFragment()).loadDataAsync(mMainActivityAdapter);
-    }
-
-}
-
-	/*private boolean exportData() {
-		// DateDuration Data
-		CSVWriter writer = new CSVWriter();
-		List<String[]> data = new ArrayList<String[]>();
-		// InCount-0 Indur-1 OutCount-2 OutDur-3
-		ArrayList<Integer> value = null;
-		data.add(new String[] { "Date", "Incoming Count", "Incoming Duration",
-				"Outgoing Count", "Outgoing Duration" });
-		for (Entry<Date, ArrayList<Integer>> entry : DataInitializer.dateDurationMap
-				.entrySet()) {
-			value = (ArrayList<Integer>) entry.getValue();
-			String[] starr = new String[value.size()+1];
-			starr[0] = entry.getKey().toString();
-			for(int i=0;i<value.size();i++)
-			{
-				try{
-				starr[i+1] = value.get(i).toString();
-				}
-				catch(Exception e)
-				{
-					starr[i+1]="null";
-				}
-			}
-			data.add(starr);
-			data.add(new String[] { entry.getKey().toString(),
-					value.get(0).toString(), value.get(1).toString(),
-					value.get(2).toString(), value.get(3).toString() });
-		}
-		
-		String datedur = writer.writeAll(data);
-		byte[] dateDuration = datedur.getBytes();
-		//Log.d("AllData", datedur);
-
-		// Main Data
-		// name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State
-		data.clear();
-		writer = new CSVWriter();
-		data.add(new String[] { "Phone Number", "Name", "Incoming Count",
-				"Incoming Duration", "Outgoing Count", "Outgoing Duration",
-				"Missed Count", "Provider", "State","image_uri" });
-		Object[] values = null;
-		for (Entry<String, Object[]> entry : DataInitializer.mainmap.entrySet()) {
-			values = (Object[]) entry.getValue();
-			if (values[0] == null)
-				values[0] = entry.getKey().toString();
-			String[] st = new String[values.length+1];
-			st[0] = (entry.getKey().toString());
-			for(int i=0;i<values.length;i++)
-			{
-				try{
-				st[i+1]=(values[i].toString());
-				}
-				catch(Exception e)
-				{
-					st[i+1]="null";
-				}
-			}
-			data.add(st);
-			data.add(new String[] { ,
-					(String) values[0], values[1].toString(),
-					values[2].toString(), values[3].toString(),
-					values[4].toString(), values[5].toString(),
-					values[6].toString(), values[7].toString() });
-		}
-		byte[] mainData = writer.writeAll(data).getBytes();
-
-		// Export USSD Data
-		// 1-Date 2-Call Cost 3-Balance 4-CallDuration 5-LastNumber
-		data.clear();
-		writer = new CSVWriter();
-		data.add(new String[] { "Date", "CallCost", "Balance", "CallDuration",
-				"LastNumber" });
-		for (NormalCall entry : DataInitializer.ussdDataList) {
-			data.add(new String[] { entry.date.toString(),
-					entry.callCost.toString(), entry.bal.toString(),
-					entry.callDuration + " ", entry.lastNumber });
-		}
-		byte[] ussdData = writer.writeAll(data).getBytes();
-		DataInitializer.SmsLogs smsData;
-		data.clear();
-		writer = new CSVWriter();//Date date,String provider,String state,int count
-		data.add(new String[] { "Number","Date", "Provider", "State", "Count" });
-		try{
-		for (Entry<String, DataInitializer.SmsLogs> entry : DataInitializer.smsMap.entrySet()) {
-
-			String key = entry.getKey();
-			smsData = DataInitializer.smsMap.get(key);
-			data.add(new String[]{key,smsData.date.toString(),smsData.provider,smsData.state,smsData.count+""});
-			
-			
-		}
-		}
-		catch(Exception e)
-		{
-			Log.e(tag, "ERROR in Writing SMS data");
-			e.printStackTrace();
-		}
-		byte[] smsDataBytes = writer.writeAll(data).getBytes();
-		sendToParse(dateDuration, "dateDuration.csv",
-					mainData, "MainData.csv",
-					ussdData, "USSD_Data.csv",
-					smsDataBytes,"SMS_Data.csv");
-		//Log.d(tag, "Done writing");
-		
-		
-		// say thank you
-		// Create the dialog box
-
-		
-		// List<String> list = new ArrayList<String>();
-		// list.add(base+"dateDuration.csv");
-		// list.add(base+"MainData.csv");
-		// list.add(base+"USSD_Data.csv");
-		// email(this,"ahmedshabaz1@gmail.com","","PowerPack Data","PFA",list);
-
-		return true;
-	}
-	private void sendToParse(byte[] dateDuration, 
-			 String fileName1,
-			 byte[] mainData,
-			 String fileName2, 
-			 byte[] ussdData,
-			 String fileName3,
-			 byte[] smsData,
-			 String fileName4) 
-{
-		ParseFile pfile1, pfile2, pfile3, pfile4;
-
-		pfile1 = new ParseFile(fileName1, dateDuration);
-		pfile1.saveInBackground();
-
-		pfile2 = new ParseFile(fileName2, mainData);
-		pfile2.saveInBackground();
-
-		pfile3 = new ParseFile(fileName3, ussdData);
-		pfile3.saveInBackground();
-
-		pfile4 = new ParseFile(fileName4, smsData);
-		pfile4.saveInBackground();
-
-		ParseObject usageData = new ParseObject("UsageData");
-
-		usageData.put("DeviceID",
-				mSharedPreferences.getString("DEVICE_ID", "123456"));
-
-
-		usageData.put("Provider",
-				mSharedPreferences.getString("CARRIER", "Unknown"));
-
-		usageData.put("CIRCLE", mSharedPreferences.getString("State", "Unknown"));
-
-		usageData.put("DateDuration", pfile1);
-		usageData.put("MainData", pfile2);
-		usageData.put("USSD_Data", pfile3);
-		usageData.put("SMS_Data", pfile4);
-
-		usageData.saveEventually();
-
-	}
-	*/
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-        EventBus.getDefault().unregister(this);
 		DataInitializer.mainActivityRunning = false;
+		mSharedPreferences.edit().putInt("FILTER",0).commit();
 		/*if(mInterstitial!=null)
 		mInterstitial.destroy();*/
 	}
-
-
-	
-
-	@Override
-	public void preferenceChange(PreferenceChangeEvent pce) {
-		//Log.d(tag, "Preference Change Detected");
-		if(mMainActivityAdapter.getmRechargeFragment()!=null)
-		{
-			((RechargeFragment) mMainActivityAdapter
-					.getmRechargeFragment()).loadDataAsync(mMainActivityAdapter);
-		}
-	}
-
-
-
 
 }

@@ -5,10 +5,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.builder.ibalance.database.DatabaseManager;
+import com.builder.ibalance.database.MappingHelper;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.util.MyApplication;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 /**
  * Created by Shabaz on 03-Oct-15.
@@ -96,7 +98,7 @@ public class ContactDetailHelper
                     duration = c1.getInt(1);
                 } catch (Exception e)
                 {
-                    e.printStackTrace();
+                   //V10e.printStackTrace();
                 }
                 finally
                 {
@@ -115,7 +117,25 @@ public class ContactDetailHelper
             );
         return m;
         }
-        return new ContactDetailModel(phNumber,"Unknown","Unknown",null,0.0f);
+        ArrayList<String> carrier_circle =null;
+        if(phNumber.length()>=10)
+        {
+            try
+            {
+                carrier_circle = (new MappingHelper()).
+                        getMapping(Integer.parseInt(
+                                phNumber.substring(
+                                        phNumber.length() - 10,
+                                        phNumber.length() - 6)));
+            }
+            catch (Exception e)
+            {
+                carrier_circle = new ArrayList<>();
+                carrier_circle.add("Unknown");
+                carrier_circle.add("Unknown");
+            }
+        }
+        return new ContactDetailModel(phNumber,carrier_circle.get(0),carrier_circle.get(1),null,0.0f);
     }
     //Returns in  secs
     public int getOutDurationLocalSameCarrier(String sim_circle, String sim_carrier)

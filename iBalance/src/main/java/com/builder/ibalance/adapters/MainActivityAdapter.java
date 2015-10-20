@@ -19,11 +19,6 @@ import java.util.Locale;
  * of the sections/tabs/pages.
  */
 public class MainActivityAdapter extends FragmentPagerAdapter  {
-	private Fragment mRechargeFragment;
-
-	public Fragment getmRechargeFragment() {
-		return mRechargeFragment;
-	}
 
 
 
@@ -57,12 +52,7 @@ public class MainActivityAdapter extends FragmentPagerAdapter  {
 			//return new ContactsFragment();	
 		case 3:
 			this.position=4;
-			if(mRechargeFragment==null)
-			{
-				//Log.d(TAG, "Creating New mRechargeFragment");
-				mRechargeFragment = new RechargeFragment();
-			}
-			return mRechargeFragment;
+			return new RechargeFragment();
 			//return new RechargeFragment();
             default: return null;
 		}

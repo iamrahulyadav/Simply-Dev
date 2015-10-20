@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -24,8 +23,6 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.core.DualSim;
 import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
@@ -56,21 +53,10 @@ public class SplashscreenActivity extends Activity
     Helper.SharedPreferenceHelper mSharedPreferenceHelper = new Helper.SharedPreferenceHelper();
     ProgressBar dual_sim_bar;
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus)
-    {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus)
-        {
-            // Returns true if the push notification was for Apptentive, and we handled it.
-            boolean ranApptentive = Apptentive.handleOpenedPushNotification(this);
-        }
-    }
 
     @Override
     protected void onStart()
     {
-
         //KahunaAnalytics.start();
         super.onStart();
         // Your Code Here
@@ -102,6 +88,7 @@ public class SplashscreenActivity extends Activity
         {
             if ((app_open_from != null) && app_open_from.equals("WIDGET"))
             {
+                Helper.logUserEngageMent("WIDGET");
                 Tracker t = ((MyApplication) this.getApplication()).getTracker(
                         TrackerName.APP_TRACKER);
                 t.send(new HitBuilders.EventBuilder()
@@ -109,18 +96,33 @@ public class SplashscreenActivity extends Activity
                         .setAction("WIDGET")
                         .setLabel("WIDGET")
                         .build());
-                Apptentive.engage(this, "WIDGET_APP_OPEN");
                 FlurryAgent.logEvent("WIDGET_APP_OPEN");
-                AppsFlyerLib.sendTrackingWithEvent(getApplicationContext(), "WIDGET_APP_OPEN", "");
+               //V10AppsFlyerLib.sendTrackingWithEvent(getApplicationContext(), "WIDGET_APP_OPEN", "");
+            }
+            if ((app_open_from != null) && app_open_from.equals("POPUP"))
+            {
+                Tracker t = ((MyApplication) this.getApplication()).getTracker(
+                        TrackerName.APP_TRACKER);
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("APP_OPEN")
+                        .setAction("POPUP")
+                        .setLabel("POPUP")
+                        .build());
+                FlurryAgent.logEvent("POPUP_APP_OPEN");
+               //V10AppsFlyerLib.sendTrackingWithEvent(getApplicationContext(), "POPUP_APP_OPEN", "");
+            }
+            else
+            {
+                Helper.logUserEngageMent("NORMAL");
             }
         } catch (Exception e)
         {
             //Log.d(TAG, "Failed to  get the intent");
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
         //Log.d(TAG, "Splash Screen in");
 
-        AppsFlyerLib.sendTracking(getApplicationContext());
+       //V10AppsFlyerLib.sendTracking(getApplicationContext());
         Typeface tf = Typeface.createFromAsset(getResources().getAssets(), "Roboto-Regular.ttf");
         TextView tv = (TextView) findViewById(R.id.fullscreen_content);
         tv.setTypeface(tf);
@@ -178,10 +180,10 @@ public class SplashscreenActivity extends Activity
         AccessibilityManager mAccessibilityManager = (AccessibilityManager) this.getSystemService(Context.ACCESSIBILITY_SERVICE);
         //Log.d(TAG,"Checking for: "+id);
         List<AccessibilityServiceInfo> runningServices = mAccessibilityManager.getEnabledAccessibilityServiceList(AccessibilityEvent.TYPES_ALL_MASK);
-        Log.d(TAG, "size of ruuning services : " + runningServices.size());
+       //V10Log.d(TAG, "size of ruuning services : " + runningServices.size());
         for (AccessibilityServiceInfo service : runningServices)
         {
-            Log.d(TAG, service.getId());
+           //V10Log.d(TAG, service.getId());
             if (id.equals(service.getId()))
             {
                 return true;
@@ -215,7 +217,7 @@ public class SplashscreenActivity extends Activity
                 if (SimModel.call_log_columns.isEmpty())
                 {
                     SimModel.call_log_columns = mDualSimObject.getDualCallLogColumn();
-                    Log.d(TAG, "call_log_columns :" + SimModel.call_log_columns.toString());
+                   //V10Log.d(TAG, "call_log_columns :" + SimModel.call_log_columns.toString());
                     if (SimModel.call_log_columns.isEmpty())
                     {
                         //TODO Fall back to logical check
@@ -259,12 +261,12 @@ public class SplashscreenActivity extends Activity
                 if (sim_list != null)
                 {
                     mEditor.putInt("TYPE", SimModel.dual_type).commit();
-                    Log.d(TAG + " Sim Info =", sim_list.toString());
+                   //V10Log.d(TAG + " Sim Info =", sim_list.toString());
                 } else
                 {
-                    Log.d(TAG + " Sim Info =", "Null");
+                   //V10Log.d(TAG + " Sim Info =", "Null");
                 }
-                Log.d(TAG, "Debug info :" + SimModel.debugInfo);
+               //V10Log.d(TAG, "Debug info :" + SimModel.debugInfo);
                 SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
                 boolean first_app_launch = mSharedPreferences.getBoolean("FIRST_APP_LAUNCH", true);
                 if (first_app_launch)
@@ -291,7 +293,10 @@ public class SplashscreenActivity extends Activity
                     pObj.put("SAMPLE_CALLLOGS", getCallLogs());
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                     Location loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                    pObj.put("LOCATION", loc.toString());
+                    if(loc!=null)
+                    {
+                        pObj.put("LOCATION", loc.toString());
+                    }
                     pObj.put("APP_VERSION", BuildConfig.VERSION_CODE);
                     SharedPreferences.Editor editor = mSharedPreferences.edit();
                     editor.putInt("APP_VERSION", BuildConfig.VERSION_CODE);

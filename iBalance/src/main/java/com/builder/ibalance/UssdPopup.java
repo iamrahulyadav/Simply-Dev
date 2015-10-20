@@ -12,32 +12,24 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.services.CallDetailsModel;
-import com.builder.ibalance.util.MyApplication;
-import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.builder.ibalance.util.CircleTransform;
+import com.builder.ibalance.util.Helper;
 import com.bumptech.glide.Glide;
-import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-import com.kahuna.sdk.KahunaAnalytics;
 
 public class UssdPopup extends Activity {
 	TextView field1,field2,field3,field4,head1,head2,head3,head4;
 	Button dismiss,open_app;
-	
+	String from = "CALL"; //what type of popup
 	 @Override
 	    protected void onStart() {
 	        super.onStart();
-	        KahunaAnalytics.start();
 	        // Your Code Here
 	    }
 
 	    @Override
 	    protected void onStop() {
 	        super.onStop();
-	        KahunaAnalytics.stop();
 	        // Your Code Here
 	    }
 
@@ -79,6 +71,7 @@ public class UssdPopup extends Activity {
         String rupee_symbol = getResources().getString(R.string.rupee_symbol);
 		switch (mintent.getIntExtra("TYPE", -1)) {
 		case 1:
+            from = "CALL";
             View contactLayout = findViewById(R.id.ussd_contact_layout);
             contactLayout.setVisibility(View.VISIBLE);
             ImageView contact_picture = (ImageView) contactLayout.findViewById(R.id.ussd_contact_picture);
@@ -108,15 +101,16 @@ public class UssdPopup extends Activity {
 			field4.setText(call_rate);
 
             contact_name.setText(details.getName());
-            Glide.with(this).load(details.getImage_uri()).placeholder(R.drawable.default_contact_picture).into(contact_picture);
+            Glide.with(this).load(details.getImage_uri()).transform(new CircleTransform(this)).placeholder(R.drawable.default_contact_picture).into(contact_picture);
             contact_number.setText(details.getNumber());
             contact_carrier_circle.setText(details.getCarrier_circle());
             contact_total_spent.setText(rupee_symbol+" "+String.format("%.2f",details.getTotal_spent()));
             contact_call_cost.setText("+ "+details.getCall_cost());
-			Toast.makeText(this,"SimSlot = "+details.getSim_slot(),Toast.LENGTH_LONG).show();
+			//Toast.makeText(this,"SimSlot = "+details.getSim_slot(),Toast.LENGTH_LONG).show();
 			break;
 			//Normal SMS
 		case 2:
+            from = "SMS";
 			 cost = mintent.getStringExtra("SMS_COST");
 			head1.setText("SMS Cost");
 			field1.setText(rupee_symbol+" "+cost);
@@ -137,6 +131,7 @@ public class UssdPopup extends Activity {
 			break;
 			//Normal Data
 		case 3:
+            from = "NORMAL_DATA" ;
 			cost = mintent.getStringExtra("DATA_COST");
 			head1.setText("Data Cost");
 			field1.setText(rupee_symbol+" "+cost);
@@ -161,6 +156,7 @@ public class UssdPopup extends Activity {
 			break;
 			//Data Pack
 		case 6:
+            from = "PACK_DATA";
 			 data_consumed = mintent.getStringExtra("DATA_CONSUMED");
 			head1.setText("Data Used");
 			field1.setText(data_consumed+" MB");
@@ -195,6 +191,7 @@ public class UssdPopup extends Activity {
 			
 			@Override
 			public void onClick(View v) {
+                Helper.logUserEngageMent(from+"_DISMISS");
 				finish();
 				
 			}
@@ -205,17 +202,9 @@ public class UssdPopup extends Activity {
 			public void onClick(View v) {
 				Intent mIntent = new Intent(getApplicationContext(),SplashscreenActivity.class);
 				mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+				mIntent.putExtra("FROM", "POPUP");
+                Helper.logUserEngageMent(from+"_OPEN");
 				startActivity(mIntent);
-				Tracker t = ((MyApplication) MyApplication.context).getTracker(
-					    TrackerName.APP_TRACKER);
-				t.send(new HitBuilders.EventBuilder()
-			    .setCategory("APP_OPEN")
-			    .setAction("POPUP")
-			    .setLabel("POPUP")
-			    .build());
-				Apptentive.engage(UssdPopup.this, "POPUP_APP_OPEN");
-				FlurryAgent.logEvent("POPUP_APP_OPEN");
-				AppsFlyerLib.sendTrackingWithEvent(getApplicationContext(),"POPUP_APP_OPEN","");
      			finish();
 				
 			}

@@ -18,7 +18,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.CustomContactsAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
@@ -133,7 +132,6 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 
 		// Log the timed event when the user starts reading the article
 		// setting the third param to true creates a timed event
-		Apptentive.engage(this.getActivity(), "Contact Screen");
 		FlurryAgent.logEvent("ContactScreen", true);
 		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Contact Screen","");
 		// End the timed event, when the user navigates away from article
@@ -238,9 +236,9 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
                         call_cost));
             }
             c.close();
-            Log.d(TAG, "Before Sorting" + contactsList.toString());
+           //V10Log.d(TAG, "Before Sorting" + contactsList.toString());
             Collections.sort(contactsList, new customComparator());
-            Log.d(TAG, "After Sorting" + contactsList.toString());
+           //V10Log.d(TAG, "After Sorting" + contactsList.toString());
             return contactsList;
 		}
 

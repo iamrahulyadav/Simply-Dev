@@ -9,7 +9,6 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.builder.ibalance.database.helpers.IMSIHelper;
 import com.builder.ibalance.util.Constants;
@@ -23,8 +22,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-
-import static com.builder.ibalance.util.Helper.toastHelper;
 
 /**
  * Created by Shabaz on 7/29/2015.
@@ -47,17 +44,17 @@ public class DualSim
             mTelephonyManager = (TelephonyManager) MyApplication.context.getSystemService(Context.TELEPHONY_SERVICE);
         if (type == 0)//don't know the type start afresh
         {
-            toastHelper("Detecting Fresh");
+           // toastHelper("Detecting Fresh");
             debugInfo.append("Detecting Fresh\n");
             debugInfo.append(checkDualSim() + "\n\n");
             sim_details_known = false; //details no yet known
             sim_list.clear();
-            Log.d(tag, "getSimList");
+           //V10Log.d(tag, "getSimList");
             try
             {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) //API 22,Yay Dual Sim Support
                 {
-                    Log.d(tag, "getSimListForLolipop");
+                   //V10Log.d(tag, "getSimListForLolipop");
                     debugInfo.append("GOT " + Constants.TYPE_LOLIPOP + "\n");
                     SimModel.dual_type = Constants.TYPE_LOLIPOP;
                     getSimListForLolipop(sim_details_known);
@@ -202,7 +199,7 @@ public class DualSim
             {
                 sim_details_known = false;
             }
-            toastHelper("Detecting from prefernces "+ type);
+           // toastHelper("Detecting from prefernces "+ type);
             switch (type)
             {
 
@@ -418,10 +415,10 @@ public class DualSim
             multiSimTelephonyManager = getTeleDefault.invoke(null,parameters);
         } catch (IllegalAccessException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (InvocationTargetException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
         if(sim_details_known) //already known then just check serials
         {
@@ -443,10 +440,10 @@ public class DualSim
                 multiSimTelephonyManager = getTeleDefault.invoke(null,parameters);
             } catch (IllegalAccessException e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             } catch (InvocationTargetException e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             }
             if(multiSimTelephonyManager==null && !knownSerial[1].equals("-1"))
             {
@@ -498,10 +495,10 @@ public class DualSim
             multiSimTelephonyManager = getTeleDefault.invoke(null,parameters);
         } catch (IllegalAccessException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (InvocationTargetException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
         if (multiSimTelephonyManager != null)
         {
@@ -571,7 +568,7 @@ public class DualSim
 
         } catch (ClassNotFoundException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
             return false;
         }
     }
@@ -583,7 +580,7 @@ public class DualSim
 
     private void getSimListForSubscriptionManager(boolean sim_details_known)
     {
-        Log.d(tag, "Function getSimListForSubscriptionManager");
+       //V10Log.d(tag, "Function getSimListForSubscriptionManager");
         String imei0= null, imei1 = null;
         Object sim[] = new Object[3]; //just to be safe
         //        SimModel.two_slots = true;
@@ -595,14 +592,14 @@ public class DualSim
             subInfoRecord = Class.forName("android.telephony.SubInfoRecord");
         } catch (ClassNotFoundException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
 
         Class<?> sunInfoRecObj = subInfoRecord.getComponentType();
         ArrayList<?> subInfoList = new ArrayList<>();
 
         subInfoList = (ArrayList<?>)ReflectionHelper.getObject(null, "android.telephony.SubscriptionManager", "getActiveSubInfoList", new Class[0]);
-        Log.d(tag,"subInfoList = "+subInfoList.toString());
+       //V10Log.d(tag,"subInfoList = "+subInfoList.toString());
         if(sim_details_known) //already known then just check serials
         {
             for(int i=0;i<subInfoList.size();i++)
@@ -614,7 +611,7 @@ public class DualSim
                     iccField = subInfoRecord.getField("iccId");
                 } catch (NoSuchFieldException e)
                 {
-                    e.printStackTrace();
+                   //V10e.printStackTrace();
                 }
                 String serial = null;
                 if(iccField!=null)
@@ -624,7 +621,7 @@ public class DualSim
                         serial = (String) iccField.get(sim[i]);
                     } catch (IllegalAccessException e)
                     {
-                        e.printStackTrace();
+                       //V10e.printStackTrace();
                     }
                 }
                 if(!knownSerial[i].equals(serial))
@@ -666,7 +663,7 @@ public class DualSim
 
             //
             sim[i] = subInfoList.get(i);
-            Log.d(tag,"Sub "+i+" ="+sim[i].toString());
+           //V10Log.d(tag,"Sub "+i+" ="+sim[i].toString());
             Field iccField =null,subField=null,slotField=null,mccField=null,mncField=null,display_carier_field = null;
             String serial=null,sim_imsi=null,network_imsi=null,imei=null,display_carier = null;
             long subsciption = 1;
@@ -687,8 +684,8 @@ public class DualSim
                 display_carier_field.setAccessible(true);
             } catch (NoSuchFieldException e)
             {
-                Log.d(tag,"Field Notavailable");
-                e.printStackTrace();
+               //V10Log.d(tag,"Field Notavailable");
+               //V10e.printStackTrace();
             }
             try
             {
@@ -704,7 +701,7 @@ public class DualSim
                 display_carier = (String) display_carier_field.get(sim[i]);
             } catch (Exception e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             }
             ArrayList<String> carrier_circle = getCarrierCirclefromIMSI(sim_imsi);
             SimModel mSimModel = new SimModel.Builder(subsciption,slot, sim_imsi, carrier_circle.get(0))
@@ -721,7 +718,7 @@ public class DualSim
         {
             SimModel.dual_type = Constants.TYPE_UNKNOWN;
             sim_list.clear();
-            Log.d(tag, "Network Not Available");
+           //V10Log.d(tag, "Network Not Available");
         }
 
     }
@@ -760,7 +757,7 @@ public class DualSim
             {
                 SimModel.two_slots = false;
                 //If there is only one slot then there is no need for checking Sim Serial
-                toastHelper("Single Sim" + imei);
+               // toastHelper("Single Sim" + imei);
             } else
             {
                 serial[i] = (String) ReflectionHelper.getObject(mTelephonyManager, "android.telephony.TelephonyManager", "getSimSerialNumberGemini", parameter);
@@ -1363,7 +1360,7 @@ public class DualSim
         //do the same for sim 2
         parameter[0] = 1;
         imei1 = (String) ReflectionHelper.getObject(mSimTelephonyManager, "android.telephony.MSimTelephonyManager", "getDeviceId", parameter);
-        // Log.d(tag, imei + "");
+        ////V10Log.d(tag, imei + "");
         if (imei1 == null || imei0.equals(imei1))
         {
             SimModel.two_slots = false;
@@ -1466,10 +1463,10 @@ public class DualSim
             Object[] empty_parameter = new Object[0];
             TelephonyManager mTelephonyManager = (TelephonyManager)multiSimTelephonyManager;
             {
-                Log.d("ASUS","getDeviceId = "+mTelephonyManager.getDeviceId());
-                Log.d("ASUS","getSimOperator = "+mTelephonyManager.getSimOperator());
-                Log.d("ASUS","getSimSerialNumber = "+mTelephonyManager.getSimSerialNumber());
-                Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
+               //V10Log.d("ASUS","getDeviceId = "+mTelephonyManager.getDeviceId());
+               //V10Log.d("ASUS","getSimOperator = "+mTelephonyManager.getSimOperator());
+               //V10Log.d("ASUS","getSimSerialNumber = "+mTelephonyManager.getSimSerialNumber());
+               //V10Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
             }
             serial0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimSerialNumber", empty_parameter);
             imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
@@ -1506,10 +1503,10 @@ public class DualSim
         {
             TelephonyManager mTelephonyManager = (TelephonyManager)multiSimTelephonyManager;
             {
-                Log.d("ASUS","getDeviceId = "+mTelephonyManager.getDeviceId());
-                Log.d("ASUS","getSimOperator = "+mTelephonyManager.getSimOperator());
-                Log.d("ASUS","getSimSerialNumber = "+mTelephonyManager.getSimSerialNumber());
-                Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
+               //V10Log.d("ASUS","getDeviceId = "+mTelephonyManager.getDeviceId());
+               //V10Log.d("ASUS","getSimOperator = "+mTelephonyManager.getSimOperator());
+               //V10Log.d("ASUS","getSimSerialNumber = "+mTelephonyManager.getSimSerialNumber());
+               //V10Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
             }
             Object[] empty_parameter = new Object[0];
             imei1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
@@ -1824,10 +1821,10 @@ public class DualSim
     private void getSimListForLolipop(boolean sim_details_known)
     {
 
-        Log.d(tag, "Function getSimListForLolipop");
+       //V10Log.d(tag, "Function getSimListForLolipop");
         String imei0=null,imei1=null;
         SubscriptionManager mSubscriptionManager = SubscriptionManager.from(MyApplication.context);
-        Log.d(tag, "SimInfo LIst:" + mSubscriptionManager.getActiveSubscriptionInfoList().toString());
+       //V10Log.d(tag, "SimInfo LIst:" + mSubscriptionManager.getActiveSubscriptionInfoList().toString());
         SubscriptionInfo sim1, sim0;
         SimModel.two_slots = true;
         SimModel.uses_subscription = true;
@@ -1953,7 +1950,7 @@ public class DualSim
                     parameter[0] = sim1.getSubscriptionId();
                     imsi1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getSimOperator", parameter);
                 }
-                Log.d(tag, "IMSI 0 = " + imsi0 + "\nIMSI1 = " + imsi1);
+               //V10Log.d(tag, "IMSI 0 = " + imsi0 + "\nIMSI1 = " + imsi1);
                 if (imsi0.equals(imsi1) && !sim0.getCarrierName().equals(sim1.getCarrierName())) // If MNCs are same get carrier name an see if it is different
                 {                                                                       //If yes then Qtiyappa happened try for the general approach
                     int subid_0 = 1, subid_1 = 2;
@@ -1998,7 +1995,7 @@ public class DualSim
             {
                 SimModel.dual_type = Constants.TYPE_UNKNOWN;
                 sim_list.clear();
-                Log.d(tag, "Network Not Available");
+               //V10Log.d(tag, "Network Not Available");
             }
         }
 
@@ -2015,7 +2012,7 @@ public class DualSim
 
     private void getSimListforMediaTek(boolean sim_details_known)
     {
-        Log.d(tag, "MediaTek");
+       //V10Log.d(tag, "MediaTek");
         TelephonyManagerEx mediaTekTelephonyManager = new TelephonyManagerEx(MyApplication.context);
         String imsi0 = "", imsi1 = "", serial0 = null, serial1 = null;
         long subId0=-1,subId1=-1;
@@ -2107,7 +2104,7 @@ public class DualSim
         {
             SimModel.dual_type = Constants.TYPE_UNKNOWN;
             //Both sims have some problem
-            Log.d(tag, "Error in getting the Sims");
+           //V10Log.d(tag, "Error in getting the Sims");
             sim_list.clear();
         }
 
@@ -2141,7 +2138,7 @@ public class DualSim
             if(carrier_circle==null && IMSI.length()>=5)
             {
                 String temp = IMSI.substring(0,3)+'0'+IMSI.substring(3);
-                Log.d(tag,"Adding zero to find CARRIER_CIRCLE "+temp);
+               //V10Log.d(tag,"Adding zero to find CARRIER_CIRCLE "+temp);
                 carrier_circle = imsiHelper.getMapping(temp);
             }
         }
@@ -2166,7 +2163,7 @@ public class DualSim
                 telephonyClass = Class.forName(mTelephonyManager.getClass().getName());
         } catch (ClassNotFoundException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
         Class<?>[] parameter = new Class[1];
         parameter[0] = int.class;
@@ -2189,13 +2186,13 @@ public class DualSim
                 }
             } catch (NoSuchMethodException e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             } catch (InvocationTargetException e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             } catch (IllegalAccessException e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             }
 
         }
@@ -2211,23 +2208,23 @@ public class DualSim
                 obParameter[0] = 0; //sim 1
                 Object returned_object = getSimStateMethod.invoke(mTelephonyManager, obParameter);
                 TelephonyManager tel = (TelephonyManager) returned_object;
-                Log.d(tag, "Telphony 0 = " + tel.getNetworkOperatorName());
+               //V10Log.d(tag, "Telphony 0 = " + tel.getNetworkOperatorName());
                 obParameter[0] = 2; //sim 1
                 returned_object = getSimStateMethod.invoke(mTelephonyManager, obParameter);
-                Log.d(tag, "Telphony 1 = " + tel.getNetworkOperatorName());
+               //V10Log.d(tag, "Telphony 1 = " + tel.getNetworkOperatorName());
                 if (returned_object == null)
                 {
                     isDualSim = false;
                 }
             } catch (NoSuchMethodException e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             } catch (InvocationTargetException e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             } catch (IllegalAccessException e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             }
         }
         return isDualSim;
@@ -2236,7 +2233,7 @@ public class DualSim
 
     public final String checkDualSim() //for Debug only
     {
-        Log.d(tag, "Testing Dual SIM Support");
+       //V10Log.d(tag, "Testing Dual SIM Support");
         StringBuilder mStringBuilder = new StringBuilder("Debuf Info :");
         String[] arrayOfString1 = {"android.provider.", "android.telephony.", "com.mediatek.telephony."};
         String[] arrayOfString2 = {"TelephonyManager", "TelephonyManagerEx", "MSimTelephonyManager", "MultiSimTelephonyManager", "SubscriptionManager", "SubInfoRecord", "Telephony", "Telephony$SIMInfo", "MSimCardUtils", "SimManager"};
@@ -2353,11 +2350,11 @@ public class DualSim
                 dual_sim_column_name = colPrefixList[i] + colSuffixList[j];
                 if (managedCursor.getColumnIndex(dual_sim_column_name) != -1) //if it exists
                 {
-                    toastHelper("Found "+dual_sim_column_name);
+                   // toastHelper("Found "+dual_sim_column_name);
                     call_log_columns.add(dual_sim_column_name);
                 }
             }
-        toastHelper("found  "+SimModel.call_log_columns.toString());
+       // toastHelper("found  "+SimModel.call_log_columns.toString());
         return call_log_columns; //fall back to logical categorization
     }
 }

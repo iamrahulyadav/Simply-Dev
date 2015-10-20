@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.DeductionsAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.util.MyApplication;
@@ -39,8 +38,6 @@ public class DeductionsFragment extends Fragment {
 
 			// Log the timed event when the user starts reading the article
 			// setting the third param to true creates a timed event
-
-			Apptentive.engage(this.getActivity(), "DeductionsHistoryScreen");
 			FlurryAgent.logEvent("DeductionsHistoryScreen", true);
 			AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"DeductionsHistoryScreen","");
 			// End the timed event, when the user navigates away from article

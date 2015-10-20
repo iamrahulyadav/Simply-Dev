@@ -1,10 +1,14 @@
 package com.builder.ibalance;
 
-import java.util.HashMap;
-import java.util.Map;
+import android.app.Fragment;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.adapters.RechargesAdapter;
 import com.builder.ibalance.database.RechargeHelper;
 import com.builder.ibalance.util.MyApplication;
@@ -12,14 +16,6 @@ import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-
-import android.database.Cursor;
-import android.os.Bundle;
-import android.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
 
 public class RechargesHistoryFragment extends Fragment{
 
@@ -36,7 +32,6 @@ public class RechargesHistoryFragment extends Fragment{
 
 			// Log the timed event when the user starts reading the article
 			// setting the third param to true creates a timed event
-			Apptentive.engage(this.getActivity(), "RechargeHistoryScreen");
 			FlurryAgent.logEvent("RechargeHistoryScreen", true);
 			AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"RechargeHistoryScreen","");
 		super.onResume();

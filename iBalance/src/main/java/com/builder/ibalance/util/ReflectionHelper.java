@@ -28,8 +28,8 @@ public class ReflectionHelper
         } catch (Exception e)
         {
             //There was some problem return null
-            Log.d(tag,"getObject Failed");
-            e.printStackTrace();
+           //V10Log.d(tag,"getObject Failed");
+           //V10e.printStackTrace();
             return null;
         }
     }
@@ -73,7 +73,7 @@ public class ReflectionHelper
         } catch (Exception e)
         {
             //There was some problem return null
-            Log.d(tag,"getMethod Failed");
+           //V10Log.d(tag,"getMethod Failed");
             //e.printStackTrace();
             return null;
         }
@@ -87,7 +87,7 @@ public class ReflectionHelper
         }
         catch (ClassNotFoundException e)
         {
-            Log.d(tag,"classExists Failed");
+           //V10Log.d(tag,"classExists Failed");
             return false;
         }
     }
@@ -114,7 +114,7 @@ public class ReflectionHelper
         } catch (Exception e)
         {
             //There was some problem return false
-            Log.d(tag,"methodCheck 1 Failed");
+           //V10Log.d(tag,"methodCheck 1 Failed");
             //e.printStackTrace();
             return false;
         }
@@ -137,7 +137,7 @@ public class ReflectionHelper
         } catch (Exception e)
         {
             //There was some problem return false
-            Log.d(tag,"methodCheck 2 Failed");
+           //V10Log.d(tag,"methodCheck 2 Failed");
             //e.printStackTrace();
             return false;
         }

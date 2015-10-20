@@ -2,7 +2,6 @@ package com.builder.ibalance.services;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -22,9 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.BalanceWidget;
 import com.builder.ibalance.BuildConfig;
 import com.builder.ibalance.MainActivity;
@@ -62,8 +59,6 @@ import com.parse.ParseQuery;
 import java.util.Date;
 import java.util.Locale;
 
-import de.greenrobot.event.EventBus;
-
 public class RecorderUpdaterService extends AccessibilityService
 {
     final static String tag = RecorderUpdaterService.class.getSimpleName();
@@ -75,8 +70,6 @@ public class RecorderUpdaterService extends AccessibilityService
     StringBuilder sb = new StringBuilder();
     AccessibilityNodeInfo dismissNode = null;
     CallDetailsModel mCallDetailsModel = null;
-    Message observerMsg;
-    EventBus mEventBus;
     Handler noUSSDMsgHandler = null;
     String lastNumber = null;
     int sim_slot = 0;
@@ -98,10 +91,10 @@ public class RecorderUpdaterService extends AccessibilityService
                     mCallDetailsModel = null;
                     lastNumber = null;
                     sim_slot = 0;
-                    Toast.makeText(MyApplication.context, "USSD Message was not Received", Toast.LENGTH_LONG).show();
+                  //  Toast.makeText(MyApplication.context, "USSD Message was not Received", Toast.LENGTH_LONG).show();
                 }
             };
-            Log.d(tag + "  displayPopUp", " Last Number =" + lastNumber);
+           //V10Log.d(tag + "  displayPopUp", " Last Number =" + lastNumber);
             if (mCallDetailsModel != null)
             {
 
@@ -129,6 +122,9 @@ public class RecorderUpdaterService extends AccessibilityService
                         .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 noUSSDMsgHandler.removeCallbacks(r);
                 noUSSDMsgHandler = null;
+                if (dismissNode != null)
+                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                dismissNode = null;
                 startActivity(popup_intent);
                 NormalCall entry = new NormalCall(
                         new Date().getTime(),
@@ -143,14 +139,14 @@ public class RecorderUpdaterService extends AccessibilityService
                 addToDatabase(entry);
             } else
             {
-                Log.d(tag, "USSD Message Not Received");
+               //V10Log.d(tag, "USSD Message Not Received");
 
                 noUSSDMsgHandler.postDelayed(r, 15000);
                 //wait for 30 seconds and show that USSD message was not received
             }
         } else
         {
-            Log.d(tag, "CallLog Not Updated");
+           //V10Log.d(tag, "CallLog Not Updated");
             //wait for callLog to update
         }
     }
@@ -168,11 +164,11 @@ public class RecorderUpdaterService extends AccessibilityService
 
                 previousBalance = sharedPreferences.getFloat(
                         "CURRENT_BALANCE_"+details.slot, (float) -20.0);
-                // Log.d(tag, "previousBalance " + previousBalance);
+                ////V10Log.d(tag, "previousBalance " + previousBalance);
                 // if the entry is duplicate
                 if (Float.compare(previousBalance,  details.bal) == 0)
                 {
-                    // Log.d(tag, "Duplicate  previousBalance ");
+                    ////V10Log.d(tag, "Duplicate  previousBalance ");
                     return;
                 }
                 // if there has been a Recharge
@@ -181,7 +177,7 @@ public class RecorderUpdaterService extends AccessibilityService
                     if (details.bal - previousBalance > 1.0)
                     {
                         RechargeHelper mRechargeHelper = new RechargeHelper();
-                        // Log.d(tag, "Recharge = "+ (details.bal -
+                        ////V10Log.d(tag, "Recharge = "+ (details.bal -
                         // previousBalance + details.callCost));
                         ParseObject pObj = new ParseObject("RECHARGES");
                         pObj.put("DEVICE_ID", sharedPreferences
@@ -204,7 +200,7 @@ public class RecorderUpdaterService extends AccessibilityService
                     }
                 }
                 mBalanceHelper.addEntry(details);
-                // Log.d(tag + "Current Bal", details.bal + " ");
+                ////V10Log.d(tag + "Current Bal", details.bal + " ");
                 sharedPreferences.edit().putFloat("CURRENT_BALANCE_"+details.slot, (float) details.bal).commit();
                 break;
             default:
@@ -239,12 +235,12 @@ public class RecorderUpdaterService extends AccessibilityService
         StringBuilder sb = new StringBuilder();
         if (accessibilityNodeInfo == null)
         {
-            // Log.d("TEST", "accessibilityNodeInfo is null");
+            ////V10Log.d("TEST", "accessibilityNodeInfo is null");
             return "";
         }
 
         int j = accessibilityNodeInfo.getChildCount();
-        // Log.d("TEST", "number of children = " + j);
+        ////V10Log.d("TEST", "number of children = " + j);
         for (int i = 0; i < j; i++)
         {
 
@@ -252,47 +248,46 @@ public class RecorderUpdaterService extends AccessibilityService
 
             if (ac == null)
             {
-                // Log.d(tag+"USSD","ac is null");
+                ////V10Log.d(tag+"USSD","ac is null");
                 continue;
             }
             if (ac.getChildCount() > 0)
             {
-                // Log.d(tag+"USSD", "More than one subchild"+
+                ////V10Log.d(tag+"USSD", "More than one subchild"+
                 // ac.getChildCount());
                 sb.append(getTextFromNode(ac));
             }
-            // Log.d(tag+"USSD",ac.getClassName()+"");
+            ////V10Log.d(tag+"USSD",ac.getClassName()+"");
             if (ac.getClassName().equals(TextView.class.getName()))
             {
                 sb.append(ac.getText());
-                // Log.d("TEST", "Number:" + i + "   " + sb);
+                ////V10Log.d("TEST", "Number:" + i + "   " + sb);
             } else if (ac.getClassName().equals(EditText.class.getName()))
                 hasEditText = true;
             else if (ac.getClassName().equals(Button.class.getName()))
             {
-                Log.d("TEST", "Button " + ac.getText());
+               //V10Log.d("TEST", "Button " + ac.getText());
                 dismissNode = ac;
-                Log.d("TEST", "Performed a Click ");
+               //V10Log.d("TEST", "Performed a Click ");
             }
 
         }
         return sb.toString().replace("\r\n", " ").replace("\n", " ");
     }
 
-    @SuppressLint("NewApi")
     public void onAccessibilityEvent(AccessibilityEvent event)
     {
         mCallDetailsModel = null;
         text = getTextFromNode(event.getSource());// getEventText(event);
         text = text.replace("\r\n", "").replace("\n", "");
-        Log.d(TAG, "Dismissed AccessibilityNodeInfo");
+       //V10Log.d(TAG, "Dismissed AccessibilityNodeInfo");
         // text += getEventText(event);
         // = sb.toString();
         String ussd_details = String
                 .format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
                         getEventType(event), event.getClassName(),
                         event.getPackageName(), event.getEventTime(), text);
-        Log.d("USSD", ussd_details);
+       //V10Log.d("USSD", ussd_details);
 
         SharedPreferences sharedPreferences = getSharedPreferences("USER_DATA",
                 Context.MODE_PRIVATE);
@@ -320,23 +315,10 @@ public class RecorderUpdaterService extends AccessibilityService
                         case NORMAL_CALL:
                             type = "NORMAL_CALL";
                             NormalCall details = (NormalCall) parser.getDetails();
-                            if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-                            {
-                                if (!hasEditText)
-                                {
-                                    performGlobalAction(GLOBAL_ACTION_BACK);
-                                } else
-                                {
-                                    if (dismissNode != null)
-                                        dismissNode
-                                                .performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                                }
-
-                                // Log.d(TAG + " test", "did a back");
+                                ////V10Log.d(TAG + " test", "did a back");
                                 FlurryAgent.logEvent("POPUP_SHOWN");
 
-                                AppsFlyerLib.sendTrackingWithEvent(
-                                        MyApplication.context, "POPUP_SHOWN", "");
+                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SHOWN", "");
                                 t.send(new HitBuilders.EventBuilder()
                                         .setCategory("POPUP").setAction("SHOWN")
                                         .setLabel("").build());
@@ -350,21 +332,10 @@ public class RecorderUpdaterService extends AccessibilityService
                                 }
                                 mCallDetailsModel = new CallDetailsModel(details.callCost, details.bal, call_rate, details.callDuration, details.message);
 
-                                Toast.makeText(this, "USSD POPUP Display", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(this, "USSD POPUP Display", Toast.LENGTH_SHORT).show();
                                 displayPopUp();
                                 updateWidget((details).bal.toString());
-                            } else
-                            {
-                                FlurryAgent.logEvent("POPUP_NOT_SHOWN");
 
-                                AppsFlyerLib.sendTrackingWithEvent(
-                                        MyApplication.context, "POPUP_NOT_SHOWN",
-                                        "");
-                                t.send(new HitBuilders.EventBuilder()
-                                        .setCategory("POPUP")
-                                        .setAction("NOT_SHOWN").setLabel("")
-                                        .build());
-                            }
 
                             break;
                         case NORMAL_DATA:
@@ -383,14 +354,12 @@ public class RecorderUpdaterService extends AccessibilityService
                                 }
                                 FlurryAgent.logEvent("POPUP_SHOWN_NDATA");
 
-                                AppsFlyerLib.sendTrackingWithEvent(
-                                        MyApplication.context, "POPUP_SHOWN_NDATA",
-                                        "");
+                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SHOWN_NDATA","");
                                 t.send(new HitBuilders.EventBuilder()
                                         .setCategory("POPUP")
                                         .setAction("NDATA_SHOWN").setLabel("")
                                         .build());
-                                // Log.d(TAG + " test", "did a back");
+                                ////V10Log.d(TAG + " test", "did a back");
                                 popup_intent = new Intent(getApplicationContext(),
                                         UssdPopup.class);
                                 popup_intent.putExtra("TYPE", 3);
@@ -411,9 +380,7 @@ public class RecorderUpdaterService extends AccessibilityService
                             } else
                             {
                                 FlurryAgent.logEvent("NDATA_POPUP_NOT_SHOWN");
-                                AppsFlyerLib.sendTrackingWithEvent(
-                                        MyApplication.context,
-                                        "NDATA_POPUP_NOT_SHOWN", "");
+                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"NDATA_POPUP_NOT_SHOWN", "");
                                 t.send(new HitBuilders.EventBuilder()
                                         .setCategory("POPUP")
                                         .setAction("NDATA_NOT_SHOWN").setLabel("")
@@ -422,7 +389,7 @@ public class RecorderUpdaterService extends AccessibilityService
                             NormalDataHelper mNormalDataHelper = new NormalDataHelper();
 
                             mNormalDataHelper.addEntry(details1);
-                            // Log.d(tag + "Current Bal", details1.bal + " ");
+                            ////V10Log.d(tag + "Current Bal", details1.bal + " ");
                             editor = sharedPreferences.edit();
                             editor.putFloat("CURRENT_BALANCE", (float) details1.bal);
                             editor.commit();
@@ -443,14 +410,12 @@ public class RecorderUpdaterService extends AccessibilityService
                                                 .performAction(AccessibilityNodeInfo.ACTION_CLICK);
                                 }
                                 FlurryAgent.logEvent("POPUP_SHOWN_PDATA");
-                                AppsFlyerLib.sendTrackingWithEvent(
-                                        MyApplication.context, "POPUP_SHOWN_PDATA",
-                                        "");
+                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SHOWN_PDATA","");
                                 t.send(new HitBuilders.EventBuilder()
                                         .setCategory("POPUP")
                                         .setAction("PDATA_SHOWN").setLabel("")
                                         .build());
-                                // Log.d(TAG + " test", "did a back");
+                                ////V10Log.d(TAG + " test", "did a back");
 
                                 popup_intent = new Intent(getApplicationContext(),
                                         UssdPopup.class);
@@ -475,9 +440,7 @@ public class RecorderUpdaterService extends AccessibilityService
                             } else
                             {
                                 FlurryAgent.logEvent("PDATA_POPUP_NOT_SHOWN");
-                                AppsFlyerLib.sendTrackingWithEvent(
-                                        MyApplication.context,
-                                        "PDATA_POPUP_NOT_SHOWN", "");
+                               //V10AppsFlyerLib.sendTrackingWithEvent( MyApplication.context,"PDATA_POPUP_NOT_SHOWN", "");
                                 t.send(new HitBuilders.EventBuilder()
                                         .setCategory("POPUP")
                                         .setAction("PDATA_NOT_SHOWN").setLabel("")
@@ -486,7 +449,7 @@ public class RecorderUpdaterService extends AccessibilityService
                             DataPackHelper mDataPackHelper = new DataPackHelper();
 
                             mDataPackHelper.addEntry(details2);
-                            // Log.d(tag + "Current Bal", details2.bal + " ");
+                            ////V10Log.d(tag + "Current Bal", details2.bal + " ");
                             editor = sharedPreferences.edit();
                             editor.putFloat("CURRENT_DATA",
                                     (float) details2.data_left);
@@ -506,12 +469,10 @@ public class RecorderUpdaterService extends AccessibilityService
                                         dismissNode
                                                 .performAction(AccessibilityNodeInfo.ACTION_CLICK);
                                 }
-                                // Log.d(TAG + " test", "did a back");
+                                ////V10Log.d(TAG + " test", "did a back");
                                 FlurryAgent.logEvent("POPUP_SMS_SHOWN");
 
-                                AppsFlyerLib.sendTrackingWithEvent(
-                                        MyApplication.context, "POPUP_SMS_SHOWN",
-                                        "");
+                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SMS_SHOWN","");
                                 t.send(new HitBuilders.EventBuilder()
                                         .setCategory("POPUP")
                                         .setAction("SMS_SHOWN").setLabel("").build());
@@ -535,9 +496,7 @@ public class RecorderUpdaterService extends AccessibilityService
 
                                 FlurryAgent.logEvent("POPUP_SMS_NOT_SHOWN");
 
-                                AppsFlyerLib.sendTrackingWithEvent(
-                                        MyApplication.context,
-                                        "POPUP_SMS_NOT_SHOWN", "");
+                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"POPUP_SMS_NOT_SHOWN", "");
                                 t.send(new HitBuilders.EventBuilder()
                                         .setCategory("POPUP")
                                         .setAction("SMS_NOT_SHOWN").setLabel("")
@@ -547,11 +506,11 @@ public class RecorderUpdaterService extends AccessibilityService
 
                             previousBalance = sharedPreferences.getFloat(
                                     "CURRENT_BALANCE", (float) -20.0);
-                            // Log.d(tag, "previousBalance " + previousBalance);
+                            ////V10Log.d(tag, "previousBalance " + previousBalance);
                             // if the entry is duplicate
                             if (Float.compare(previousBalance, detail3.bal) == 0)
                             {
-                                // Log.d(tag, "Duplicate  previousBalance ");
+                                ////V10Log.d(tag, "Duplicate  previousBalance ");
                                 return;
                             }
                             // if there has been a Recharge
@@ -560,7 +519,7 @@ public class RecorderUpdaterService extends AccessibilityService
                                 if (detail3.bal - previousBalance > 1.0)
                                 {
                                     RechargeHelper mRechargeHelper = new RechargeHelper();
-                                    // Log.d(tag, "Recharge = "+ (details.bal -
+                                    ////V10Log.d(tag, "Recharge = "+ (details.bal -
                                     // previousBalance + details.callCost));
                                     ParseObject pObj = new ParseObject("RECHARGES");
                                     pObj.put("DEVICE_ID", sharedPreferences
@@ -583,7 +542,7 @@ public class RecorderUpdaterService extends AccessibilityService
                                 }
                             }
                             mNormalSMSHelper.addEntry(detail3);
-                            // Log.d(tag + "Current Bal", details.bal + " ");
+                            ////V10Log.d(tag + "Current Bal", details.bal + " ");
                             editor = sharedPreferences.edit();
                             editor.putFloat("CURRENT_BALANCE", (float) detail3.bal);
                             editor.commit();
@@ -607,7 +566,7 @@ public class RecorderUpdaterService extends AccessibilityService
                     pObj1.saveEventually();
                 } else// invalid USSD Message
                 {
-                    // Log.d(TAG + "Updater", "invalid USSD");
+                    ////V10Log.d(TAG + "Updater", "invalid USSD");
 
                     final SharedPreferences  mSharedPreferences = getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE);
                     PARSER_VERSION = mSharedPreferences.getInt("PARSER_VERSION",1);
@@ -650,7 +609,7 @@ public class RecorderUpdaterService extends AccessibilityService
             }
         } catch (Exception e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
             ParseObject pObj = new ParseObject("ERROR_LOGS");
             pObj.put("PLACE", "Accesibility_Service");
             pObj.put("Object", e.getMessage());
@@ -663,7 +622,7 @@ public class RecorderUpdaterService extends AccessibilityService
 
     private void updateWidget(String balance)
     {
-        // Log.d(tag,"Updating Widget"+ balance);
+        ////V10Log.d(tag,"Updating Widget"+ balance);
 
         AppWidgetManager mgr = AppWidgetManager
                 .getInstance(getApplicationContext());
@@ -679,7 +638,7 @@ public class RecorderUpdaterService extends AccessibilityService
             SharedPreferences mSharedPreferences = getApplicationContext()
                     .getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
             float currBalance = Float.parseFloat(balance);
-            // Log.d(tag, "balance = " + balance);
+            ////V10Log.d(tag, "balance = " + balance);
             // Set the text
             remoteViews.setTextViewText(
                     R.id.widget_balance,
@@ -692,19 +651,19 @@ public class RecorderUpdaterService extends AccessibilityService
 
             int total_out_duration = mSharedPreferences.getInt(
                     "TOTAL_OUT_DURATION", 100);
-            // Log.d(TAG, "Toatl OUT Duration = " + total_out_duration);
+            ////V10Log.d(TAG, "Toatl OUT Duration = " + total_out_duration);
 
             float call_rate = mSharedPreferences.getFloat("CALL_RATE",
                     (float) 1.7);
-            // Log.d(TAG, "CALL_RATE= " + call_rate);
+            ////V10Log.d(TAG, "CALL_RATE= " + call_rate);
 
             int numberOfDays = (int) ((new Date().getTime() - firstDate) / (1000 * 60 * 60 * 24));
-            // Log.d(TAG, "No of Days = " + numberOfDays);
+            ////V10Log.d(TAG, "No of Days = " + numberOfDays);
 
             float total_cost_inPaise = total_out_duration * call_rate;
-            // Log.d(TAG, "Toatal cost = " + total_cost_inPaise);
+            ////V10Log.d(TAG, "Toatal cost = " + total_cost_inPaise);
             int predictedDays = (int) (currBalance * numberOfDays / (total_cost_inPaise / 100));
-            // Log.d(TAG, "predicted DAys = " + predictedDays);
+            ////V10Log.d(TAG, "predicted DAys = " + predictedDays);
             if (predictedDays == 0)
             {
                 remoteViews.setTextViewText(R.id.widget_prediction,
@@ -753,7 +712,7 @@ public class RecorderUpdaterService extends AccessibilityService
     @Override
     public void onInterrupt()
     {
-        // Log.d(TAG, "onInterrupt");
+        ////V10Log.d(TAG, "onInterrupt");
     }
 
     @Override
@@ -773,7 +732,7 @@ public class RecorderUpdaterService extends AccessibilityService
         getContentResolver().registerContentObserver(
                 android.provider.CallLog.Calls.CONTENT_URI, false,
                 mCallLogObserver);
-        // Log.d(TAG, "onServiceConnected");
+        ////V10Log.d(TAG, "onServiceConnected");
         // mBalanceHelper.addDemoentries();
         if (ConstantsAndStatics.WAITING_FOR_SERVICE)
         {
@@ -792,7 +751,7 @@ public class RecorderUpdaterService extends AccessibilityService
                     if (e == null)
                     {
                         // Now let's update it pl
-                        Log.d(TAG, "Service On");
+                       //V10Log.d(TAG, "Service On");
                         service_status.put("APP_VERSION", BuildConfig.VERSION_CODE);
                         service_status.put("SERVICE_STATUS", "ON");
                         service_status.increment("SERVICE_TOGGLE_COUNT");
@@ -801,7 +760,7 @@ public class RecorderUpdaterService extends AccessibilityService
                 }
             });
 
-            // Log.d(TAG, "OpeningMain Activity");
+            ////V10Log.d(TAG, "OpeningMain Activity");
             ConstantsAndStatics.WAITING_FOR_SERVICE = false;
             Intent openApplication = new Intent(getApplicationContext(),
                     MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -826,7 +785,7 @@ public class RecorderUpdaterService extends AccessibilityService
         public void handleMessage(Message msg)
         {
             super.handleMessage(msg);
-            Log.d(tag + " handleMessage", "What = " + msg.what + "  Contents" + msg.obj.toString());
+           //V10Log.d(tag + " handleMessage", "What = " + msg.what + "  Contents" + msg.obj.toString());
             if (msg.what == 1729)
             {
                 sim_slot = msg.arg1;

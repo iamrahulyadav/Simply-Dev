@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:wheel="http://schemas.android.com/apk/res-auto"
               android:id="@+id/ussd_alert_background"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
@@ -86,7 +85,7 @@
 
 
 
-            <com.builder.ibalance.util.RoundedImageView
+            <ImageView
                 android:id="@+id/ussd_contact_picture"
                 android:layout_width="70dp"
                 android:layout_height="70dp"

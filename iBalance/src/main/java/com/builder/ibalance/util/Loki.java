@@ -339,19 +339,19 @@ public class Loki
             deciphered = decrypt(cipher);
         } catch (IllegalBlockSizeException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (BadPaddingException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (InvalidKeyException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (InvalidAlgorithmParameterException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (UnsupportedEncodingException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
         return deciphered;
     }

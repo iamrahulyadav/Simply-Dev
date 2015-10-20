@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.appsflyer.AppsFlyerLib;
-import com.apptentive.android.sdk.Apptentive;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -23,11 +22,11 @@ import com.github.mikephil.charting.components.Legend.LegendPosition;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.Highlight;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.kahuna.sdk.KahunaAnalytics;
+import com.kahuna.sdk.Kahuna;
 
 import java.util.ArrayList;
 
@@ -164,21 +163,18 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 	}
 	 @Override
 	    protected void onStart() {
-	       
-	        KahunaAnalytics.start();
-	  	  Apptentive.onStart(this);
-	  	AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Contact Detail","");
+
+		 Kahuna.getInstance().start();
+	  	AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Contact Detail","");
 	  	FlurryAgent.logEvent("ContactDetailHelper", true);
-		Apptentive.engage(this, "Contact Detail");
 		 super.onStart();
 	    }
 
 	    @Override
 	    protected void onStop() {
-	       
-	        KahunaAnalytics.stop();
+
+			Kahuna.getInstance().start();
 	        FlurryAgent.endTimedEvent("ContactDetailHelper");
-	  	  Apptentive.onStop(this);
 	  	 super.onStop();
 	    } 
 	private String getTotalDurationFormatted(int totalSecs) {
@@ -222,12 +218,11 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 		switch (id) {
 		case R.id.call:
 			t.send(new HitBuilders.EventBuilder()
-		    .setCategory("CALL")
-		    .setAction("CALL")
-		    .setLabel("")
-		    .build());
-	 	
-	Apptentive.engage(this, "CALL");
+					.setCategory("CALL")
+					.setAction("CALL")
+					.setLabel("")
+					.build());
+
 	FlurryAgent.logEvent("CALL");
 	AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"CALL","");
 			Intent intent = new Intent(Intent.ACTION_DIAL);

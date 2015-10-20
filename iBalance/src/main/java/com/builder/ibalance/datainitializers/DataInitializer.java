@@ -116,7 +116,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 			updateWidgetInitially(MyApplication.context);
 			done = true;
             long endTime = System.nanoTime();
-            Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
+           //V10Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
 
 			//Log.d("DataInit", "WORKING IN InitializeSmsMap");
 			//InitializeSmsMap(MyApplication.context);
@@ -133,10 +133,10 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         long startTime = System.nanoTime();
         long last_indexed_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
         boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME",true);
-        Log.d(TAG, "INDEXED ID = " + last_indexed_id);
+       //V10Log.d(TAG, "INDEXED ID = " + last_indexed_id);
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
         Cursor callLogCursor = mCallLogsHelper.getAllCallLogs(last_indexed_id);
-        Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
+       //V10Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
         int slot,duration,type;
         Calendar c =Calendar.getInstance();
         DateDurationModel dateDurationModel = new DateDurationModel(0l,0,0,0,0,0,0);
@@ -168,7 +168,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             callLogCursor.close();
             return;
         }
-        Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
+       //V10Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
         mCallLogsHelper.getDatabase().beginTransaction();
         try
         {
@@ -297,7 +297,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             dateDurationModel.clear();
             callLogCursor.moveToPrevious();
             long indexed_id = callLogCursor.getLong(id_index);
-            Log.d(TAG, "INDEXED ID = " + indexed_id);
+           //V10Log.d(TAG, "INDEXED ID = " + indexed_id);
             Editor mEditor = mSharedPreferences.edit();
             mEditor.putLong("INDEXED_ID", indexed_id);
             mEditor.putBoolean("FIRST_TIME", false);
@@ -308,7 +308,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             //Write All ContactDetails to Database
             if (firstTime)
             {
-                Log.d(TAG,"Contacts Created = "+contactDetailMap.size());
+               //V10Log.d(TAG,"Contacts Created = "+contactDetailMap.size());
                 //add total duration for first time
                 for (Entry<String, ContactDetailModel> entry : DataInitializer.contactDetailMap.entrySet())
                 {
@@ -324,11 +324,11 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             }
             mCallLogsHelper.getDatabase().setTransactionSuccessful();
             long endTime = System.nanoTime();
-            Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
+           //V10Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
+           //V10e.printStackTrace();
         }
         finally
         {
@@ -426,7 +426,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
     /*public static void InitializeMap(Context context) {
         long startTime = System.nanoTime();
         SharedPreferences mSharedPreferences = context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-        Log.d(TAG,"InitializeMap");
+       //V10Log.d(TAG,"InitializeMap");
         Long startDate = 0l;//cal.getTimeInMillis();
         // Cache.clear();
         //Log.d("DataInit", "InitializeMap");
@@ -452,7 +452,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                         null,
                         IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+ " ASC"
                 );
-        Log.d(TAG,"QUERY Returned "+managedCursor.getCount());
+       //V10Log.d(TAG,"QUERY Returned "+managedCursor.getCount());
 		*//*Cursor managedCursor = context.getContentResolver().query(
 				CallLog.Calls.CONTENT_URI,
 				new String[] {CallLog.Calls.NUMBER,CallLog.Calls.DATE,CallLog.Calls.TYPE,CallLog.Calls.DURATION},
@@ -659,7 +659,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         }
 
         long endTime = System.nanoTime();
-        Log.d(TAG, "Initialize Map Took  = " + ((endTime - startTime) / 1000000) + "ms");
+       //V10Log.d(TAG, "Initialize Map Took  = " + ((endTime - startTime) / 1000000) + "ms");
     }*/
 
 
@@ -672,8 +672,8 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 	@Override
 	protected void onPostExecute(Integer result) {
 		super.onPostExecute(result);
-    Log.d(TAG, "POSTING DataLoadingDone Event");
-        EventBus.getDefault().post(new DataLoadingDone());
+   //V10Log.d(TAG, "POSTING DataLoadingDone Event");
+        EventBus.getDefault().postSticky(new DataLoadingDone());
         new SmsDataInitializer().execute();
     }
 
@@ -686,25 +686,25 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 	    		BalanceWidget.class);
 	    SharedPreferences mSharedPreferences = ctx.getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
 	      float currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, (float) -1.0);
-	      Log.d("DataInit widget bal ", ""+ currBalance);
+	     //V10Log.d("DataInit widget bal ", ""+ currBalance);
 	      // Set the text
 	      
 	      int predictedDays = -1 ;
       long firstDate = mSharedPreferences.getLong("FIRST_DATE", Long.parseLong("1420050619800"));
 	      
 	      int total_out_duration = mSharedPreferences.getInt("TOTAL_OUT_DURATION", 100);
-	      Log.d(TAG, "Toatl OUT Duration = "+total_out_duration);
+	     //V10Log.d(TAG, "Toatl OUT Duration = "+total_out_duration);
 	      
 	      float call_rate = mSharedPreferences.getFloat("CALL_RATE", (float)1.7);
-	      Log.d(TAG, "CALL_RATE= "+call_rate);
+	     //V10Log.d(TAG, "CALL_RATE= "+call_rate);
 	      
 	      int numberOfDays = (int)( (new Date().getTime()+19800l - firstDate) / (1000 * 60 * 60 * 24));
-	      Log.d(TAG, "No of Days = "+ numberOfDays);
+	     //V10Log.d(TAG, "No of Days = "+ numberOfDays);
 	      
 	      float total_cost_inPaise = total_out_duration*call_rate;
-	      Log.d(TAG, "Toatal cost = "+total_cost_inPaise);
+	     //V10Log.d(TAG, "Toatal cost = "+total_cost_inPaise);
 	       predictedDays = (int) (currBalance*numberOfDays/(total_cost_inPaise/100));
-	      Log.d(TAG, "predicted DAys = "+predictedDays);
+	     //V10Log.d(TAG, "predicted DAys = "+predictedDays);
 	      Editor mEditor = mSharedPreferences.edit();
 	      mEditor.putInt("PREDICTED_DAYS", predictedDays);
 	      mEditor.commit();

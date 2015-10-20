@@ -122,7 +122,7 @@ public class BalanceHelper {
 		// 1. build the query
 		String query = "SELECT  * FROM " + "CALL" + " WHERE date >= " + time+ " AND "
                 +IbalanceContract.CallEntry.COLUMN_NAME_SLOT + " = "+sim_slot;
-        Log.d(TAG,query);
+       //V10Log.d(TAG,query);
         // 2. get reference to writable DB
 //		String myPath = myContext.getDatabasePath(this.DB_NAME).toString();// DB_PATH
 //																			// +
@@ -204,7 +204,7 @@ public class BalanceHelper {
                 duration = c.getInt(1);
             } catch (Exception e)
             {
-                e.printStackTrace();
+               //V10e.printStackTrace();
             }
         }
         float total_cost = callCost + ((total_duration-duration) * call_rate)/100;

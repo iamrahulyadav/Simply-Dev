@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.CallLog;
-import android.util.Log;
 
 import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.messages.OutgoingCallMessage;
@@ -57,7 +56,7 @@ public class CallLogObserver extends ContentObserver
         {
             previous_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
         }
-        Log.d(tag,"NEW ID = "+previous_id);
+       //V10Log.d(tag,"NEW ID = "+previous_id);
 
         cursor = MyApplication.context.getContentResolver().query(
                 CallLog.Calls.CONTENT_URI,
@@ -68,7 +67,7 @@ public class CallLogObserver extends ContentObserver
         int type_index =cursor.getColumnIndex(CallLog.Calls.TYPE);
         int number_index =cursor.getColumnIndex( CallLog.Calls.NUMBER);
         int duration_index =cursor.getColumnIndex(CallLog.Calls.DURATION);
-        Log.d(tag,"No.of Rows = "+cursor.getCount());
+       //V10Log.d(tag,"No.of Rows = "+cursor.getCount());
         while (cursor.moveToNext())
         {
             int slot_id = 0;
@@ -83,7 +82,7 @@ public class CallLogObserver extends ContentObserver
                     int len = cursor.getColumnCount();
                     for(int i=0;i<len;i++)
                     {
-                        Log.d(tag,"Col = "+cursor.getColumnName(i));
+                       //V10Log.d(tag,"Col = "+cursor.getColumnName(i));
                     }
                     ArrayList<String> column_names = SimModel.call_log_columns;
                     if(SimModel.isTwo_slots())
@@ -126,7 +125,7 @@ public class CallLogObserver extends ContentObserver
                             }
                         }
                     }
-                    Log.d(tag, "slot_id = " + slot_id);
+                   //V10Log.d(tag, "slot_id = " + slot_id);
                     String number = cursor.getString(number_index);
                     Message msg = accessibiltyServiceHandler.obtainMessage();
                     msg.arg1 = slot_id;
