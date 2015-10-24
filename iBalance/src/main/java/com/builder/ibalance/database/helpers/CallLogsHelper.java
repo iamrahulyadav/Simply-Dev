@@ -31,7 +31,10 @@ public class CallLogsHelper
         mSqlDB.execSQL(IbalanceContract.CREATE_CALL_LOG_TABLE);
     }
 
-
+    public SQLiteDatabase getWriteableDatabase()
+    {
+        return mSqlDB;
+    }
     public SQLiteDatabase getDatabase()
     {
         return mSqlDB;

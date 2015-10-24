@@ -236,22 +236,21 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 		boolean isWhatsappInstalled = whatsappInstalledOrNot();
 		Intent sendIntent = new Intent();
 		sendIntent.setAction(Intent.ACTION_SEND);
-		//ToDo change Link
 		switch (v.getId()) {
 		case R.id.whatsapp_share_button:
-			sendIntent.putExtra(Intent.EXTRA_TEXT, "Have a complete control of your prepaid Balance and stay protected from unauthorized deduction.\nTry out \"Simply\":\nhttps://play.google.com/store/apps/details?id=com.builder.ibalance ");
+			sendIntent.putExtra(Intent.EXTRA_TEXT, "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": https://goo.gl/v3YMrN ");
 			sendIntent.setType("text/plain");
 			if(isWhatsappInstalled)
 			{
 				
 					// Build and send an Event.
 					t.send(new HitBuilders.EventBuilder()
-					    .setCategory("SHARE")
-					    .setAction("WhatsApp")
-					    .setLabel("")
-					    .build());
+                            .setCategory("SHARE")
+                            .setAction("WhatsApp")
+                            .setLabel("")
+                            .build());
 
-				FlurryAgent.logEvent("WhatsApp_Share");
+                FlurryAgent.logEvent("WhatsApp_Share");
 				//V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"WhatsApp_Share","");
 				sendIntent.setPackage("com.whatsapp");
 				startActivity(sendIntent);
@@ -260,11 +259,11 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 			{
 					// Build and send an Event.
 					t.send(new HitBuilders.EventBuilder()
-					    .setCategory("SHARE")
-					    .setAction("OTHER_SHARE")
-					    .setLabel("")
-					    .build());
-					//V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"OTHER_SHARE","");
+                            .setCategory("SHARE")
+                            .setAction("OTHER_SHARE")
+                            .setLabel("")
+                            .build());
+                //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"OTHER_SHARE","");
 					FlurryAgent.logEvent("Other_Share");
 					startActivity(sendIntent);
 			}
@@ -273,12 +272,12 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 		case R.id.feedback:
 			
 				t.send(new HitBuilders.EventBuilder()
-			    .setCategory("Feedack")
-			    .setAction("Email")
-			    .setLabel("")
-			    .build());
+                        .setCategory("Feedack")
+                        .setAction("Email")
+                        .setLabel("")
+                        .build());
 
-				FlurryAgent.logEvent("Email_FeedBack");
+            FlurryAgent.logEvent("Email_FeedBack");
 				//V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Email_FeedBack","");
 				sendIntent.setType("text/html");
 				//sendIntent.setType("message/rfc822");

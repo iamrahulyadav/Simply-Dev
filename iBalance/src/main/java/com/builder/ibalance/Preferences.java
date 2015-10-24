@@ -9,7 +9,6 @@ public class Preferences extends PreferenceActivity{
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		 PreferenceManager prefMgr = getPreferenceManager();
          prefMgr.setSharedPreferencesName("USER_DATA");

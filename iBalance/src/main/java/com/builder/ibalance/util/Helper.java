@@ -51,6 +51,10 @@ public  class Helper {
         });
 
     }
+    public static String getDeviceId()
+    {
+        return ((TelephonyManager)MyApplication.context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+    }
    public static boolean contactExists(String number)
     {
         Uri lookupUri = Uri.withAppendedPath(
@@ -70,21 +74,26 @@ public  class Helper {
     }
     public static Intent openWhatsApp( String number,String deviceID) {
 /// number is the phone number
-        Uri mUri = Uri.parse("smsto:+" + number);
-        Intent mIntent = new Intent(Intent.ACTION_SENDTO, mUri);
+
         try
         {
-
+            Uri mUri = Uri.parse("smsto:+" + number);
+            Intent mIntent = new Intent(Intent.ACTION_SENDTO, mUri);
             PackageInfo info = MyApplication.context.getPackageManager().getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES);
             mIntent.setPackage("com.whatsapp");
+            mIntent.putExtra("sms_body", deviceID);
+            mIntent.putExtra("chat", true);
+            return  mIntent;
 
         } catch (Exception e)
         {
             // some code
+            Uri uri = Uri.parse("smsto:"+number);
+            Intent it = new Intent(Intent.ACTION_SENDTO, uri);
+            it.putExtra("sms_body", "--Support_info--\n"+deviceID+"\n-------------");
+            return it;
         }
-        mIntent.putExtra("sms_body", deviceID);
-        mIntent.putExtra("chat", true);
-        return  mIntent;
+
     }
     public static void logUserEngageMent(String from)
     {

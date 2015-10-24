@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.CallLog;
@@ -116,7 +117,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 			updateWidgetInitially(MyApplication.context);
 			done = true;
             long endTime = System.nanoTime();
-           //V10Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
+           Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
 
 			//Log.d("DataInit", "WORKING IN InitializeSmsMap");
 			//InitializeSmsMap(MyApplication.context);
@@ -162,7 +163,8 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                 IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE+","+
                 IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER+
                 ") " +
-                "VALUES ";
+                "VALUES ( ? , ? , ? , ? , ? , ? )";
+        SQLiteStatement callLogInsertStatement = mCallLogsHelper.getWriteableDatabase().compileStatement(query_format);
         if(!callLogCursor.moveToFirst())
         {
             callLogCursor.close();
@@ -288,9 +290,17 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                         break;
                 }
 
-                query = query_format + "(" + id + "," + slot + "," + date + "," + duration + "," + type + ", '" + number + "')";
+                callLogInsertStatement.bindLong(1,id);
+                callLogInsertStatement.bindLong(2,slot);
+                callLogInsertStatement.bindLong(3,date);
+                callLogInsertStatement.bindLong(4,duration);
+                callLogInsertStatement.bindLong(5,type);
+                callLogInsertStatement.bindString(6,number);
+
+                callLogInsertStatement.executeInsert();
+                //query = query_format + "(" + id + "," + slot + "," + date + "," + duration + "," + type + ", '" + number + "')";
                 //Log.d(tag,"Query = "+query);
-                mCallLogsHelper.executeQuery(query + "");
+               // mCallLogsHelper.executeQuery(query + "");
             } while (callLogCursor.moveToNext());
             //Enter the last Entry
             mCallLogsHelper.executeQuery(dateDurationModel.toString());
@@ -324,7 +334,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             }
             mCallLogsHelper.getDatabase().setTransactionSuccessful();
             long endTime = System.nanoTime();
-           //V10Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
+           Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
         }
         catch (SQLException e)
         {

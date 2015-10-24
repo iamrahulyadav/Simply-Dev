@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.database.MappingHelper;
 import com.builder.ibalance.database.models.ContactDetailModel;
+import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.util.MyApplication;
 
 import java.sql.SQLException;
@@ -127,6 +128,12 @@ public class ContactDetailHelper
                                 phNumber.substring(
                                         phNumber.length() - 10,
                                         phNumber.length() - 6)));
+                if(DataInitializer.carriers==null)
+                {
+                    DataInitializer.InitializeData();
+                }
+                carrier_circle.add(0,DataInitializer.carriers.get(carrier_circle.get(0)));
+                carrier_circle.add(1,DataInitializer.circle.get(carrier_circle.get(1)));
             }
             catch (Exception e)
             {

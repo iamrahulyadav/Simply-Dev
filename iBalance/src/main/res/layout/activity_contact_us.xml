@@ -103,14 +103,13 @@
         android:id="@+id/share_debug_button"
         android:background="@drawable/button_selector">
 
-        <!-- Todo Change to gear ICon -->
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="2.5"
             android:id="@+id/chat_icon_id"
-            android:src="@drawable/chat_icon"/>
+            android:src="@drawable/share_debug"/>
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="match_parent"

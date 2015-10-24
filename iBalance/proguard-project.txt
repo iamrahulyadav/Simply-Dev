@@ -71,7 +71,7 @@
 -keep class com.mopub.mobileads.** {*;}
 -keep class com.millennialmedia.android.** {*;}
 -keep class com.millennialmedia.google.** {*;}
--keep class com.mediatek.compatibility.gemini.** {*;}
+-keep class com.mediatek.** {*;}
 -keepclasseswithmembers class com.kahuna.** {*;}
 -dontwarn com.flurry.sdk.*
 -dontwarn com.parse.*
@@ -79,7 +79,7 @@
 -dontwarn com.github.mikephil.*
 -dontwarn com.millennialmedia.**
 -dontwarn com.nuance.**
--dontwarn com.mediatek.compatibility.gemini.**
+-dontwarn com.mediatek.**
 -dontwarn com.google.android.gms.internal.*
 -dontwarn com.kahuna.**
 -keep public class com.google.vending.licensing.ILicensingService

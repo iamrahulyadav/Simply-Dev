@@ -11,6 +11,8 @@ import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Contacts;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -111,7 +113,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                     }
                     else
                         sim_slot = 0;
-                    Toast.makeText(MyApplication.context,"Switched to Sim "+(sim_slot+1),Toast.LENGTH_LONG).show();
+                    Toast.makeText(MyApplication.context,"Switched to Sim "+(sim_slot+1),Toast.LENGTH_SHORT).show();
                     getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
                     new USSDLoader().execute(sim_slot);
                 }
@@ -124,6 +126,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         String carrier = "Unknown";
         try
         {
+            Log.d(tag,"Bal Frag Loading Slot = "+sim_slot);
            carrier = GlobalData.globalSimList.get(sim_slot).carrier;
 
             current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, (float)-1.0);
@@ -160,39 +163,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 
 		// Set a positive/yes button and create a listener
 		alertbox.setNeutralButton("Okay", null);
-/*		alertbox.setPositiveButton("Yes",
-				new DialogInterface.OnClickListener() {
-
-					// Click listener
-
-					public void onClick(DialogInterface arg0, int arg1) {
-
-						 Toast.makeText(getApplicationContext(),
-						 "Recharge Feature is Coming Soon", Toast.LENGTH_LONG).show();
-						Intent i = new Intent(getApplicationContext(),
-								Recharge.class);
-						startActivity(i);
-					}
-
-				});
-
-		// Set a negative/no button and create a listener
-
-		alertbox.setNegativeButton("No", new DialogInterface.OnClickListener() {
-
-			// Click listener
-
-			public void onClick(DialogInterface arg0, int arg1) {
-
-				// Toast.makeText(getApplicationContext(),
-				// "'No' button clicked", Toast.LENGTH_SHORT).show();
-
-			}
-
-		});*/
-
-		// display box
-
 		alertbox.show();
 
 	}
@@ -204,6 +174,8 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         @Override
         protected void onPreExecute()
         {
+            Log.d(tag,"Bal Frag onPreExecute");
+
             super.onPreExecute();
             rootView.findViewById(R.id.rootRL).setVisibility(View.GONE);
             if(GlobalData.globalSimList.size()>=2)
@@ -217,6 +189,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         @Override
         protected Void doInBackground(Integer... params)
         {
+            Log.d(tag,"Bal Frag doInBackground");
             DataInitializer.initializeUSSDData(params[0]);
             return null;
         }
@@ -224,15 +197,22 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         @Override
         protected void onPostExecute(Void aVoid)
         {
+            Log.d(tag,"Bal Frag onPostExecute");
             super.onPostExecute(aVoid);
-
-            rootView.findViewById(R.id.rootRL).setVisibility(View.VISIBLE);
-            if(GlobalData.globalSimList.size()>=2)
+            if(isAdded())
             {
-                rootView.findViewById(R.id.sim_switch).setVisibility(View.VISIBLE);
+                rootView.findViewById(R.id.rootRL).setVisibility(View.VISIBLE);
+                if (GlobalData.globalSimList.size() >= 2)
+                {
+                    rootView.findViewById(R.id.sim_switch).setVisibility(View.VISIBLE);
+                }
+                rootView.findViewById(R.id.ussd_progress).setVisibility(View.GONE);
+                intializeScreen(sim_slot);
             }
-            rootView.findViewById(R.id.ussd_progress).setVisibility(View.GONE);
-            intializeScreen(sim_slot);
+            else
+            {
+                Log.d(tag,"Bal Frag not added");
+            }
         }
     }
 
@@ -241,7 +221,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
     public void onStart()
     {
         super.onStart();
-        EventBus.getDefault().register(this);
+        EventBus.getDefault().registerSticky(this);
     }
 
     @Override
@@ -264,13 +244,23 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
     }
     void intializeScreen(int sim_slot)
 	{
-		currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, mSharedPreferences.getFloat("CURRENT_BALANCE",(float)-1.0));
+        Log.d(tag,"Bal Frag intializeScreen");
+		if(sim_slot==0)
+		{
+            Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
+			currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, mSharedPreferences.getFloat("CURRENT_BALANCE",(float)-1.0));
+		}
+		else
+		{
+            Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
+			currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot,(float)-1.0);
+		}
 		currData = mSharedPreferences.getFloat("CURRENT_DATA_"+sim_slot, mSharedPreferences.getFloat("CURRENT_DATA",(float)-1.0));
 		//Log.d(tag,"Balance  = "+currBalance);
 		//Log.d(tag,"DATA  = "+currData);
 		if (DataInitializer.done == true) 
 		{
-			//Log.d(tag, "Setting Predicted days");
+			Log.d(tag, "Setting Predicted days");
 			setPredictedDays(sim_slot);
 		}
 		
@@ -287,6 +277,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 				startActivity( new Intent(MyApplication.context, HistoryActivity.class));
 			}
 		});
+        Log.d(tag, "Bal Frag currBalance = " + currBalance);
 		if(currBalance>-1.0)
 		{
 		((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
@@ -314,21 +305,21 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                     } else
                     {
                         //Sending Device Id doesn't work
-                        startActivity(Helper.openWhatsApp("+919739663487", ""));
+                        startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
                     }
-                }
-            });
-        }
-		if(currData>0.0)
+				}
+			});
+		}
+		if (currData > 0.0)
 		{
-			dataTextView.setText(currData+"MB");
+			dataTextView.setText(currData + "MB");
 		}
 		dataTextView.setOnClickListener(new View.OnClickListener()
-        {
+		{
 
-            @Override
-            public void onClick(View v)
-            {
+			@Override
+			public void onClick(View v)
+			{
                 //Toast.makeText(getActivity(), "This Feature is  in Build!", Toast.LENGTH_SHORT).show();
             }
         });
@@ -584,13 +575,11 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 
 	@Override
 	public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void onNothingSelected() {
-		// TODO Auto-generated method stub
 		
 	}
 

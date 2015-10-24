@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
-import android.util.Log;
 
 import com.builder.ibalance.database.helpers.IbalanceContract;
 import com.builder.ibalance.util.MyApplication;
@@ -22,7 +21,6 @@ import java.io.OutputStream;
  * Created by Shabaz on 17-Aug-15.
  */
 
-// TODO : Move the MysqliteHeper tp Database Manager
 public class DatabaseManager extends SQLiteOpenHelper {
     // The Android's default system path of your application database.
     final static String tag = DatabaseManager.class.getSimpleName();

@@ -22,6 +22,17 @@ public class SimModel {
     public String imei;
     public String sim_imsi;
     public String network_imsi;
+
+    public void setCarrier(String carrier)
+    {
+        this.carrier = carrier;
+    }
+
+    public void setCircle(String circle)
+    {
+        this.circle = circle;
+    }
+
     public String carrier;
     public String carrier_display_name;
 

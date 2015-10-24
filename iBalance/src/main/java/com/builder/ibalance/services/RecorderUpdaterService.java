@@ -391,7 +391,8 @@ public class RecorderUpdaterService extends AccessibilityService
                             mNormalDataHelper.addEntry(details1);
                             ////V10Log.d(tag + "Current Bal", details1.bal + " ");
                             editor = sharedPreferences.edit();
-                            editor.putFloat("CURRENT_BALANCE", (float) details1.bal);
+                            //Hard coded but have to solve it later
+                            editor.putFloat("CURRENT_BALANCE_0", (float) details1.bal);
                             editor.commit();
 
                             break;
@@ -505,7 +506,7 @@ public class RecorderUpdaterService extends AccessibilityService
                             NormalSMSHelper mNormalSMSHelper = new NormalSMSHelper();
 
                             previousBalance = sharedPreferences.getFloat(
-                                    "CURRENT_BALANCE", (float) -20.0);
+                                    "CURRENT_BALANCE_0", (float) -20.0);
                             ////V10Log.d(tag, "previousBalance " + previousBalance);
                             // if the entry is duplicate
                             if (Float.compare(previousBalance, detail3.bal) == 0)
@@ -544,7 +545,7 @@ public class RecorderUpdaterService extends AccessibilityService
                             mNormalSMSHelper.addEntry(detail3);
                             ////V10Log.d(tag + "Current Bal", details.bal + " ");
                             editor = sharedPreferences.edit();
-                            editor.putFloat("CURRENT_BALANCE", (float) detail3.bal);
+                            editor.putFloat("CURRENT_BALANCE_0", (float) detail3.bal);
                             editor.commit();
 
                             break;

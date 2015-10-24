@@ -70,13 +70,11 @@ public class HistoryActivity extends FragmentActivity implements ActionBar.TabLi
 
 	@Override
 	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void onTabReselected(Tab tab, FragmentTransaction ft) {
-		// TODO Auto-generated method stub
 		
 	}
 	

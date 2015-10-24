@@ -819,7 +819,6 @@ public class CallPatternFragment extends Fragment implements
     @Override
     public void onChartScale(MotionEvent me, float scaleX, float scaleY)
     {
-        // TODO Auto-generated method stub
 
     }
 
@@ -839,7 +838,6 @@ public class CallPatternFragment extends Fragment implements
     @Override
     public void onNothingSelected(AdapterView<?> parent)
     {
-        // TODO Auto-generated method stub
 
     }
 

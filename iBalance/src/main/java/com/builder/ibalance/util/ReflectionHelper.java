@@ -1,8 +1,8 @@
 package com.builder.ibalance.util;
 
 import android.content.Context;
-import android.util.Log;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 /**
@@ -141,5 +141,44 @@ public class ReflectionHelper
             //e.printStackTrace();
             return false;
         }
+    }
+  public static   String printTelephonyManagerMethodNamesForThisDevice(String className) {
+        StringBuilder details = new StringBuilder();
+        Class<?> telephonyClass = null;
+        try
+        {
+            telephonyClass = Class.forName(className);
+        } catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+            return "Exception";
+        }
+        Class<?> ms[] = telephonyClass.getDeclaredClasses();
+        if(ms!=null)
+            for(int i=0;i<ms.length;i++)
+            {
+
+                details.append("Sub Class: "+ms[i].toString()+"");
+            }
+
+        Field[] mFields = telephonyClass.getFields();
+        if(mFields!=null)
+            for(int i=0;i<mFields.length;i++)
+            {
+                mFields[i].setAccessible(true);
+
+                details.append("Fields: "+mFields[i].toString());
+
+            }
+        Method[] methods = telephonyClass.getMethods();
+        details.append("Methods:\n--------------------------------------------");
+        for (int idx = 0; idx < methods.length; idx++) {
+
+
+            details.append("\n" + methods[idx] + " declared by " + methods[idx].getDeclaringClass());
+        }
+
+
+        return details.toString();
     }
 }

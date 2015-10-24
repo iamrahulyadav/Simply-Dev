@@ -221,6 +221,10 @@ public class SplashscreenActivity extends Activity
                     if (SimModel.call_log_columns.isEmpty())
                     {
                         //TODO Fall back to logical check
+                        ParseObject pObj = new ParseObject("ISSUES");
+                        pObj.put("DEVICE_ID", Helper.getDeviceId());
+                        pObj.put("TYPE", "DUAL_SIM_NO_CallLog_Columns");
+                        pObj.saveEventually();
                     }
                 }
                 if (GlobalData.globalSimList.size() >= 2)

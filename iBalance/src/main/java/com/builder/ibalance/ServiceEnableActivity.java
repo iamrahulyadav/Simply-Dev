@@ -3,6 +3,7 @@ package com.builder.ibalance;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -17,7 +18,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -36,15 +36,25 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
 		Button nextButton = (Button) findViewById(R.id.splash_next_button);
 		nextButton.setOnClickListener(this);
         ImageView gifImageView = (ImageView) findViewById(R.id.splash_simply_rec_img_id);
+
+		AnimationDrawable anim = new AnimationDrawable();
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT || android.os.Build.MANUFACTURER.toUpperCase().contains("XIAOMI"))
         {
             //White Screen service enable
-            Glide.with(this).load(R.drawable.service_enable_white).into(gifImageView);
+			anim.addFrame(getResources().getDrawable(R.drawable.service_white_1), 2000);
+			anim.addFrame(getResources().getDrawable(R.drawable.service_white_2), 700);
+
+
+            //Picasso.with(this).load(R.drawable.service_enable_white).into(gifImageView);
         }
         else
         {
-            Glide.with(this).load(R.drawable.service_enable_black).into(gifImageView);
+            anim.addFrame(getResources().getDrawable(R.drawable.service_black_1), 2000);
+            anim.addFrame(getResources().getDrawable(R.drawable.service_black_2), 700);
         }
+		gifImageView.setBackgroundDrawable(anim);
+		anim.setOneShot(false);
+		anim.start();
         gifImageView.setOnClickListener(this);
 		final TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);

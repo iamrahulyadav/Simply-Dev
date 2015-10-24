@@ -77,7 +77,7 @@
                 <TextView
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="Find Simply Recorder under Services menu(you may have to scroll)."
+                    android:text="Find Simply Recorder under SERVICES menu(you may have to scroll)."
                     android:id="@+id/textView27"
                     android:textSize="16dp"
                     android:paddingRight="20dp" />
@@ -101,7 +101,7 @@
                 <TextView
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="And switch it on."
+                    android:text="And switch it ON."
                     android:id="@+id/textView33"
                     android:textSize="16dp"
                     android:paddingRight="20dp" />
@@ -114,7 +114,9 @@
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:text="NEXT >"
+        android:textStyle="bold"
         android:layout_weight="1"
+        android:textSize="20sp"
         style="@style/ussd_popup_button"
         android:textColor="#FFFFFF"
         android:id="@+id/splash_next_button"
