@@ -1,195 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:fab="http://schemas.android.com/apk/res-auto"
 
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
     <LinearLayout
         android:id="@+id/rootRL"
-        android:visibility="gone"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_gravity="center"
         android:orientation="vertical">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:divider="@color/list_divider" >
 
         <LinearLayout
-            android:id="@+id/bal_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_weight="0.5"
-            android:orientation="vertical"
-            android:background="@drawable/bal_view_selector" >
-
-            <TextView
-                android:id="@+id/balHead"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Balance"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/darker_gray" />
-
-            <TextView
-                android:id="@+id/balanceView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="--.--"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@android:color/background_dark" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_weight="0.5"
-            android:orientation="vertical" >
-
-            <TextView
-                android:id="@+id/dataHead"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Data"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/darker_gray" />
-
-            <TextView
-                android:id="@+id/dataView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="--.-- MB"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@android:color/background_dark" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <RelativeLayout
-        android:id="@+id/textLoader"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="8dp"
-        android:background="#FFFFFF" >
-
-        <TextView
-            android:id="@+id/predictionView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:gravity="center"
-            android:text="Balance is predicted to get over on --"
-            android:textColor="#1AD3A2" />
+            android:layout_gravity="center"
+            android:divider="@color/list_divider">
 
-        <ProgressBar
-            android:id="@+id/balscreen_prediction"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_alignBottom="@+id/predictionView"
-            android:layout_marginLeft="14dp"
-            android:layout_toRightOf="@+id/predictionView" />
-    </RelativeLayout>
-
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                        android:id="@+id/nobal"
-                        android:gravity="center"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-            >
             <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:orientation="vertical"
-                android:weightSum="1">
+                android:id="@+id/bal_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_weight="0.5"
+                android:background="@drawable/bal_view_selector"
+                android:orientation="vertical">
+
                 <TextView
-                    android:layout_width="fill_parent"
+                    android:id="@+id/balHead"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="No balance track"
-                    android:padding="25dp"
-                    android:layout_weight=".33"
-                    android:id="@+id/text_no_track"
                     android:gravity="center"
-                    android:textSize="22dp"
-                    android:textColor="#FF6633" />
-
-
-
-
-                <ImageView
-                    android:layout_width="fill_parent"
-                    android:layout_height="0dp"
-                    android:id="@+id/imageView6"
-                    android:src="@drawable/call_icon"
-                    android:layout_weight=".33"
-                    android:layout_below="@+id/text_no_track"
-                    android:layout_centerHorizontal="true" />
+                    android:text="Balance"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@android:color/darker_gray"/>
 
                 <TextView
-                    android:layout_width="fill_parent"
+                    android:id="@+id/balanceView"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tracking will start after you make a call,if it doesn't work then please"
-
-                    android:id="@+id/textView22"
-                    android:padding="20dp"
-                    android:layout_below="@+id/imageView6"
-                    android:gravity="center_horizontal"
-
-
-                    android:textSize="20dp"
-                    android:textColor="#1ad3a2" />
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/ussd_popup_button"
-                    android:text="Contant Us"
-                    android:id="@+id/bal_contact_us"
-                    android:layout_gravity="center_horizontal"
-                    />
-
+                    android:gravity="center"
+                    android:text="--.--"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@android:color/background_dark"/>
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_weight="0.5"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/dataHead"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Data"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@android:color/darker_gray"/>
+
+                <TextView
+                    android:id="@+id/dataView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="--.-- MB"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@android:color/background_dark"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/textLoader"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:background="#FFFFFF">
+
+            <TextView
+                android:id="@+id/predictionView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="Balance is predicted to get over on --"
+                android:textColor="#1AD3A2"/>
+
+            <ProgressBar
+                android:id="@+id/balscreen_prediction"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_alignBottom="@+id/predictionView"
+                android:layout_marginLeft="14dp"
+                android:layout_toRightOf="@+id/predictionView"/>
         </RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/parallax_container"
+                android:orientation="vertical"
+                android:weightSum="10"
+                >
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/balcontainer"
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:layout_margin="5dp"
-        android:layout_weight="0.18"
-        android:visibility="gone" >
-    </com.github.mikephil.charting.charts.LineChart>
+                <include layout="@layout/balance_deduction_graph"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:orientation="vertical"
+                    android:layout_weight="1">
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="3dp"
+                    android:background="@color/dark_grey"/>
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Recents"
+                    android:textStyle="bold"
+                    android:id="@+id/textView"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:layout_weight="6"/>
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="3dp"
+                    android:background="@color/dark_grey"/>
+                </LinearLayout>
+                <include layout="@layout/recent_call_list"/>
+            </LinearLayout>
 
-</LinearLayout>
+    </LinearLayout>
+
     <com.melnykov.fab.FloatingActionButton
+        xmlns:fab="http://schemas.android.com/apk/res-auto"
         android:id="@+id/sim_switch"
-        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:layout_gravity="bottom|right"
         android:layout_margin="16dp"
         android:src="@drawable/sim_toggle"
+        android:visibility="gone"
         fab:fab_colorNormal="@color/green_btn_bg_color"
         fab:fab_colorPressed="@color/green_btn_bg_pressed_color"
-        fab:fab_colorRipple="@color/grey"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>
+        fab:fab_colorRipple="@color/grey"/>
 
     <ProgressBar
+        android:id="@+id/ussd_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/ussd_progress"
+        android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"/>
+        android:indeterminate="false"/>
 </RelativeLayout>

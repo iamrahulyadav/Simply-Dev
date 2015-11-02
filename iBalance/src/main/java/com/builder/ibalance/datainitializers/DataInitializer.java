@@ -47,7 +47,6 @@ import de.greenrobot.event.EventBus;
 
 
 public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
-	public static boolean mainActivityRunning = true;
 	//static Context context;
 	public static volatile boolean done = false;
     int sim_slot = 0;

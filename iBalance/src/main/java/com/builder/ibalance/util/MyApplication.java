@@ -13,8 +13,8 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.EmptyCredentialsException;
 import com.kahuna.sdk.IKahunaUserCredentials;
-import com.kahuna.sdk.KahunaUserCredentials;
 import com.kahuna.sdk.Kahuna;
+import com.kahuna.sdk.KahunaUserCredentials;
 import com.parse.Parse;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
@@ -54,6 +54,7 @@ public class MyApplication extends MultiDexApplication
 
         Kahuna.getInstance().onAppCreate(this, "3e512234b35542f4b42f7cc05f4c047a", null);
         IKahunaUserCredentials newCreds = Kahuna.getInstance().createUserCredentials();
+		Crashlytics.getInstance().core.setUserIdentifier(deviceId);
         newCreds.add(KahunaUserCredentials.USERNAME_KEY, deviceId);
         try
         {

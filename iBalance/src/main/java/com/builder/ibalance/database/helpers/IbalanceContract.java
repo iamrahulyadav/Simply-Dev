@@ -5,7 +5,8 @@ package com.builder.ibalance.database.helpers;
 /**
  * Created by Shabaz on 17-Aug-15.
  */
-public class IbalanceContract {
+public class
+        IbalanceContract {
     // To prevent someone from accidentally instantiating the contract class,
     // give it an empty constructor.
     private static final String TEXT_TYPE = " TEXT";

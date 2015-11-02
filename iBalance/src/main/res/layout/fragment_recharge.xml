@@ -1,327 +1,301 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_gravity="center">
-
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent" >
 <LinearLayout
-    android:layout_width="fill_parent"
-    android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:background="@color/grey"
-    android:orientation="vertical" >
+              android:layout_width="match_parent"
+              android:layout_height="fill_parent"
+              android:weightSum="1"
+              android:background="#efefef"
+              android:orientation="vertical"
+              android:baselineAligned="false">
 
-    <TextView
-        android:id="@+id/uasage_title"
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:gravity="center" 
-        android:text="Total Usage" 
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:textColor="@color/primary_green"
-        />
+        android:background="@color/white"
+        android:layout_margin="10dp"
+        android:layout_weight="0.10">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Local Calls"
+            android:id="@+id/textView29"
+            android:paddingTop="5dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignRight="@+id/textView34"
+            android:layout_alignEnd="@+id/textView34" />
+
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/local_progress_bar"
+            android:layout_marginTop="25dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:layout_below="@+id/textView29"
+            android:layout_alignRight="@+id/textView39"
+            android:layout_alignEnd="@+id/textView39" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="To "
+            android:id="@+id/local_same_carrier"
+            android:layout_alignBottom="@+id/local_progress_bar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="18dp"
+            android:paddingLeft="10dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="To Others"
+            android:id="@+id/textView39"
+            android:layout_alignTop="@+id/local_same_carrier"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:paddingRight="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="STD Calls"
+            android:id="@+id/textView34"
+            android:layout_below="@+id/local_progress_bar"
+            android:layout_centerHorizontal="true"
+            android:paddingTop="10dp" />
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/STD_progress_bar"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:layout_below="@+id/textView34"
+            android:layout_alignRight="@+id/textView39"
+            android:layout_alignEnd="@+id/textView39"
+            android:layout_marginTop="25dp"
+            android:indeterminate="false"
+            android:layout_marginBottom="10dp" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="To Airtel"
+            android:id="@+id/std_same_carrier"
+            android:layout_marginBottom="18dp"
+            android:layout_alignBottom="@+id/STD_progress_bar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:paddingLeft="10dp" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="To Others"
+            android:id="@+id/textView40"
+            android:layout_alignTop="@+id/std_same_carrier"
+            android:layout_alignRight="@+id/textView39"
+            android:layout_alignEnd="@+id/textView39"
+            android:paddingRight="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="75 min"
+            android:id="@+id/local_same_mins"
+            android:textColor="#ffffff"
+            android:layout_below="@+id/textView39"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:paddingLeft="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="25 min"
+            android:id="@+id/local_diff_mins"
+            android:textColor="#ffffff"
+            android:layout_below="@+id/textView39"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:paddingRight="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="45 min"
+            android:id="@+id/std_same_mins"
+            android:layout_below="@+id/textView40"
+            android:layout_alignLeft="@+id/local_same_mins"
+            android:layout_alignStart="@+id/local_same_mins"
+            android:textColor="#ffffff"
+            android:paddingLeft="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="105 min"
+            android:id="@+id/std_diff_mins"
+            android:textColor="#ffffff"
+            android:layout_below="@+id/textView40"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:paddingRight="12dp" />" />
+    </RelativeLayout>
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Recharge Now "
+        android:gravity="center_horizontal"
+        android:textSize="18dp"/>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:background="#8c8c8c"/>
+
     <LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content">
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:layout_margin="10dp"
+        android:orientation="vertical"
 
+        >
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:padding="5dp"
+
+            >
+            <ImageView
+                android:id="@+id/call_icon"
+                android:layout_width="20dp"
+                android:layout_height="40dp"
+                android:src="@drawable/phone_icon"
+
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:hint="Mobile Number                              "
+                android:id="@+id/numberField"
+                android:paddingTop="10dp"
+                android:layout_weight=".2"
+                android:layout_alignBottom="@+id/call_icon"
+                android:layout_toRightOf="@+id/call_icon"
+                android:layout_toLeftOf="@+id/conatact_select"
+                android:layout_toStartOf="@+id/conatact_select"
+                android:textSize="15dp"
+                android:textColorHint="#e1e1e1" />
+
+            <ImageButton
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/conatact_select"
+                android:layout_weight=".2"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/contact_list_icon"
+                android:layout_alignBottom="@+id/numberField" />
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+
+            >
+
+
+
+            <ImageView
+                android:id="@+id/Rupee_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/rupee_symbol_gray"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+            <EditText
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:hint="Enter Amount"
+                android:layout_weight=".2"
+                android:id="@+id/amountField"
+                android:layout_gravity="center_horizontal"
+                android:layout_alignParentTop="true"
+                android:layout_marginRight="10dp"
+                android:layout_toLeftOf="@+id/recharge_butt_id"
+                android:layout_toStartOf="@+id/recharge_butt_id"
+                android:layout_toRightOf="@+id/Rupee_icon"
+                android:layout_toEndOf="@+id/Rupee_icon"
+                android:textSize="15dp"
+                android:textColorHint="#e1e1e1" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:text="Recharge"
+                android:textColor="#ffffff"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp"
+                android:id="@+id/recharge_butt_id"
+                android:background="@drawable/button_background"
+                android:layout_gravity="center_horizontal"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
     <TextView
-    android:id="@+id/summary_local_carrier"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_weight="0.6"
-    android:gravity="left"
-    android:paddingBottom="5dp"
-    android:paddingLeft="10dp"
-    android:paddingTop="5dp"
-    android:text="Local mins to " />
-
-     <TextView
-        android:id="@+id/local_same"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="left" 
-        android:layout_weight="0.4"
-        android:text="10 mins" 
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        android:visibility="gone"
-        />
-      <ProgressBar
-         android:id="@+id/local_same_wait"
-         style="?android:attr/progressBarStyleSmall"
-         android:layout_width="0dp"
-         android:layout_height="wrap_content" 
-         android:layout_gravity="left"
-       	 android:layout_weight="0.4"/>
-     </LinearLayout>
-     <LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content">
-      <TextView
-        android:layout_width="0dp"
-         android:layout_height="wrap_content"
-         android:gravity="left"
-         android:layout_weight="0.6" 
-        android:text="Local mins to Others" 
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        />
-      <TextView
-        android:id="@+id/local_others"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="left" 
-        android:layout_weight="0.4"
-        android:text="10 mins" 
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        android:visibility="gone"
-        />
-      <ProgressBar
-         android:id="@+id/local_other_wait"
-         style="?android:attr/progressBarStyleSmall"
-         android:layout_width="0dp"
-         android:layout_height="wrap_content" 
-         android:layout_gravity="left"
-       	 android:layout_weight="0.4"/>
-      </LinearLayout>
-      <LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content">
-       <TextView
-        android:id="@+id/summary_std_carrier" 
-        android:layout_width="0dp"
-         android:layout_height="wrap_content"
-         android:gravity="left"
-         android:layout_weight="0.6"
-        android:text="STD mins to " 
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        />
-      <TextView
-        android:id="@+id/std_same"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="left" 
-        android:layout_weight="0.4"
-        android:text="10 mins" 
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        android:visibility="gone"
-        />
-      <ProgressBar
-         android:id="@+id/std_same_wait"
-         style="?android:attr/progressBarStyleSmall"
-         android:layout_width="0dp"
-         android:layout_height="wrap_content" 
-         android:layout_gravity="left"
-       	 android:layout_weight="0.4"/>
-      </LinearLayout>
-      <LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content">
-        <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="left" 
-        android:text="STD mins to Others" 
-        android:layout_weight="0.6"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        />
-      <TextView
-        android:id="@+id/std_others"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="left" 
-        android:layout_weight="0.4"
-        android:text="10 mins" 
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:paddingLeft="10dp"
-        android:visibility="gone"
-        />
-      <ProgressBar
-         android:id="@+id/std_other_wait"
-         style="?android:attr/progressBarStyleSmall"
-         android:layout_width="0dp"
-         android:layout_height="wrap_content" 
-         android:layout_gravity="left"
-       	 android:layout_weight="0.4"/>
-        </LinearLayout>
-<TextView
-        android:id="@+id/recharge_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:gravity="center" 
-        android:text="Last Recharge" 
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:textColor="@color/primary_green"
-        />
-<LinearLayout 
-    android:id="@+id/last_recharge_layout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:visibility="gone">
-    <LinearLayout 
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_weight="0.3">
+        android:text="Popular plans"
+        android:textSize="18dp"
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="5dp"
-            android:text="Date" />
+        android:gravity="center"/>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:background="#efefef"/>
 
-        <TextView
-            android:id="@+id/summary_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="5dp"
-            
-            android:textColor="@android:color/darker_gray"
-            android:text="" />
- 
-    </LinearLayout>
-    <LinearLayout 
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_weight="0.3">
-
-        <TextView
-            
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="5dp"
-            android:text="Amount" />
-
-        <TextView
-            
-            android:id="@+id/summary_amount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="5dp"
-            android:textColor="@android:color/darker_gray"
-            android:text="@string/rupee_symbol"/>
- 
-    </LinearLayout>
-    <LinearLayout 
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_weight="0.4">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingBottom="5dp"
-            android:paddingLeft="10dp"
-            android:paddingTop="5dp"
-            android:text="Plan Name" />
-
-       
- 
-    </LinearLayout>
-</LinearLayout>
-
-<TextView
-    android:id="@+id/no_recharge"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center"
-    android:text="No Recharges Tracked"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp"
-    android:layout_marginTop="10dp" />
-
-<TextView
-        android:id="@+id/fraud_title"
+    <ListView
+        android:id="@+id/plans_list_view"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:gravity="center" 
-        android:text="Fraud/Suspicious Transactions" 
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:textColor="@color/primary_green"
-        android:layout_marginTop="10dp"
-        />
-<TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingBottom="5dp"
-            android:paddingLeft="10dp"
-            android:paddingTop="5dp"
-            android:text="No Fraudlent/Suspicious Transactions found" 
-            android:layout_marginBottom="10dp"/>
+        android:divider="@color/list_divider"
+        android:dividerHeight="1dp"
+        android:listSelector="@drawable/list_row_selector"
+        >
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
-
-    <Button
-        android:id="@+id/whatsapp_share_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginLeft="20dp"
-        android:layout_weight="1"
-        
-        android:layout_marginRight="2dp"
-        android:background="@color/primary_green"
-        android:text="Share App"
-        android:textColor="@android:color/white" />
-
-    <Button
-        android:id="@+id/feedback"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginRight="20dp"
-        android:layout_weight="1"
-        android:layout_marginLeft="2dp"
-        android:background="@android:color/holo_orange_dark"
-        android:text="FeedBack"
-        android:textColor="@android:color/white" />
-</LinearLayout>
-
-
-
-    <!--<com.melnykov.fab.FloatingActionButton
-        xmlns:fab="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/sim_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_margin="16dp"
-        android:src="@drawable/sim_toggle"
-        fab:fab_colorNormal="@color/green_btn_bg_color"
-        fab:fab_colorPressed="@color/green_btn_bg_pressed_color"
-        fab:fab_colorRipple="@color/grey"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>-->
+    </ListView>
 
 
 </LinearLayout>
@@ -330,15 +304,13 @@
         android:id="@+id/sim_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:layout_gravity="bottom|right"
         android:layout_margin="16dp"
         android:src="@drawable/sim_toggle"
         fab:fab_colorNormal="@color/green_btn_bg_color"
         fab:fab_colorPressed="@color/green_btn_bg_pressed_color"
-        fab:fab_colorRipple="@color/grey"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>
+        fab:fab_colorRipple="@color/grey"/>
 </RelativeLayout>
-
-

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginTop="10dp"
+    android:background="@color/white"
+    android:orientation="horizontal"
+    android:weightSum="10"
+
+    >
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_weight="3"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
+
+        >
+
+        <TextView
+            android:id="@+id/imageView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:text="Rs. "
+            android:textColor="#1ad3a2"
+            android:layout_alignBottom="@+id/price_id"
+            android:layout_toLeftOf="@+id/price_id"
+            android:layout_toStartOf="@+id/price_id"
+            android:layout_marginBottom="6dp"/>
+
+        <TextView
+            android:id="@+id/price_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="220"
+            android:textColor="#1ad3a2"
+            android:textSize="28dp"
+            />
+
+        <TextView
+            android:id="@+id/types_id"
+            android:layout_width="wrap_content"
+
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/price_id"
+
+            android:layout_centerHorizontal="true"
+            android:text="Top Up"
+            android:textSize="12dp"/>
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_weight="7"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp">
+
+        <View
+            android:layout_width="0.3dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/benefits_id"
+            android:layout_marginBottom="10dp"
+            android:background="@android:color/darker_gray"
+            />
+
+        <TextView
+            android:id="@+id/textView35"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="30dp"
+            android:text="Talk Time"
+            android:textColor="#837E7E"/>
+
+        <TextView
+            android:id="@+id/Talktime_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/textView35"
+            android:layout_alignLeft="@+id/textView35"
+            android:layout_alignRight="@+id/textView35"
+            android:layout_alignStart="@+id/textView35"
+            android:layout_below="@+id/textView35"
+            android:gravity="center_horizontal"
+            android:text="220"/>
+
+        <TextView
+            android:id="@+id/textView36"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="23dp"
+            android:layout_marginRight="10dp"
+            android:text="Validity"
+            android:textColor="#837E7E"
+            android:textIsSelectable="false"/>
+
+        <TextView
+            android:id="@+id/Validity_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/textView36"
+            android:layout_alignStart="@+id/textView36"
+            android:layout_below="@+id/textView36"
+            android:text="30 days"/>
+
+        <TextView
+            android:id="@+id/benefits_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/Talktime_id"
+            android:padding="10dp"
+            android:textColor="#837E7E"
+            android:textSize="12dp"/>
+
+
+    </RelativeLayout>
+
+</LinearLayout>

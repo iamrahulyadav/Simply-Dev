@@ -118,7 +118,9 @@ public class ContactDetailHelper
             );
         return m;
         }
-        ArrayList<String> carrier_circle =null;
+        ArrayList<String> carrier_circle = new ArrayList<>();
+        carrier_circle.add("Unknown");
+        carrier_circle.add("Unknown");
         if(phNumber.length()>=10)
         {
             try
@@ -137,9 +139,7 @@ public class ContactDetailHelper
             }
             catch (Exception e)
             {
-                carrier_circle = new ArrayList<>();
-                carrier_circle.add("Unknown");
-                carrier_circle.add("Unknown");
+               
             }
         }
         return new ContactDetailModel(phNumber,carrier_circle.get(0),carrier_circle.get(1),null,0.0f);

@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.builder.ibalance.util.MyApplication;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -109,7 +110,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
         num_of_toggle++;
         if(num_of_toggle>4)
         {
-            Toast.makeText(this,"Please Restart your phone and\n          Try Again!",Toast.LENGTH_LONG).show();
+            Toast.makeText(MyApplication.context,"Please Restart your phone and\n          Try Again!",Toast.LENGTH_LONG).show();
         }
 		switch (v.getId()) {
         case R.id.splash_simply_rec_img_id:

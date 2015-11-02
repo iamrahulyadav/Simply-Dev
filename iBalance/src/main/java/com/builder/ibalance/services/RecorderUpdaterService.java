@@ -122,8 +122,8 @@ public class RecorderUpdaterService extends AccessibilityService
                         .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 noUSSDMsgHandler.removeCallbacks(r);
                 noUSSDMsgHandler = null;
-                if (dismissNode != null)
-                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                /*if (dismissNode != null)
+                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);*/
                 dismissNode = null;
                 startActivity(popup_intent);
                 NormalCall entry = new NormalCall(
@@ -260,6 +260,7 @@ public class RecorderUpdaterService extends AccessibilityService
             ////V10Log.d(tag+"USSD",ac.getClassName()+"");
             if (ac.getClassName().equals(TextView.class.getName()))
             {
+
                 sb.append(ac.getText());
                 ////V10Log.d("TEST", "Number:" + i + "   " + sb);
             } else if (ac.getClassName().equals(EditText.class.getName()))

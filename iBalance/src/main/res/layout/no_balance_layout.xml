@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nobal"
+    android:layout_width="wrap_content"
+    android:layout_height="0dp"
+    android:layout_weight="6"
+    android:gravity="center"
+    android:visibility="gone"
+    tools:showIn="@layout/fragment_balance">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:weightSum="1">
+
+        <TextView
+            android:id="@+id/text_no_track"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".33"
+            android:gravity="center"
+            android:padding="25dp"
+            android:text="No balance track"
+            android:textColor="#FF6633"
+            android:textSize="22dp"/>
+
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_below="@+id/text_no_track"
+            android:layout_centerHorizontal="true"
+            android:layout_weight=".33"
+            android:src="@drawable/call_icon"/>
+
+        <TextView
+            android:id="@+id/textView22"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageView6"
+            android:gravity="center_horizontal"
+            android:padding="20dp"
+            android:text="Tracking will start after you make a call,if it doesn't work then please"
+            android:textColor="#1ad3a2"
+            android:textSize="20dp"/>
+
+        <Button
+            android:id="@+id/bal_contact_us"
+            style="@style/ussd_popup_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Contant Us"
+            />
+
+    </LinearLayout>
+
+</RelativeLayout>

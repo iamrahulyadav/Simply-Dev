@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
@@ -21,10 +22,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.builder.ibalance.adapters.DeductionsAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.datainitializers.DataInitializer;
@@ -53,6 +54,8 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.melnykov.fab.FloatingActionButton;
+import com.poliveira.apps.parallaxlistview.ParallaxListView;
+import com.poliveira.apps.parallaxlistview.ParallaxScrollEvent;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -97,7 +100,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		dataTextView.setTypeface(tf);
 		balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
         contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
-        mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
+       // mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
         if(GlobalData.globalSimList.size()>=2)
         {
             sim_switch.setVisibility(View.VISIBLE);
@@ -270,26 +273,50 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		else
 		balanceTextView.setText(getResources().getString(R.string.rupee_symbol)+" "+ currBalance);
 
-		balance_layout.setOnClickListener(new View.OnClickListener() {
-			
+		balance_layout.setOnClickListener(new View.OnClickListener()
+		{
+
 			@Override
-			public void onClick(View v) {
-				startActivity( new Intent(MyApplication.context, HistoryActivity.class));
+			public void onClick(View v)
+			{
+				startActivity(new Intent(MyApplication.context, HistoryActivity.class));
 			}
 		});
         Log.d(tag, "Bal Frag currBalance = " + currBalance);
+        LinearLayout parallaxcontainer = (LinearLayout)rootView.findViewById(R.id.parallax_container);
+        parallaxcontainer.removeAllViews();
+		final View v = this.getActivity().getLayoutInflater().inflate(R.layout.recent_call_list, parallaxcontainer, true);
+		ParallaxListView mListView = (ParallaxListView) v.findViewById(R.id.recents_list);
+		final Cursor cursor = new BalanceHelper().getData();
+		cursor.moveToFirst();
+		DeductionsAdapter mDeductionsAdapter = new DeductionsAdapter(getActivity(), cursor, false);
+		mListView.setAdapter(mDeductionsAdapter);
+
+
 		if(currBalance>-1.0)
 		{
-		((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
-		mLineChart.setVisibility(View.VISIBLE);
-		createGraph();
+		//((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
+		//mLineChart.setVisibility(View.VISIBLE);
+
+            mListView.setParallaxView(this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, mListView, false));
+            mLineChart = (LineChart) v.findViewById(R.id.balcontainer);
+            createGraph();
 		}
+
+
+
 		if(DataInitializer.ussdDataList.size()>0)
 		{
+
+
 			setData();
+
+            //mListView.setParallaxView(rootView.findViewById(R.id.parallax_container));
+
 		}
 		else
         {
+            mListView.setParallaxView(this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, mListView, false));
             contactUsButton.setOnClickListener(new OnClickListener()
             {
                 @Override
@@ -310,6 +337,14 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 				}
 			});
 		}
+
+        mListView.setScrollEvent(new ParallaxScrollEvent()
+        {
+            @Override
+            public void onScroll(double percentage, double offset, View parallaxView)
+            {
+            }
+        });
 		if (currData > 0.0)
 		{
 			dataTextView.setText(currData + "MB");

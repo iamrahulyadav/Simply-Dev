@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,20 +23,15 @@ import android.widget.EditText;
 
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
-import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
-import com.builder.ibalance.util.RegexUpdater;
 import com.facebook.appevents.AppEventsLogger;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.Kahuna;
-import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
 
 import de.greenrobot.event.EventBus;
 
@@ -52,7 +46,8 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	//public static int appOpenCount = 0;
 	//public static int adFrequency = -1;
 
-	 MainActivityAdapter mMainActivityAdapter;
+	// MainActivityAdapter mainActivityAdapter;
+	MainActivityAdapter mainActivityAdapter;
 	ViewPager mViewPager;
 	int PARSER_VERSION = 1;
 	int NEW_PARSER_VERSION = 1;
@@ -61,31 +56,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-		PARSER_VERSION =  getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION",1);
-		ParseConfig.getInBackground(new ConfigCallback()
-		{
-			@Override
-			public void done(ParseConfig config, ParseException e)
-			{
-				if (e == null)
-				{
-					//Log.d(tag, "Yay! Config was fetched from the server.");
-				} else
-				{
-					Log.e(tag, "Failed to fetch. Using Cached Config.");
-					config = ParseConfig.getCurrentConfig();
-				}
-                if((config!=null))
-                {
-                    NEW_PARSER_VERSION = config.getInt("PARSER_VERSION");
-                    if (NEW_PARSER_VERSION > PARSER_VERSION)
-                    {
-                        new RegexUpdater().update(NEW_PARSER_VERSION);
-                    }
-                }
-				//Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
-			}
-		});
+
 
 		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
@@ -94,11 +65,11 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		actionBar.setCustomView(R.layout.custom_actionbar_title); */
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the activity.
-		mMainActivityAdapter = new MainActivityAdapter(getFragmentManager());
+		mainActivityAdapter = new MainActivityAdapter(getFragmentManager());
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mMainActivityAdapter);
+		mViewPager.setAdapter(mainActivityAdapter);
 		mViewPager.setOffscreenPageLimit(1);
 
 		// When swiping between different sections, select the corresponding
@@ -114,7 +85,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 				});
 
 		// For each of the sections in the app, add a tab to the action bar.
-		for (int i = 0; i < mMainActivityAdapter.getCount(); i++) {
+		for (int i = 0; i < mainActivityAdapter.getCount(); i++) {
 			// Create a tab with text corresponding to the page title defined by
 			// the adapter. Also specify this Activity object, which implements
 			// the TabListener interface, as the callback (listener) for when
@@ -122,7 +93,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 			
 	        
 			actionBar.addTab(actionBar.newTab()
-					.setText(mMainActivityAdapter.getPageTitle(i))
+					.setText(mainActivityAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
 
@@ -301,7 +272,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		DataInitializer.mainActivityRunning = false;
 		mSharedPreferences.edit().putInt("FILTER",0).commit();
 		/*if(mInterstitial!=null)
 		mInterstitial.destroy();*/
