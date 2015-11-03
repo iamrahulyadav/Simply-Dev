@@ -42,6 +42,9 @@ android {
             minifyEnabled true
             proguardFiles 'proguard-project.txt'
         }
+        debug {
+            ext.enableCrashlytics = false
+        }
     }
 }
 

@@ -9,9 +9,8 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.builder.ibalance.R;
-import com.builder.ibalance.models.PlansModel;
-import com.builder.ibalance.util.CircleTransform;
 import com.builder.ibalance.util.MyApplication;
+import com.parse.ParseObject;
 
 import java.util.List;
 
@@ -23,10 +22,9 @@ public class PlansAdapter extends BaseAdapter
 
     TextView priceText,validityText,typeText,talktimeText, benefitsText;
     private LayoutInflater inflater;
-    private List<PlansModel> plansList;
+    private List<ParseObject> plansList;
     Typeface tf;
-    CircleTransform mCircleTransform = new CircleTransform();
-    public PlansAdapter(List<PlansModel> plansList) {
+    public PlansAdapter(List<ParseObject> plansList) {
         inflater = (LayoutInflater) MyApplication.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         tf = Typeface.createFromAsset(MyApplication.context.getResources().getAssets(), "Roboto-Regular.ttf");
         this.plansList = plansList;
@@ -55,7 +53,7 @@ public class PlansAdapter extends BaseAdapter
 
         if (convertView == null)
             convertView = inflater.inflate(R.layout.plans_list_item, null);
-        PlansModel mPlan = plansList.get(position);
+        ParseObject mPlan = plansList.get(position);
         priceText = (TextView) convertView.findViewById(R.id.price_id);
         priceText.setTypeface(tf);
         typeText = (TextView) convertView.findViewById(R.id.types_id);
@@ -69,20 +67,18 @@ public class PlansAdapter extends BaseAdapter
         benefitsText.setTypeface(tf);
 
 
-        priceText.setText(mPlan.getPrice()+"");
-        typeText.setText(mPlan.getType());
-        String temp = mPlan.getValidity();
-        if(temp.equals(""))
-            temp = "N/A";
+        priceText.setText(mPlan.getInt("price") + "");
+        typeText.setText(mPlan.getString("type"));
+        String temp = mPlan.getString("validity");
         validityText.setText(temp);
-        Float talktime = mPlan.getTalktime();
+        Double talktime = mPlan.getDouble("talktime");
         if(talktime==null)
             temp = "N/A";
         else
             temp = talktime+"";
         talktimeText.setText(temp);
-        benefitsText.setText(mPlan.getBenefits());
-        convertView.setTag(mPlan.getPrice());
+        benefitsText.setText(mPlan.getString("benefits"));
+        convertView.setTag(mPlan.getString("price"));
         return convertView;
     }
 }

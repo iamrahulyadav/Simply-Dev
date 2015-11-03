@@ -11,8 +11,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Contacts;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -32,7 +30,6 @@ import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.GlobalData;
-import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -283,20 +280,21 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 			}
 		});
         Log.d(tag, "Bal Frag currBalance = " + currBalance);
-        LinearLayout parallaxcontainer = (LinearLayout)rootView.findViewById(R.id.parallax_container);
-        parallaxcontainer.removeAllViews();
-		final View v = this.getActivity().getLayoutInflater().inflate(R.layout.recent_call_list, parallaxcontainer, true);
-		ParallaxListView mListView = (ParallaxListView) v.findViewById(R.id.recents_list);
-		final Cursor cursor = new BalanceHelper().getData();
-		cursor.moveToFirst();
-		DeductionsAdapter mDeductionsAdapter = new DeductionsAdapter(getActivity(), cursor, false);
-		mListView.setAdapter(mDeductionsAdapter);
 
+        ParallaxListView mListView = null;
 
 		if(currBalance>-1.0)
 		{
-		//((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
-		//mLineChart.setVisibility(View.VISIBLE);
+			LinearLayout parallaxcontainer = (LinearLayout)rootView.findViewById(R.id.parallax_container);
+			parallaxcontainer.removeAllViews();
+			final View v = this.getActivity().getLayoutInflater().inflate(R.layout.recent_call_list, parallaxcontainer, true);
+			mListView = (ParallaxListView) v.findViewById(R.id.recents_list);
+			final Cursor cursor = new BalanceHelper().getData();
+			cursor.moveToFirst();
+			DeductionsAdapter mDeductionsAdapter = new DeductionsAdapter(getActivity(), cursor, false);
+			mListView.setAdapter(mDeductionsAdapter);
+		/*((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
+		mLineChart.setVisibility(View.VISIBLE);*/
 
             mListView.setParallaxView(this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, mListView, false));
             mLineChart = (LineChart) v.findViewById(R.id.balcontainer);
@@ -316,7 +314,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		}
 		else
         {
-            mListView.setParallaxView(this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, mListView, false));
+            /*mListView.setParallaxView(this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, mListView, false));
             contactUsButton.setOnClickListener(new OnClickListener()
             {
                 @Override
@@ -335,16 +333,18 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                         startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
                     }
 				}
-			});
+			});*/
 		}
-
-        mListView.setScrollEvent(new ParallaxScrollEvent()
+        if(mListView!=null)
         {
-            @Override
-            public void onScroll(double percentage, double offset, View parallaxView)
+            mListView.setScrollEvent(new ParallaxScrollEvent()
             {
-            }
-        });
+                @Override
+                public void onScroll(double percentage, double offset, View parallaxView)
+                {
+                }
+            });
+        }
 		if (currData > 0.0)
 		{
 			dataTextView.setText(currData + "MB");

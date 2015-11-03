@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:layout_margin="10dp"
-        android:layout_weight="0.10">
+        >
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -111,6 +111,7 @@
             android:text="75 min"
             android:id="@+id/local_same_mins"
             android:textColor="#ffffff"
+            android:textSize="12sp"
             android:layout_below="@+id/textView39"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
@@ -120,6 +121,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="25 min"
+            android:textSize="12sp"
             android:id="@+id/local_diff_mins"
             android:textColor="#ffffff"
             android:layout_below="@+id/textView39"
@@ -131,6 +133,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="45 min"
+            android:textSize="12sp"
             android:id="@+id/std_same_mins"
             android:layout_below="@+id/textView40"
             android:layout_alignLeft="@+id/local_same_mins"
@@ -142,6 +145,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="105 min"
+            android:textSize="12sp"
             android:id="@+id/std_diff_mins"
             android:textColor="#ffffff"
             android:layout_below="@+id/textView40"
@@ -289,13 +293,38 @@
     <ListView
         android:id="@+id/plans_list_view"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:divider="@color/list_divider"
         android:dividerHeight="1dp"
         android:listSelector="@drawable/list_row_selector"
+        android:layout_marginBottom="10dp"
         >
 
     </ListView>
+
+    <LinearLayout
+        android:id="@+id/plans_loading"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.10"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="loading plans"
+            android:paddingRight="5dp"
+            android:textColor="@color/dark_grey"
+            android:id="@+id/textView2"/>
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"/>
+    </LinearLayout>
 
 
 </LinearLayout>

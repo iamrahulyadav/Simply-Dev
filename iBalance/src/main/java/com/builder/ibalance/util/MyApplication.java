@@ -6,8 +6,10 @@ import android.support.multidex.MultiDexApplication;
 import android.telephony.TelephonyManager;
 
 import com.appsflyer.AppsFlyerLib;
+import com.builder.ibalance.BuildConfig;
 import com.builder.ibalance.R;
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.core.CrashlyticsCore;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
@@ -38,7 +40,7 @@ public class MyApplication extends MultiDexApplication
     public void onCreate() {
     	
         super.onCreate();
-		Fabric.with(this, new Crashlytics());
+		Fabric.with(this, new Crashlytics.Builder().core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build()).build());
 		context = this;
 		refWatcher = LeakCanary.install(this);
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this

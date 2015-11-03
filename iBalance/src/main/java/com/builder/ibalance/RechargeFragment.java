@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,7 +29,6 @@ import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
-import com.builder.ibalance.models.PlansModel;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
@@ -36,108 +36,115 @@ import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.melnykov.fab.FloatingActionButton;
+import com.parse.FindCallback;
+import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
 
-public class RechargeFragment extends Fragment implements OnClickListener {
+public class RechargeFragment extends Fragment implements OnClickListener
+{
 
-	View rootView;
-	final String TAG = RechargeFragment.class.getSimpleName();
-	TextView local_carrier,std_carrier,mTextView;
-	ProgressBar mProgressBar;
-	FloatingActionButton sim_switch;
+    private static final int CONTACT_PICKER_RESULT = 1001;
+    final String TAG = RechargeFragment.class.getSimpleName();
+    View rootView;
+    TextView local_carrier, std_carrier, mTextView;
+    ProgressBar mProgressBar;
+    FloatingActionButton sim_switch;
     ListView plansListView;
     Button rechargeNow;
     ImageButton contactsPicker;
     String dummyJson = "[{\"price\":225,\"carrier\":\"Airtel\",\"circle\":\"KARNATAKA\",\"validity\":\"30 days\",\"type\":\"Takltime\",\"talktime\":240,\"tags\":[\"FULL TT\"],\"benefits\":\"Talktime: 240 (30 Days Val) | 300 local A-A secs for 5 days\"},{\"price\":251,\"carrier\":\"Airtel\",\"circle\":\"KARNATAKA\",\"validity\":\"30 days\",\"type\":\"Takltime\",\"talktime\":180,\"tags\":[\"Topup\",\"2G\",\"3G\"],\"benefits\":\"1.25 GB + Rs.180 Talktime\"}]";
-	int sim_slot = 0;
+    int sim_slot = 0;
     String rechargePhoneNumber = null;
-    private static final int CONTACT_PICKER_RESULT = 1001;
-    EditText numberField;
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		rootView = inflater.inflate(R.layout.fragment_recharge, container,
-				false);
-		sim_slot = BalanceFragment.sim_slot;
+    EditText numberField,amountField;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState)
+    {
+        rootView = inflater.inflate(R.layout.fragment_recharge, container,
+                false);
+        sim_slot = BalanceFragment.sim_slot;
         local_carrier = (TextView) rootView.findViewById(R.id.local_same_carrier);
         std_carrier = (TextView) rootView.findViewById(R.id.std_same_carrier);
-		sim_switch = (FloatingActionButton) rootView.findViewById(R.id.sim_switch);
-		contactsPicker = (ImageButton) rootView.findViewById(R.id.conatact_select);
+        sim_switch = (FloatingActionButton) rootView.findViewById(R.id.sim_switch);
+        contactsPicker = (ImageButton) rootView.findViewById(R.id.conatact_select);
         contactsPicker.setOnClickListener(this);
-		rechargeNow = (Button) rootView.findViewById(R.id.recharge_butt_id);
+        rechargeNow = (Button) rootView.findViewById(R.id.recharge_butt_id);
         rechargeNow.setOnClickListener(this);
-		//Log.d(TAG, "UserCircle = "+ userCircle + " UserCarrier "+userCarrier);
-        plansListView = (ListView) rootView.findViewById(R.id.plans_list_view);
-        Type listType = new TypeToken<ArrayList<PlansModel>>() {}.getType();
         numberField = (EditText) rootView.findViewById(R.id.numberField);
-        rechargePhoneNumber = ((TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
-        if(rechargePhoneNumber!=null)
+        amountField = (EditText) rootView.findViewById(R.id.amountField);
+        rechargePhoneNumber = ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
+        if (rechargePhoneNumber != null)
         {
             numberField.setText(rechargePhoneNumber);
         }
+        //Log.d(TAG, "UserCircle = "+ userCircle + " UserCarrier "+userCarrier);
+        plansListView = (ListView) rootView.findViewById(R.id.plans_list_view);
 
-        List<PlansModel> plansList = null;
-        try
+        if (GlobalData.globalSimList.size() >= 2)
         {
-            plansList = new Gson().fromJson(dummyJson, listType);
+            sim_switch.setVisibility(View.VISIBLE);
+            sim_switch.setOnClickListener(new OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    if (sim_slot == 0)
+                    {
+                        BalanceFragment.sim_slot = 1;
+                        sim_slot = 1;
 
-            PlansAdapter mPlansAdapter = new PlansAdapter(plansList);
-            plansListView.setAdapter(mPlansAdapter);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            Helper.toastHelper("Deserialization Failed");
-        }
-		if(GlobalData.globalSimList.size()>=2)
-		{
-			sim_switch.setVisibility(View.VISIBLE);
-			sim_switch.setOnClickListener(new OnClickListener()
-			{
-				@Override
-				public void onClick(View v)
-				{
-					if(sim_slot == 0)
-					{
-						BalanceFragment.sim_slot = 1;
-						sim_slot = 1;
-
-					}
-					else
-					{
-						BalanceFragment.sim_slot = 0;
-						sim_slot = 0;
-					}
-					Toast.makeText(MyApplication.context, "Switched to Sim " + (sim_slot + 1), Toast.LENGTH_LONG).show();
-					getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
+                    } else
+                    {
+                        BalanceFragment.sim_slot = 0;
+                        sim_slot = 0;
+                    }
+                    Toast.makeText(MyApplication.context, "Switched to Sim " + (sim_slot + 1), Toast.LENGTH_LONG).show();
+                    getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
                     if (DataInitializer.done == true)
                     {
                         loadData(sim_slot);
                     }
                 }
-			});
-		}
-		else
-		{
-			sim_switch.setVisibility(View.GONE);
-		}
-		if (DataInitializer.done == true) {
-			//Log.d(TAG, "Data Already loaded");
-			loadData(sim_slot);
+            });
+        } else
+        {
+            sim_switch.setVisibility(View.GONE);
+        }
 
-		} else {
-			//Log.d(TAG, "Data Still Loading");
-		}
-		/*Button whatsAppShareButton = (Button) rootView.findViewById(R.id.whatsapp_share_button);
+        SimModel currentSim = GlobalData.globalSimList.get(sim_slot);
+        Log.d(TAG,"Querying Parse with carrier = "+currentSim.getCarrier());
+        Log.d(TAG,"Querying Parse with Circle = "+currentSim.getCircle());
+        Helper.toastHelper(currentSim.getCarrier()+" "+currentSim.getCircle());
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("PLANS");
+        query.whereEqualTo("carrier",currentSim.getCarrier());
+        query.whereEqualTo("circle",currentSim.getCircle());
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> plansList, ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "Plans Retrieved " + plansList.size() + " plans");
+                    Log.d(TAG, "Plans Retrieved " + plansList.toString() );
+                    populatePlans(plansList);
+                } else {
+                    Log.d(TAG, "PLANS Error: " + e.getMessage());
+                }
+            }
+        });
+
+        if (DataInitializer.done == true)
+        {
+            //Log.d(TAG, "Data Already loaded");
+            loadData(sim_slot);
+
+        }
+
+        /*Button whatsAppShareButton = (Button) rootView.findViewById(R.id.whatsapp_share_button);
 		Button feedBackButton = (Button) rootView.findViewById(R.id.feedback);
 		whatsAppShareButton.setOnClickListener(this);
 		feedBackButton.setOnClickListener(this);
@@ -156,26 +163,48 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 		LinearLayout mLayout = (LinearLayout) rootView.findViewById(R.id.last_recharge_layout);
 		mLayout.setVisibility(View.VISIBLE);
 		}*/
-		return rootView;
-	}
-	void setUsageDetails(int same_local,int others_local,int same_std,int others_std)
-	{
-		Resources res = getResources();
-		Drawable drawable = res.getDrawable(R.drawable.bar_style);
-		ProgressBar mProgress = (ProgressBar) rootView.findViewById(R.id.local_progress_bar);
+        return rootView;
+    }
+    void populatePlans(List<ParseObject> plans)
+    {
+        /*Type listType = new TypeToken<ArrayList<PlansModel>>()
+        {
+        }.getType();
 
-		mProgress.setMax(same_local+others_local); // Maximum Progress
-		 mProgress.setProgress(same_local);   // Main Progress
-		// mProgress.setSecondaryProgress(b); // Secondary Progress
-		mProgress.setProgressDrawable(drawable);
+        List<PlansModel> plansList = null;
+        try
+        {
+            plansList = new Gson().fromJson(plansJsonString, listType);*/
 
-		Drawable drawable1 = res.getDrawable(R.drawable.bar_style);
-		ProgressBar mProgress1 = (ProgressBar) rootView.findViewById(R.id.STD_progress_bar);
-		mProgress1.setMax(same_std+others_std); // Maximum Progress
-			mProgress1.setProgress(same_std);   // Main Progress
+            PlansAdapter mPlansAdapter = new PlansAdapter(plans);
+            plansListView.setAdapter(mPlansAdapter);
+        rootView.findViewById(R.id.plans_loading).setVisibility(View.GONE);
+        plansListView.setVisibility(View.VISIBLE);
+       /* } catch (Exception e)
+        {
+            e.printStackTrace();
+            Helper.toastHelper("Deserialization Failed");
+        }*/
+    }
+    void setUsageDetails(int same_local, int others_local, int same_std, int others_std)
+    {
+        Resources res = getResources();
+        Drawable drawable = res.getDrawable(R.drawable.bar_style);
+        ProgressBar mProgress = (ProgressBar) rootView.findViewById(R.id.local_progress_bar);
 
-		mProgress1.setProgressDrawable(drawable1);
-	}
+        mProgress.setMax(same_local + others_local); // Maximum Progress
+        mProgress.setProgress(same_local);   // Main Progress
+        // mProgress.setSecondaryProgress(b); // Secondary Progress
+        mProgress.setProgressDrawable(drawable);
+
+        Drawable drawable1 = res.getDrawable(R.drawable.bar_style);
+        ProgressBar mProgress1 = (ProgressBar) rootView.findViewById(R.id.STD_progress_bar);
+        mProgress1.setMax(same_std + others_std); // Maximum Progress
+        mProgress1.setProgress(same_std);   // Main Progress
+
+        mProgress1.setProgressDrawable(drawable1);
+    }
+
     @Override
     public void onStart()
     {
@@ -189,48 +218,49 @@ public class RechargeFragment extends Fragment implements OnClickListener {
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
+
     public void onEvent(DataLoadingDone m)
     {
         loadData(sim_slot);
     }
 
-	
-	private void loadData(int sim_slot) {
-		
-		int total_outgoing_duration=0,outgoing_duration_local_same_carrier=0,outgoing_duration_std_same_carrier=0,outgoing_duration_local_diff_carrier=0,outgoing_duration_std_diff_carrier=0;
-        String sim_carrier = "Airtel",sim_circle = "Karnataka";
+
+    private void loadData(int sim_slot)
+    {
+
+        int total_outgoing_duration = 0, outgoing_duration_local_same_carrier = 0, outgoing_duration_std_same_carrier = 0, outgoing_duration_local_diff_carrier = 0, outgoing_duration_std_diff_carrier = 0;
+        String sim_carrier = "Airtel", sim_circle = "Karnataka";
         try
         {
             SimModel mSimModel = GlobalData.globalSimList.get(sim_slot);
             sim_carrier = mSimModel.getCarrier();
             sim_circle = mSimModel.getCircle();
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             //This should not happen
             ParseObject pObj = new ParseObject("ERROR_LOGS");
-            pObj.put("PLACE","RechargeFragment_LoadData");
-                pObj.put("Object"," GlobalSimList :"+GlobalData.globalSimList.toString() );
+            pObj.put("PLACE", "RechargeFragment_LoadData");
+            pObj.put("Object", " GlobalSimList :" + GlobalData.globalSimList.toString());
             pObj.saveEventually();
         }
-        local_carrier.setText("To "+sim_carrier);
-        std_carrier.setText("To "+sim_carrier);
+        local_carrier.setText("To " + sim_carrier);
+        std_carrier.setText("To " + sim_carrier);
         ContactDetailHelper mContactDetailHelper = new ContactDetailHelper();
         outgoing_duration_local_same_carrier = mContactDetailHelper.getOutDurationLocalSameCarrier(sim_circle, sim_carrier);
-        outgoing_duration_local_same_carrier = (outgoing_duration_local_same_carrier+60-1)/60;
-        ((TextView)rootView.findViewById(R.id.local_same_mins)).setText(outgoing_duration_local_same_carrier+"mins");
+        outgoing_duration_local_same_carrier = (outgoing_duration_local_same_carrier + 60 - 1) / 60;
+        ((TextView) rootView.findViewById(R.id.local_same_mins)).setText(outgoing_duration_local_same_carrier + "mins");
 
         outgoing_duration_local_diff_carrier = mContactDetailHelper.getOutDurationLocalDiffCarrier(sim_circle, sim_carrier);
-        outgoing_duration_local_diff_carrier = (outgoing_duration_local_diff_carrier+60-1)/60;
-        ((TextView)rootView.findViewById(R.id.local_diff_mins)).setText(outgoing_duration_local_diff_carrier+"mins");
+        outgoing_duration_local_diff_carrier = (outgoing_duration_local_diff_carrier + 60 - 1) / 60;
+        ((TextView) rootView.findViewById(R.id.local_diff_mins)).setText(outgoing_duration_local_diff_carrier + "mins");
 
         outgoing_duration_std_same_carrier = mContactDetailHelper.getOutDurationSTDSameCarrier(sim_circle, sim_carrier);
-        outgoing_duration_std_same_carrier = (outgoing_duration_std_same_carrier+60-1)/60;
-        ((TextView)rootView.findViewById(R.id.std_same_mins)).setText(outgoing_duration_std_same_carrier+"mins");
+        outgoing_duration_std_same_carrier = (outgoing_duration_std_same_carrier + 60 - 1) / 60;
+        ((TextView) rootView.findViewById(R.id.std_same_mins)).setText(outgoing_duration_std_same_carrier + "mins");
 
-        outgoing_duration_std_diff_carrier = mContactDetailHelper.getOutDurationSTDDiffCarrier(sim_circle,sim_carrier);
-        outgoing_duration_std_diff_carrier = (outgoing_duration_std_diff_carrier+60-1)/60;
-        ((TextView)rootView.findViewById(R.id.std_diff_mins)).setText(outgoing_duration_std_diff_carrier+"mins");
+        outgoing_duration_std_diff_carrier = mContactDetailHelper.getOutDurationSTDDiffCarrier(sim_circle, sim_carrier);
+        outgoing_duration_std_diff_carrier = (outgoing_duration_std_diff_carrier + 60 - 1) / 60;
+        ((TextView) rootView.findViewById(R.id.std_diff_mins)).setText(outgoing_duration_std_diff_carrier + "mins");
 
 		/*mTextView = (TextView) rootView.findViewById(R.id.local_same);
 		mProgressBar = (ProgressBar) rootView.findViewById(R.id.local_same_wait);
@@ -270,15 +300,16 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 			mTextView.setText(0+" mins");
 		mProgressBar.setVisibility(View.GONE);
 		mTextView.setVisibility(View.VISIBLE);*/
-        setUsageDetails(outgoing_duration_local_same_carrier,outgoing_duration_local_diff_carrier,outgoing_duration_std_same_carrier,outgoing_duration_std_diff_carrier);
+        setUsageDetails(outgoing_duration_local_same_carrier, outgoing_duration_local_diff_carrier, outgoing_duration_std_same_carrier, outgoing_duration_std_diff_carrier);
 
-		
-	}
-	String valueToString(Object[] value)
-	{
-		return (String)(value[0]+"   "+value[1]+"  "+value[2]+"  "+value[3]+"  "+value[4]+"  "+value[5]+"  "+value[6]+"  "+value[7]+"  "+value[8]);
-		
-	}
+
+    }
+
+    String valueToString(Object[] value)
+    {
+        return (String) (value[0] + "   " + value[1] + "  " + value[2] + "  " + value[3] + "  " + value[4] + "  " + value[5] + "  " + value[6] + "  " + value[7] + "  " + value[8]);
+
+    }
 
 
     @Override
@@ -295,58 +326,66 @@ public class RechargeFragment extends Fragment implements OnClickListener {
             Cursor cursor = MyApplication.context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
                     ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ",
                     new String[]{id}, null);
-
+            Log.d(TAG, "Cursor count = " + cursor.getCount());
             int phoneIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
             if (cursor.moveToFirst())
             {
                 rechargePhoneNumber = cursor.getString(phoneIdx);
             }
-            if(rechargePhoneNumber!=null)
+            if (rechargePhoneNumber != null)
             {
 
                 numberField.setText(rechargePhoneNumber);
             }
-        }
-        else
+        } else
         {
             Helper.toastHelper("Error: Inavlid Contact");
         }
     }
 
-    private String getDurationFormatted(int totalSecs) {
-		String min,sec,hr;
-		Integer hrs,mins,secs;
-		secs = totalSecs % 60;
-		if(secs<10)
-			sec = "0"+secs;
-		else
-			sec = ""+secs;
-		totalSecs = totalSecs/60;
-		mins = totalSecs %60;
-		if(mins<10)
-			min = "0"+mins;
-		else
-			min = ""+mins;
-		totalSecs = totalSecs/60;
-		hrs = totalSecs;
-		if(hrs<10)
-			hr = "0"+hrs;
-		else
-			hr = ""+hrs;
-		return hr+":"+min+":"+sec;
-	}
-	@Override
-	public void onClick(View v) {
+    private String getDurationFormatted(int totalSecs)
+    {
+        String min, sec, hr;
+        Integer hrs, mins, secs;
+        secs = totalSecs % 60;
+        if (secs < 10)
+            sec = "0" + secs;
+        else
+            sec = "" + secs;
+        totalSecs = totalSecs / 60;
+        mins = totalSecs % 60;
+        if (mins < 10)
+            min = "0" + mins;
+        else
+            min = "" + mins;
+        totalSecs = totalSecs / 60;
+        hrs = totalSecs;
+        if (hrs < 10)
+            hr = "0" + hrs;
+        else
+            hr = "" + hrs;
+        return hr + ":" + min + ":" + sec;
+    }
+
+    @Override
+    public void onClick(View v)
+    {
         switch (v.getId())
         {
             case R.id.conatact_select:
                 Intent contactPickerIntent = new Intent(Intent.ACTION_PICK, Uri.parse("content://contacts"));
-                contactPickerIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE); // Show user only contacts w/ phone numbers
+                //contactPickerIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE); // Show user only contacts w/ phone numbers
                 startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT);
 
                 break;
             case R.id.recharge_butt_id:
-                Helper.toastHelper("Recharging for "+rechargePhoneNumber);
+                Intent rechargeIntent = new Intent(this.getActivity(),RechargePopup.class);
+                rechargeIntent.putExtra("NUMBER",numberField.getText().toString());
+                rechargeIntent.putExtra("CARRIER","Airtel");
+                rechargeIntent.putExtra("CIRCLE","Karnataka");
+                rechargeIntent.putExtra("AMOUNT",Integer.parseInt(amountField.getText().toString()));
+                startActivity(rechargeIntent);
+                Helper.toastHelper("Recharging for " + rechargePhoneNumber);
                 break;
             default:
         }
@@ -412,31 +451,37 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 			break;
 
 		}*/
-	
-		
-	}
-	
 
-	private boolean whatsappInstalledOrNot() {
-		PackageManager pm = getActivity().getPackageManager();
-		boolean app_installed = false;
-		try {
-			pm.getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES);
-			app_installed = true;
-		} catch (PackageManager.NameNotFoundException e) {
-			app_installed = false;
-		}
-		return app_installed;
-	}
+
+    }
+
+
+    private boolean whatsappInstalledOrNot()
+    {
+        PackageManager pm = getActivity().getPackageManager();
+        boolean app_installed = false;
+        try
+        {
+            pm.getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES);
+            app_installed = true;
+        } catch (PackageManager.NameNotFoundException e)
+        {
+            app_installed = false;
+        }
+        return app_installed;
+    }
 
     @Override
-    public void onPause() {
+    public void onPause()
+    {
 
         FlurryAgent.endTimedEvent("RechargeScreen");
         super.onPause();
     }
+
     @Override
-    public void onResume() {
+    public void onResume()
+    {
         Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(
                 TrackerName.APP_TRACKER);
 
@@ -448,11 +493,12 @@ public class RechargeFragment extends Fragment implements OnClickListener {
         // Log the timed event when the user starts reading the article
         // setting the third param to true creates a timed event
         FlurryAgent.logEvent("RechargeScreen", true);
-       //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Recharge Screen", "");
+        //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Recharge Screen", "");
         // End the timed event, when the user navigates away from article
 
         super.onResume();
     }
+
     @Override
     public void onDestroy()
     {
@@ -460,7 +506,6 @@ public class RechargeFragment extends Fragment implements OnClickListener {
 
         MyApplication.getRefWatcher().watch(this);
     }
-
 
 
 }
