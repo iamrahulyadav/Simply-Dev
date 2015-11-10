@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
+import android.util.Log;
 
 import com.builder.ibalance.database.helpers.IbalanceContract;
 import com.builder.ibalance.util.MyApplication;
@@ -26,7 +27,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     final static String tag = DatabaseManager.class.getSimpleName();
     private final static String DATABASE_NAME = "simply.db";
     private final static String OLD_DATABASE_NAME = "ibalance.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static DatabaseManager sInstance;
 
     public static synchronized DatabaseManager getInstance() {
@@ -258,49 +259,42 @@ public class DatabaseManager extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
-        /*Cursor c = db.rawQuery("SELECT * FROM CALL LIMIT 500",null);
-        ArrayList<NormalCall> tempList = new ArrayList<>();
-        //using only one object for optimisation
-        NormalCall tempNormalCall = new NormalCall(0l,0.0f,0.0f,0,"");
-        *//*+ "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
-                + "COST FLOAT, "  + "DURATION INTEGER, "
-                + "NUMBER TEXT, "+ "BALANCE FLOAT, " +"MESSAGE TEXT"+" )";*//*
-        int date_idx = c.getColumnIndex("DATE"),
-                cost_idx = c.getColumnIndex("COST"),
-                dur_idx = c.getColumnIndex("DURATION"),
-                num_idx = c.getColumnIndex("NUMBER"),
-                bal_idx = c.getColumnIndex("BALANCE"),
-                msg_idx = c.getColumnIndex("MESSAGE");
-        Collections.reverse(tempList);
-        while(c.moveToNext())
+        Log.d(tag,"Oldversion = "+ oldVersion + "newVersion = "+ newVersion );
+        if(oldVersion==2 && newVersion==3)
         {
-            tempList.add(new NormalCall(
-                    c.getLong(date_idx),
-                    0,
-                    c.getFloat(cost_idx),
-                    c.getFloat(bal_idx),
-                    c.getInt(dur_idx),
-                    c.getString(num_idx),
-                    c.getString(msg_idx)
-            ));
+            String tempTable = "temp_table";
+            db.beginTransaction();
+            db.execSQL("ALTER TABLE " + IbalanceContract.CallEntry.TABLE_NAME + " RENAME TO " + tempTable);
+            Log.d(tag, "Call Entry Rename complete");
+            db.execSQL(IbalanceContract.CREATE_CALL_TABLE);
+            db.execSQL("INSERT INTO "+IbalanceContract.CallEntry.TABLE_NAME+ " select * from " + tempTable);
+            Log.d(tag, "Call Entry Copy over complete");
+            db.execSQL("DROP TABLE " + tempTable);
+            Log.d(tag, "TEMP  Call Entry DRop complete");
+            db.execSQL("ALTER TABLE " + IbalanceContract.CallLogEntry.TABLE_NAME + " RENAME TO " + tempTable);
+            Log.d(tag, "Call LOG Entry Rename complete");
+            db.execSQL(IbalanceContract.CREATE_CALL_LOG_TABLE);
+            db.execSQL("INSERT INTO "+IbalanceContract.CallLogEntry.TABLE_NAME+ "(" +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_ID+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER+" ) "+
+                    " select  " +
+                    "_ID , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT+" , "+
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER+" "+
+                    " from " + tempTable);
+            Log.d(tag, "Call LOG Entry CopyOver complete");
+            db.setTransactionSuccessful();
+            db.endTransaction();
+            Log.d(tag, "Everything Successful");
         }
-        try {
-            //Log.d(TAG, "Trying to copy");
-            // copy the mapping mobile number to circle, operator database
-            copyDataBase();
-            createTables();
 
-        }
-        catch (IOException e)
-        {
-           //V10Log.d(tag,"CopyingFailed Check Assets");//what did you screw up???
-           //V10e.printStackTrace();
-        }
-        BalanceHelper mBalanceHelper = new BalanceHelper();
-        for(NormalCall temp:tempList)
-        {
-          mBalanceHelper.addEntry(temp);
-        }*/
 
 
     }

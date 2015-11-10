@@ -33,7 +33,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Recharge Number"
+        android:text="Number"
         android:id="@+id/recharge"
         android:layout_below="@+id/textView46"
         android:layout_alignParentLeft="true"
@@ -117,34 +117,92 @@
 <LinearLayout
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
     android:gravity="center"
+
+    android:background="@color/light_grey"
     android:weightSum="3">
-    <ImageButton
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="2dp"
+        android:background="@color/white"
+        android:layout_gravity="center"
+        android:layout_weight="1">
+    <ImageButton
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:layout_margin="2dp"
         android:id="@+id/paytm_recharge"
-        android:layout_weight="1"
+        android:background="@drawable/paytm"
         android:layout_below="@+id/textView47"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"/>
-
-    <ImageButton
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_margin="1dp"
+            android:layout_gravity="center"
+            android:text="Paytm"/>
+    </LinearLayout>
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:layout_margin="2dp"
+        android:background="@color/white"
+        android:layout_weight="1">
+    <ImageButton
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:gravity="center"
+        android:layout_margin="2dp"
+        android:layout_gravity="center"
         android:id="@+id/mobikwik_recharge"
-        android:layout_weight="1"
+        android:background="@drawable/mobikwik"
         android:layout_below="@+id/textView47"
         android:layout_toRightOf="@+id/mobile_no_id"
         />
-
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_margin="1dp"
+            android:layout_gravity="center"
+            android:text="Mobikwik"/>
+    </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            android:layout_margin="2dp"
+            android:background="@color/white"
+            android:layout_weight="1">
     <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:gravity="center"
+        android:layout_margin="2dp"
+        android:layout_gravity="center"
         android:id="@+id/freecharge_recharge"
-        android:layout_weight="1"
+        android:background="@drawable/freecharge"
         android:layout_below="@+id/textView47"
         android:layout_toRightOf="@+id/imageButton2"
         />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_margin="1dp"
+                android:layout_gravity="center"
+                android:text="FreeCharge"/>
+        </LinearLayout>
 
 </LinearLayout>
     <TextView
@@ -152,9 +210,11 @@
         android:layout_height="wrap_content"
         android:text="Note:- Though we take utmost care to display plans, some plans may be obsolete, please check with you operator"
         android:id="@+id/textView45"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:textSize="10sp"
+        android:gravity="center"
         android:textColor="@color/dark_grey"
         android:paddingLeft="5dp"
         android:paddingRight="5dp" />

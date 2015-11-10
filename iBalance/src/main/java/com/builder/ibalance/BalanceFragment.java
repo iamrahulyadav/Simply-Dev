@@ -6,9 +6,9 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,14 +17,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.builder.ibalance.adapters.DeductionsAdapter;
+import com.builder.ibalance.adapters.RecentListAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
+import com.builder.ibalance.database.helpers.CallLogsHelper;
 import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
@@ -51,8 +55,7 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.melnykov.fab.FloatingActionButton;
-import com.poliveira.apps.parallaxlistview.ParallaxListView;
-import com.poliveira.apps.parallaxlistview.ParallaxScrollEvent;
+import com.nirhart.parallaxscroll.views.ParallaxListView;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -79,6 +82,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
     static int sim_slot = 0;
 	public  List<NormalCall> ussdDataList = null;
     Button contactUsButton;
+    ParallaxListView mListView;
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -97,7 +101,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		dataTextView.setTypeface(tf);
 		balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
         contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
-       // mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
+        //mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
         if(GlobalData.globalSimList.size()>=2)
         {
             sim_switch.setVisibility(View.VISIBLE);
@@ -281,24 +285,41 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		});
         Log.d(tag, "Bal Frag currBalance = " + currBalance);
 
-        ParallaxListView mListView = null;
 
 		if(currBalance>-1.0)
 		{
-			LinearLayout parallaxcontainer = (LinearLayout)rootView.findViewById(R.id.parallax_container);
-			parallaxcontainer.removeAllViews();
-			final View v = this.getActivity().getLayoutInflater().inflate(R.layout.recent_call_list, parallaxcontainer, true);
-			mListView = (ParallaxListView) v.findViewById(R.id.recents_list);
-			final Cursor cursor = new BalanceHelper().getData();
-			cursor.moveToFirst();
-			DeductionsAdapter mDeductionsAdapter = new DeductionsAdapter(getActivity(), cursor, false);
-			mListView.setAdapter(mDeductionsAdapter);
+			ViewGroup container = (ViewGroup) rootView.findViewById(R.id.parallax_container);
+			mListView = (ParallaxListView) rootView.findViewById(R.id.recents_list);
+            mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph,null,false);
+            mLineChart.setLayoutParams(new AbsListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, 600));
+            createGraph();
+          /*  mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
+            createGraph();*/
+            //have to set the header before setting the adapter
+            mListView.addParallaxedHeaderView(mLineChart);
+            RecentListAdapter mRecentListAdapter = new RecentListAdapter(getActivity(), new CallLogsHelper().getAllLocalCallLogs(), false);
+			mListView.setAdapter(mRecentListAdapter);
+			mListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+            {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                {
+                    Intent intent = new Intent(Intent.ACTION_CALL);
+
+                    /** Creating a uri object to store the telephone number */
+                    Uri data = Uri.parse("tel:" + view.getTag());
+
+                    /** Setting intent data */
+                    intent.setData(data);
+
+                    /** Starting the caller activity by the implicit intent */
+                    startActivity(intent);
+                }
+            });
 		/*((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
 		mLineChart.setVisibility(View.VISIBLE);*/
 
-            mListView.setParallaxView(this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, mListView, false));
-            mLineChart = (LineChart) v.findViewById(R.id.balcontainer);
-            createGraph();
+
 		}
 
 
@@ -335,16 +356,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 				}
 			});*/
 		}
-        if(mListView!=null)
-        {
-            mListView.setScrollEvent(new ParallaxScrollEvent()
-            {
-                @Override
-                public void onScroll(double percentage, double offset, View parallaxView)
-                {
-                }
-            });
-        }
 		if (currData > 0.0)
 		{
 			dataTextView.setText(currData + "MB");

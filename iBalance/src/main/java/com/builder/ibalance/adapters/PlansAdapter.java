@@ -78,7 +78,7 @@ public class PlansAdapter extends BaseAdapter
             temp = talktime+"";
         talktimeText.setText(temp);
         benefitsText.setText(mPlan.getString("benefits"));
-        convertView.setTag(mPlan.getString("price"));
+        convertView.setTag(mPlan.getInt("price") + "");
         return convertView;
     }
 }

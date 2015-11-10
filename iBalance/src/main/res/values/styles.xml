@@ -76,4 +76,11 @@
         <item name="android:paddingRight">21dp</item>
         <item name="android:textColor">@color/white</item>
     </style>
+
+    <style name="call_summary">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">10dp</item>
+        <item name="android:background">@color/white</item>
+    </style>
 </resources>

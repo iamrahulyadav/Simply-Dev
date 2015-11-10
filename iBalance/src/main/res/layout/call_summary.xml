@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/callSummary"
+    style="@style/call_summary"
+    android:visibility="gone"
+    tools:showIn="@layout/fragment_recharge">
+
+    <TextView
+        android:id="@+id/textView29"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/textView34"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/textView34"
+        android:paddingTop="5dp"
+        android:text="Local Calls"/>
+
+
+    <ProgressBar
+        android:id="@+id/local_progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/textView39"
+        android:layout_alignRight="@+id/textView39"
+        android:layout_below="@+id/textView29"
+        android:layout_marginTop="25dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"/>
+
+    <TextView
+        android:id="@+id/local_same_carrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/local_progress_bar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="18dp"
+        android:paddingLeft="10dp"
+        android:text="To "/>
+
+    <TextView
+        android:id="@+id/textView39"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/local_same_carrier"
+        android:paddingRight="10dp"
+        android:text="To Others"/>
+
+    <TextView
+        android:id="@+id/textView34"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/local_progress_bar"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="10dp"
+        android:text="STD Calls"/>
+
+    <ProgressBar
+        android:id="@+id/STD_progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/textView39"
+        android:layout_alignRight="@+id/textView39"
+        android:layout_below="@+id/textView34"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="25dp"
+        android:indeterminate="false"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"/>
+
+
+    <TextView
+        android:id="@+id/std_same_carrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/STD_progress_bar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="18dp"
+        android:paddingLeft="10dp"
+        android:text="To Airtel"/>
+
+
+    <TextView
+        android:id="@+id/textView40"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/textView39"
+        android:layout_alignRight="@+id/textView39"
+        android:layout_alignTop="@+id/std_same_carrier"
+        android:paddingRight="10dp"
+        android:text="To Others"/>
+
+    <TextView
+        android:id="@+id/local_same_mins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView39"
+        android:paddingLeft="12dp"
+        android:text="75 min"
+        android:textColor="#ffffff"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/local_diff_mins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView39"
+        android:paddingRight="12dp"
+        android:text="25 min"
+        android:textColor="#ffffff"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/std_same_mins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/local_same_mins"
+        android:layout_alignStart="@+id/local_same_mins"
+        android:layout_below="@+id/textView40"
+        android:paddingLeft="12dp"
+        android:text="45 min"
+        android:textColor="#ffffff"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/std_diff_mins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView40"
+        android:paddingRight="12dp"
+        android:text="105 min"
+        android:textColor="#ffffff"
+        android:textSize="12sp"/>" />
+</RelativeLayout>

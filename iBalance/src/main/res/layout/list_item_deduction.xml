@@ -9,7 +9,7 @@
     <!-- contact_picture   -->
 
     <ImageView
-        android:id="@+id/contact_picture"
+        android:id="@+id/recents_picture"
         android:layout_width="80dp"
         android:layout_height="100dp"
         android:layout_marginRight="5dp"
@@ -20,11 +20,11 @@
     <!-- contact_name -->
 
     <TextView
-        android:id="@+id/contact_name"
+        android:id="@+id/recents_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/contact_picture"
-        android:layout_toRightOf="@+id/contact_picture"
+        android:layout_alignTop="@+id/recents_picture"
+        android:layout_toRightOf="@+id/recents_picture"
         android:textSize="@dimen/contact_name"
         android:layout_toLeftOf="@+id/slot"
         android:layout_toStartOf="@+id/slot"/>
@@ -32,12 +32,12 @@
     <!-- contact_number -->
 
     <TextView
-        android:id="@+id/contact_number"
+        android:id="@+id/recents_number"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/contact_name"
+        android:layout_below="@id/recents_name"
         android:layout_marginTop="5dip"
-        android:layout_toRightOf="@+id/contact_picture"
+        android:layout_toRightOf="@+id/recents_picture"
         android:textColor = "@color/dark_grey"
         android:textSize="@dimen/contact_number"
         android:layout_toLeftOf="@+id/days_ago"
@@ -52,7 +52,7 @@
         android:textColor = "@color/dark_grey"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:layout_toRightOf="@+id/contact_picture"
+        android:layout_toRightOf="@+id/recents_picture"
         android:textSize="@dimen/circle"
         android:layout_toLeftOf="@+id/slot"
         android:layout_toStartOf="@+id/slot"/>
@@ -75,7 +75,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/call_cost"
-        android:layout_alignLeft="@+id/contact_name"
+        android:layout_alignLeft="@+id/recents_name"
         android:textColor = "@color/dark_grey"
         android:text="Call Rate: " />
 
@@ -83,8 +83,8 @@
         android:id="@+id/call_cost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/contact_number"
-        android:layout_alignLeft="@+id/contact_name"
+        android:layout_below="@+id/recents_number"
+        android:layout_alignLeft="@+id/recents_name"
         android:textColor = "@color/dark_grey"
         android:text="Cost: " />
 
@@ -106,7 +106,7 @@
         android:id="@+id/balance"
         android:layout_below="@+id/call_rate"
         android:layout_alignParentBottom="true"
-        android:layout_alignLeft="@+id/contact_name"/>
+        android:layout_alignLeft="@+id/recents_name"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -114,7 +114,7 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Sim: "
         android:id="@+id/slot"
-        android:layout_alignBottom="@+id/contact_name"
+        android:layout_alignBottom="@+id/recents_name"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignLeft="@+id/time"

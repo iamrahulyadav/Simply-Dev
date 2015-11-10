@@ -33,16 +33,16 @@
         <item>BSNL</item>
         <item>MTNL</item>
         <item>MTS</item>
-        <item>Spice</item>
         <item>Uninor</item>
-        <item>Virgin</item>
+        <item>Reliance-CDMA</item>
         <item>Videocon</item>
         <item>T24</item>
+        <item>Spice</item>
         <item>Loop</item>
         <item>Tata-Indicom</item>
         <item>S-Tel</item>
+        <item>Virgin</item>
         <item>Etisalat-DB</item>
-        <item>Reliance-CDMA</item>
     </string-array>
     <string-array name="circles">
         <item>Andhra Pradesh</item>

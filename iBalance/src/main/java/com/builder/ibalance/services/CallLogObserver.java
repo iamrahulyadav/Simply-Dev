@@ -130,7 +130,8 @@ public class CallLogObserver extends ContentObserver
                     Message msg = accessibiltyServiceHandler.obtainMessage();
                     msg.arg1 = slot_id;
                     msg.what = 1729;
-                    msg.obj = new OutgoingCallMessage(number,duration);
+                    long call_id = cursor.getLong(id_idex);
+                    msg.obj = new OutgoingCallMessage(number,duration,call_id);
                     accessibiltyServiceHandler.sendMessage(msg);
                 }
             }

@@ -72,6 +72,7 @@ public class RecorderUpdaterService extends AccessibilityService
     CallDetailsModel mCallDetailsModel = null;
     Handler noUSSDMsgHandler = null;
     String lastNumber = null;
+    long _id = 0;
     int sim_slot = 0;
     int duration = 0;
     String text;
@@ -126,7 +127,7 @@ public class RecorderUpdaterService extends AccessibilityService
                     dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);*/
                 dismissNode = null;
                 startActivity(popup_intent);
-                NormalCall entry = new NormalCall(
+                NormalCall entry = new NormalCall(_id,
                         new Date().getTime(),
                         sim_slot,
                         mCallDetailsModel.getCall_cost(),
@@ -793,6 +794,7 @@ public class RecorderUpdaterService extends AccessibilityService
                 sim_slot = msg.arg1;
                 lastNumber = ((OutgoingCallMessage) msg.obj).lastNumber;
                 duration = ((OutgoingCallMessage) msg.obj).duration;
+                _id = ((OutgoingCallMessage) msg.obj).id;
                 displayPopUp();
             }
 

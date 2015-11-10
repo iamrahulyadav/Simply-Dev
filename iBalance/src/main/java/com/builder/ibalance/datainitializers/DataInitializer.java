@@ -135,7 +135,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME",true);
        //V10Log.d(TAG, "INDEXED ID = " + last_indexed_id);
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
-        Cursor callLogCursor = mCallLogsHelper.getAllCallLogs(last_indexed_id);
+        Cursor callLogCursor = mCallLogsHelper.getAllSystemCallLogs(last_indexed_id);
        //V10Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
         int slot,duration,type;
         Calendar c =Calendar.getInstance();
@@ -240,8 +240,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                     {
                         normalizedNumber = normalizedNumber.substring(1);
                     }
-                    normalizedNumber = normalizedNumber.replaceAll(" ","");
-                    normalizedNumber = normalizedNumber.replaceAll("-", "");
+                    normalizedNumber = normalizedNumber.replaceAll(" ","").replaceAll("-", "");
                     //Check if you got the number in the previous pass
                     contactDetail = contactDetailMap.get(normalizedNumber);
                     if(contactDetail == null)
@@ -367,10 +366,6 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         if(contactDetail == null)
         {
             //Get Name and Image URI
-            if(original_number == "121")
-            {
-                int i= 2;
-            }
             name_image = nameCache.get(original_number);
             if (name_image == null) {
                 name_image = new String[2];

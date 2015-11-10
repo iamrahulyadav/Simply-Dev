@@ -31,6 +31,28 @@ import java.util.Map;
  * Created by Shabaz on 7/28/2015.
  */
 public  class Helper {
+    public static String getTotalDurationFormatted(int totalSecs) {
+        String min, sec, hr;
+        Integer hrs, mins, secs;
+        secs = totalSecs % 60;
+        if (secs < 10)
+            sec = "0" + secs;
+        else
+            sec = "" + secs;
+        totalSecs = totalSecs / 60;
+        mins = totalSecs % 60;
+        if (mins < 10)
+            min = "0" + mins;
+        else
+            min = "" + mins;
+        totalSecs = totalSecs / 60;
+        hrs = totalSecs;
+        if (hrs < 10)
+            hr = "0" + hrs;
+        else
+            hr = "" + hrs;
+        return hr + ":" + min + ":" + sec;
+    }
     public static void toastHelper(final String Message)
     {
         Handler handler =  new Handler(MyApplication.context.getMainLooper());

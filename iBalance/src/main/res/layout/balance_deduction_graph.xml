@@ -4,8 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/balcontainer"
     android:layout_width="match_parent"
-    android:layout_height="380dp"
-    android:layout_margin="5dp"
-    android:layout_weight="6"
-    tools:showIn="@layout/fragment_balance">
+    android:layout_height="602dp"
+    android:layout_margin="5dp">
 </com.github.mikephil.charting.charts.LineChart>

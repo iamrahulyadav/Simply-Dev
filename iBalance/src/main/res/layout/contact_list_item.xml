@@ -8,7 +8,7 @@
  
     <!-- contact_picture -->
     <ImageView
-        android:id="@+id/contact_picture"
+        android:id="@+id/recents_picture"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_alignParentLeft="true"
@@ -19,25 +19,25 @@
     <!-- contact_name -->
 
     <TextView
-        android:id="@+id/contact_name"
+        android:id="@+id/recents_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Place Holder"
-        android:layout_alignTop="@+id/contact_picture"
-        android:layout_toRightOf="@+id/contact_picture"
+        android:layout_alignTop="@+id/recents_picture"
+        android:layout_toRightOf="@+id/recents_picture"
         android:textColor="@android:color/black"
         android:textSize="@dimen/contact_name" />
  
     <!-- contact_number -->
 
     <TextView
-        android:id="@+id/contact_number"
+        android:id="@+id/recents_number"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/contact_name"
+        android:layout_below="@id/recents_name"
         android:layout_marginTop="5dip"
-        android:layout_toLeftOf="@+id/toatal_duration"
-        android:layout_toRightOf="@+id/contact_picture"
+        android:layout_toLeftOf="@+id/recents_duration"
+        android:layout_toRightOf="@+id/recents_picture"
         android:textSize="@dimen/contact_number"
         android:text="9999999999"
         android:textColor="@android:color/darker_gray" />
@@ -54,14 +54,14 @@
         android:textColor="@android:color/darker_gray" 
         android:textSize="@dimen/circle"
         android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/toatal_duration"
-        android:layout_toRightOf="@+id/contact_picture"
-        android:layout_toEndOf="@+id/contact_picture"/>
+        android:layout_toLeftOf="@+id/recents_duration"
+        android:layout_toRightOf="@+id/recents_picture"
+        android:layout_toEndOf="@+id/recents_picture"/>
     
  <!-- Duration in HH::MM::SS format -->
 
     <TextView
-        android:id="@+id/cost"
+        android:id="@+id/recents_cost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -70,7 +70,7 @@
         android:text="Rs:1789.0"  />
  <!-- Cost -->
     <TextView
-        android:id="@+id/toatal_duration"
+        android:id="@+id/recents_duration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

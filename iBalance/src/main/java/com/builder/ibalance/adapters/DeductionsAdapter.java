@@ -27,9 +27,9 @@ public class DeductionsAdapter extends CursorAdapter{
 	@Override
 	public void bindView(View view, Context arg1, Cursor cursor) {
 		Typeface tf = Typeface.createFromAsset(mContext.getAssets(), "Roboto-Regular.ttf");
-		TextView name = (TextView) view.findViewById(R.id.contact_name);
+		TextView name = (TextView) view.findViewById(R.id.recents_name);
 		name.setTypeface(tf);
-		TextView number = (TextView) view.findViewById(R.id.contact_number);
+		TextView number = (TextView) view.findViewById(R.id.recents_number);
 		number.setTypeface(tf);
 		TextView days_ago = (TextView) view.findViewById(R.id.days_ago);
 		days_ago.setTypeface(tf);

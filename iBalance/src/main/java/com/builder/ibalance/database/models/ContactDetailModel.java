@@ -44,6 +44,7 @@ public class ContactDetailModel implements Parcelable
 
     public ContactDetailModel(String name, String carrier, String circle, String image_uri, float total_cost)
     {
+        //This is reused in recents adapter with total cost 0.0
         this.name = name;
         this.carrier = carrier;
         this.circle = circle;

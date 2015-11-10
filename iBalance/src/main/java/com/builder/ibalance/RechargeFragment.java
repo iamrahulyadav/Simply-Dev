@@ -11,21 +11,27 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.builder.ibalance.adapters.PlansAdapter;
 import com.builder.ibalance.core.SimModel;
+import com.builder.ibalance.database.MappingHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
@@ -42,27 +48,31 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
 
-public class RechargeFragment extends Fragment implements OnClickListener
+public class RechargeFragment extends Fragment implements OnClickListener,AdapterView.OnItemClickListener
 {
 
     private static final int CONTACT_PICKER_RESULT = 1001;
     final String TAG = RechargeFragment.class.getSimpleName();
     View rootView;
-    TextView local_carrier, std_carrier, mTextView;
-    ProgressBar mProgressBar;
+    TextView local_carrier, std_carrier;
     FloatingActionButton sim_switch;
     ListView plansListView;
     Button rechargeNow;
-    ImageButton contactsPicker;
+    ImageButton contactsPicker,callSummaryButton;
     String dummyJson = "[{\"price\":225,\"carrier\":\"Airtel\",\"circle\":\"KARNATAKA\",\"validity\":\"30 days\",\"type\":\"Takltime\",\"talktime\":240,\"tags\":[\"FULL TT\"],\"benefits\":\"Talktime: 240 (30 Days Val) | 300 local A-A secs for 5 days\"},{\"price\":251,\"carrier\":\"Airtel\",\"circle\":\"KARNATAKA\",\"validity\":\"30 days\",\"type\":\"Takltime\",\"talktime\":180,\"tags\":[\"Topup\",\"2G\",\"3G\"],\"benefits\":\"1.25 GB + Rs.180 Talktime\"}]";
     int sim_slot = 0;
-    String rechargePhoneNumber = null;
+    String rechargePhoneNumber = "";
     EditText numberField,amountField;
-
+    String currentCarrier = "Airtel", currentCircle= "Karnataka";
+    Spinner carrierSpinner,circleSpinner;
+    ArrayAdapter<CharSequence> carrierAdapter,circleAdapter;
+    int spinnerPosition;
+    View callSummary;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
@@ -75,15 +85,49 @@ public class RechargeFragment extends Fragment implements OnClickListener
         sim_switch = (FloatingActionButton) rootView.findViewById(R.id.sim_switch);
         contactsPicker = (ImageButton) rootView.findViewById(R.id.conatact_select);
         contactsPicker.setOnClickListener(this);
+        callSummaryButton = (ImageButton) rootView.findViewById(R.id.call_summary_expand_button);
+        callSummaryButton.setOnClickListener(this);
+        callSummary =  rootView.findViewById(R.id.callSummary);
         rechargeNow = (Button) rootView.findViewById(R.id.recharge_butt_id);
         rechargeNow.setOnClickListener(this);
         numberField = (EditText) rootView.findViewById(R.id.numberField);
         amountField = (EditText) rootView.findViewById(R.id.amountField);
+        carrierSpinner = (Spinner) rootView.findViewById(R.id.recharge_carrier);
+        circleSpinner = (Spinner) rootView.findViewById(R.id.recharge_circle);
         rechargePhoneNumber = ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
         if (rechargePhoneNumber != null)
         {
             numberField.setText(rechargePhoneNumber);
         }
+        numberField.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+                if (s==null ||rechargePhoneNumber.equals(s.toString()) || s.length() < 10)
+                {
+                    //DoNothing
+                } else
+                {
+                    rechargePhoneNumber = s.toString();
+                    MappingHelper m = new MappingHelper();
+                    ArrayList<String> carrier_circle = m.getMapping(s.toString());
+                    updateUserCarrierCircle(carrier_circle);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+
+            }
+        });
         //Log.d(TAG, "UserCircle = "+ userCircle + " UserCarrier "+userCarrier);
         plansListView = (ListView) rootView.findViewById(R.id.plans_list_view);
 
@@ -119,24 +163,74 @@ public class RechargeFragment extends Fragment implements OnClickListener
         }
 
         SimModel currentSim = GlobalData.globalSimList.get(sim_slot);
-        Log.d(TAG,"Querying Parse with carrier = "+currentSim.getCarrier());
-        Log.d(TAG,"Querying Parse with Circle = "+currentSim.getCircle());
-        Helper.toastHelper(currentSim.getCarrier()+" "+currentSim.getCircle());
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("PLANS");
-        query.whereEqualTo("carrier",currentSim.getCarrier());
-        query.whereEqualTo("circle",currentSim.getCircle());
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> plansList, ParseException e) {
-                if (e == null) {
-                    Log.d(TAG, "Plans Retrieved " + plansList.size() + " plans");
-                    Log.d(TAG, "Plans Retrieved " + plansList.toString() );
-                    populatePlans(plansList);
-                } else {
-                    Log.d(TAG, "PLANS Error: " + e.getMessage());
+        currentCarrier = currentSim.getCarrier();
+        currentCircle = currentSim.getCircle();
+        carrierAdapter = ArrayAdapter.createFromResource(this.getActivity(), R.array.carriers, android.R.layout.simple_spinner_item);
+        carrierAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        carrierSpinner.setAdapter(carrierAdapter);
+        spinnerPosition = carrierAdapter.getPosition(currentCarrier);
+
+        //set the default according to value
+
+        carrierSpinner.setTag(spinnerPosition);
+        carrierSpinner.setSelection(spinnerPosition);
+        carrierSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int pos, long id)
+            {
+                currentCarrier = (String) parent.getItemAtPosition(pos);
+                if(carrierSpinner.getTag() != pos)
+                {
+                    loadPlans(currentCarrier, currentCircle);
                 }
+                carrierSpinner.setTag(-1);
+                //Log.d(TAG,"UserCarrier  "+ userCarrier);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0)
+            {
+
             }
         });
 
+        circleAdapter = ArrayAdapter.createFromResource(this.getActivity(), R.array.circles, android.R.layout.simple_spinner_item);
+        circleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        circleSpinner.setAdapter(circleAdapter);
+        spinnerPosition = circleAdapter.getPosition(currentCircle);
+        //Log.d(TAG,"spinnerPosition Circle"+spinnerPosition );
+        //set the default according to value
+
+        circleSpinner.setTag(spinnerPosition);
+        circleSpinner.setSelection(spinnerPosition);
+        circleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int pos, long id)
+            {
+
+                currentCircle = (String) parent.getItemAtPosition(pos);
+                if(circleSpinner.getTag() != pos)
+                {
+                    loadPlans(currentCarrier, currentCircle);
+                }
+                circleSpinner.setTag(-1);
+                //Log.d(TAG,"userCircle  "+ userCircle);
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+
+            }
+        });
+
+        loadPlans(currentCarrier,currentCircle);
         if (DataInitializer.done == true)
         {
             //Log.d(TAG, "Data Already loaded");
@@ -165,6 +259,52 @@ public class RechargeFragment extends Fragment implements OnClickListener
 		}*/
         return rootView;
     }
+
+    private void updateUserCarrierCircle(ArrayList<String> carrier_circle)
+    {
+        if(carrier_circle!=null)
+        {
+            if(DataInitializer.carriers==null)
+            {
+                DataInitializer.InitializeData();
+            }
+            currentCarrier = DataInitializer.carriers.get(carrier_circle.get(0));
+            currentCircle = DataInitializer.circle.get(carrier_circle.get(1));
+
+            spinnerPosition = carrierAdapter.getPosition(currentCarrier);
+            carrierSpinner.setTag(spinnerPosition);
+            carrierSpinner.setSelection(spinnerPosition);
+            spinnerPosition = circleAdapter.getPosition(currentCircle);
+            circleSpinner.setTag(spinnerPosition);
+            circleSpinner.setSelection(spinnerPosition);
+            loadPlans(currentCarrier,currentCircle);
+        }
+    }
+
+    void loadPlans(String currentCarrier, String currentCircle)
+    {
+        Log.d(TAG,"Querying Parse with carrier = "+currentCarrier);
+        Log.d(TAG,"Querying Parse with Circle = "+currentCircle);
+        Helper.toastHelper(currentCarrier + " " + currentCircle);
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("PLANS");
+        query.whereEqualTo("carrier", currentCarrier);
+        query.whereEqualTo("circle", currentCircle);
+        query.findInBackground(new FindCallback<ParseObject>()
+        {
+            public void done(List<ParseObject> plansList, ParseException e)
+            {
+                if (e == null)
+                {
+                    Log.d(TAG, "Plans Retrieved " + plansList.size() + " plans");
+                    Log.d(TAG, "Plans Retrieved " + plansList.toString());
+                    populatePlans(plansList);
+                } else
+                {
+                    Log.d(TAG, "PLANS Error: " + e.getMessage());
+                }
+            }
+        });
+    }
     void populatePlans(List<ParseObject> plans)
     {
         /*Type listType = new TypeToken<ArrayList<PlansModel>>()
@@ -175,11 +315,22 @@ public class RechargeFragment extends Fragment implements OnClickListener
         try
         {
             plansList = new Gson().fromJson(plansJsonString, listType);*/
-
-            PlansAdapter mPlansAdapter = new PlansAdapter(plans);
-            plansListView.setAdapter(mPlansAdapter);
-        rootView.findViewById(R.id.plans_loading).setVisibility(View.GONE);
-        plansListView.setVisibility(View.VISIBLE);
+        View plansLoading = rootView.findViewById(R.id.plans_loading);
+            if(plans.size()>0)
+            {
+                PlansAdapter mPlansAdapter = new PlansAdapter(plans);
+                plansListView.setAdapter(mPlansAdapter);
+                plansListView.setOnItemClickListener(this);
+                plansLoading.setVisibility(View.GONE);
+                plansListView.setVisibility(View.VISIBLE);
+            }
+        else
+            {
+                plansLoading.setVisibility(View.VISIBLE);
+                plansListView.setVisibility(View.GONE);
+                plansLoading.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                ((TextView)plansLoading.findViewById(R.id.info_text)).setText("Sorry No Popular Plans Available for the select Operator and Circle");
+            }
        /* } catch (Exception e)
         {
             e.printStackTrace();
@@ -381,11 +532,15 @@ public class RechargeFragment extends Fragment implements OnClickListener
             case R.id.recharge_butt_id:
                 Intent rechargeIntent = new Intent(this.getActivity(),RechargePopup.class);
                 rechargeIntent.putExtra("NUMBER",numberField.getText().toString());
-                rechargeIntent.putExtra("CARRIER","Airtel");
-                rechargeIntent.putExtra("CIRCLE","Karnataka");
+                rechargeIntent.putExtra("CARRIER",currentCarrier);
+                rechargeIntent.putExtra("CIRCLE",currentCircle);
                 rechargeIntent.putExtra("AMOUNT",Integer.parseInt(amountField.getText().toString()));
                 startActivity(rechargeIntent);
                 Helper.toastHelper("Recharging for " + rechargePhoneNumber);
+                break;
+            case R.id.call_summary_expand_button:
+                //toggle visibility
+                callSummary.setVisibility((callSummary.getVisibility() == View.GONE)?View.VISIBLE:View.GONE);
                 break;
             default:
         }
@@ -508,4 +663,31 @@ public class RechargeFragment extends Fragment implements OnClickListener
     }
 
 
+    /**
+     * Callback method to be invoked when an item in this AdapterView has
+     * been clicked.
+     * <p/>
+     * Implementers can call getItemAtPosition(position) if they need
+     * to access the data associated with the selected item.
+     *
+     * @param parent   The AdapterView where the click happened.
+     * @param view     The view within the AdapterView that was clicked (this
+     *                 will be a view provided by the adapter)
+     * @param position The position of the view in the adapter.
+     * @param id       The row id of the item that was clicked.
+     */
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+    {
+        Log.d(TAG,view.getTag().toString());
+        String temp = view.getTag().toString();
+        amountField.setText(temp);
+        Intent rechargeIntent = new Intent(this.getActivity(),RechargePopup.class);
+        rechargeIntent.putExtra("NUMBER",numberField.getText().toString());
+        rechargeIntent.putExtra("CARRIER",currentCarrier);
+        rechargeIntent.putExtra("CIRCLE",currentCircle);
+        rechargeIntent.putExtra("AMOUNT",Integer.parseInt(amountField.getText().toString()));
+        startActivity(rechargeIntent);
+        Helper.toastHelper("Recharging for " + rechargePhoneNumber);
+    }
 }

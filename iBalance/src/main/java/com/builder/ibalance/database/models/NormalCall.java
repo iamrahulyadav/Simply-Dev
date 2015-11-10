@@ -11,7 +11,7 @@ public class NormalCall extends DatabaseEntryBase
     public int slot ;
     public String lastNumber;
 	public String message;
-
+    public long id;
     public NormalCall(){}
  
     public NormalCall(Long time, Float callCost,Float bal,int callDuration,String message) {
@@ -23,8 +23,9 @@ public class NormalCall extends DatabaseEntryBase
         this.message = message;
     }
 
-    public NormalCall(Long time,int slot, Float callCost,Float bal,int callDuration,String lastNumber,String message) {
+    public NormalCall(long id,Long time,int slot, Float callCost,Float bal,int callDuration,String lastNumber,String message) {
         super();
+        this.id = id;
         this.date = time;
         this.slot = slot;
         this.callCost = callCost;
@@ -33,7 +34,8 @@ public class NormalCall extends DatabaseEntryBase
         this.lastNumber = lastNumber;
         this.message = message;
     }
-    public void put(Long time,int slot, Float callCost,Float bal,int callDuration,String lastNumber,String message) {
+    public void put(long id ,Long time,int slot, Float callCost,Float bal,int callDuration,String lastNumber,String message) {
+        this.id = id;
         this.date = time;
         this.slot = slot;
         this.callCost = callCost;
@@ -46,7 +48,7 @@ public class NormalCall extends DatabaseEntryBase
  
     @Override
     public String toString() {
-        return "Entry [date=" + date+ ", callcost=" + callCost + ", bal=" + bal
+        return "Entry [id = "+id+" , date=" + date+ ", callcost=" + callCost + ", bal=" + bal
                 + ", callduration=" + callDuration + "lastNumber = "+lastNumber +" Message = "+message+ "]";
     }
 }

@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.database.models.NormalCall;
@@ -21,7 +20,7 @@ public class BalanceHelper {
 	public BalanceHelper() {
 		mMySQLiteHelper = DatabaseManager.getInstance();
 	}
-
+	SQLiteDatabase readableDb = null;
 	public void addEntry(NormalCall entry) {
 
 		// 1. get reference to writable DB
@@ -35,10 +34,10 @@ public class BalanceHelper {
         {
             phNumber = phNumber.substring(1);
         }
-        phNumber = phNumber.replaceAll(" ","");
-        phNumber = phNumber.replaceAll("-", "");
+        phNumber = phNumber.replaceAll(" ","").replace("-", "");
 		// 2. create ContentValues to add key "column"/value
 		ContentValues values = new ContentValues();
+		values.put("_id", entry.id); // Id which matches the call log id
 		values.put("DATE", entry.date); // get date in milliseconds
 		values.put(IbalanceContract.CallEntry.COLUMN_NAME_SLOT,entry.slot);
 		values.put("COST", entry.callCost); // get callcost
@@ -53,7 +52,24 @@ public class BalanceHelper {
 							// values
 
 	}
-
+ public Float getCostForId(long id)
+ {
+     if(readableDb==null)
+         readableDb = mMySQLiteHelper.getReadableDatabase();
+     Cursor c = readableDb.query(IbalanceContract.CallEntry.TABLE_NAME,
+             new String[]{IbalanceContract.CallEntry.COLUMN_NAME_COST},
+             IbalanceContract.CallEntry.COLUMN_NAME_ID + " = ?",
+             new String[]{id+""},null,null,null);
+     if(c.moveToFirst())
+     {
+        //DB is 0 indexed
+         Float cost = c.getFloat(0);
+         c.close();
+         return cost;
+     }
+     c.close();
+	 return null;
+ }
 	public List<NormalCall> getAllEntries() {
 		List<NormalCall> entries = new LinkedList<NormalCall>();
 
@@ -193,7 +209,9 @@ public class BalanceHelper {
 	{
        String query = "select sum(COST), sum(DURATION) from CALL where NUMBER = \'+91"
                 + phNumber + "\'" + " OR NUMBER =\'" + phNumber + "\'";
-        Cursor c = mMySQLiteHelper.getReadableDatabase().rawQuery(query,null);
+        if(readableDb==null)
+            readableDb = mMySQLiteHelper.getReadableDatabase();
+        Cursor c = readableDb.rawQuery(query,null);
         float callCost = (float) 0.0;
         int duration = 0;
         if(c.moveToFirst())

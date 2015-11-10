@@ -37,7 +37,7 @@ public class
 
     public static final String DROP_CALL_TABLE = "DROP TABLE IF EXISTS "+ CallEntry.TABLE_NAME;
     public static final String CREATE_CALL_TABLE ="CREATE TABLE IF NOT EXISTS " + CallEntry.TABLE_NAME + " (" +
-            CallEntry.COLUMN_NAME_ID + INT_TYPE +PK+ AINC+ COMMA_SEP +
+            CallEntry.COLUMN_NAME_ID + INT_TYPE +PK+ COMMA_SEP +
             CallEntry.COLUMN_NAME_SLOT + INT_TYPE + COMMA_SEP +
             CallEntry.COLUMN_NAME_DATE + INT_TYPE + COMMA_SEP +
             CallEntry.COLUMN_NAME_COST + FLOAT_TYPE + COMMA_SEP +
@@ -216,7 +216,7 @@ public class
 
     }
     public static abstract class CallLogEntry  {
-        public static final String COLUMN_NAME_ID = "_ID";
+        public static final String COLUMN_NAME_ID = "_id";
         public static final String TABLE_NAME = "CALL_LOGS";
         public static final String COLUMN_NAME_SLOT = "SLOT";
         public static final String COLUMN_NAME_NUMBER= "NUMBER";

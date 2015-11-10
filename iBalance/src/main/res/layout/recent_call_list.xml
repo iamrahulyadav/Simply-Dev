@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<view
+
+<com.nirhart.parallaxscroll.views.ParallaxListView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/recents_list"
     android:layout_width="match_parent"
+    android:id="@+id/recents_list"
     android:layout_height="wrap_content"
     android:layout_weight="4"
-    app:scrollMultiplier="0.5"
-    class="com.poliveira.apps.parallaxlistview.ParallaxListView"
+    app:parallax_factor="1.9"
     tools:showIn="@layout/fragment_balance"/>

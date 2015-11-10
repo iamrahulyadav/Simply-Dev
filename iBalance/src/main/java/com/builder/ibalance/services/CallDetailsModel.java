@@ -18,6 +18,18 @@ public class CallDetailsModel implements Parcelable
     private String carrier_circle = "Unkown/Unkown";
     private String image_uri = null;
 
+    public long getId()
+    {
+        return id;
+    }
+
+    public void setId(long id)
+    {
+        this.id = id;
+    }
+
+    long id =0;
+
     public String getMessage()
     {
         return message;

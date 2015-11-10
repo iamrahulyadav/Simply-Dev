@@ -13,7 +13,18 @@ public class MappingHelper {
 		//Log.d(tag, "Creating Databse");
 		myDB =	 DatabaseManager.getInstance().getReadableDatabase();
 	}
-	
+	public ArrayList<String> getMapping(String number)
+	{
+        int first4Digits = 9972;
+        if(number.length()>=10)
+        {
+            first4Digits = Integer.parseInt(
+                    number.substring(
+                            number.length() - 10,
+                            number.length() - 6));
+        }
+		return getMapping(first4Digits);
+	}
 	public ArrayList<String> getMapping(int number) {
 		
 		ArrayList<String> temp = new ArrayList<String>();

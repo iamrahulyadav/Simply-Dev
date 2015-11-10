@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.builder.ibalance.R;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.util.CircleTransform;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.squareup.picasso.Picasso;
 
@@ -56,16 +57,16 @@ public class CustomContactsAdapter extends BaseAdapter {
         
         
         ImageView contactPicture = (ImageView) convertView
-                .findViewById(R.id.contact_picture);
-        TextView contact_name = (TextView) convertView.findViewById(R.id.contact_name);
+                .findViewById(R.id.recents_picture);
+        TextView contact_name = (TextView) convertView.findViewById(R.id.recents_name);
         contact_name.setTypeface(tf);
-        TextView contact_number = (TextView) convertView.findViewById(R.id.contact_number);
+        TextView contact_number = (TextView) convertView.findViewById(R.id.recents_number);
         contact_name.setTypeface(tf);
         TextView circle_state = (TextView) convertView.findViewById(R.id.circle);
         circle_state.setTypeface(tf);
-        TextView total_duration = (TextView) convertView.findViewById(R.id.toatal_duration);
+        TextView total_duration = (TextView) convertView.findViewById(R.id.recents_duration);
         total_duration.setTypeface(tf);
-        TextView cost = (TextView) convertView.findViewById(R.id.cost);
+        TextView cost = (TextView) convertView.findViewById(R.id.recents_cost);
         cost.setTypeface(tf);
         // getting movie data for the row
         ContactDetailModel m = contactItems.get(position);
@@ -92,32 +93,11 @@ public class CustomContactsAdapter extends BaseAdapter {
         circle_state.setText(m.carrier+","+m.circle);
          
         // total_duration
-        total_duration.setText(getTotalDurationFormatted(m.out_duration));
+        total_duration.setText(Helper.getTotalDurationFormatted(m.out_duration));
         
         cost.setText("Rs. "+String.format("%.2f", m.total_cost));
  
         return convertView;
     }
-    private String getTotalDurationFormatted(int totalSecs) {
-        String min, sec, hr;
-        Integer hrs, mins, secs;
-        secs = totalSecs % 60;
-        if (secs < 10)
-            sec = "0" + secs;
-        else
-            sec = "" + secs;
-        totalSecs = totalSecs / 60;
-        mins = totalSecs % 60;
-        if (mins < 10)
-            min = "0" + mins;
-        else
-            min = "" + mins;
-        totalSecs = totalSecs / 60;
-        hrs = totalSecs;
-        if (hrs < 10)
-            hr = "0" + hrs;
-        else
-            hr = "" + hrs;
-        return hr + ":" + min + ":" + sec;
-    }
+
 }

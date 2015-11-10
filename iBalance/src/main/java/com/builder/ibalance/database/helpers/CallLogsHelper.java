@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.CallLog;
 
 import com.builder.ibalance.core.SimModel;
@@ -24,30 +25,29 @@ import java.util.ArrayList;
 public class CallLogsHelper
 {
     final String tag = this.getClass().getSimpleName();
-    SQLiteDatabase mSqlDB;
+    SQLiteOpenHelper mSqlDB;
     public CallLogsHelper()
     {
-        mSqlDB  = DatabaseManager.getInstance().getWritableDatabase();
-        mSqlDB.execSQL(IbalanceContract.CREATE_CALL_LOG_TABLE);
+        mSqlDB  = DatabaseManager.getInstance();
     }
 
     public SQLiteDatabase getWriteableDatabase()
     {
-        return mSqlDB;
+        return mSqlDB.getWritableDatabase();
     }
     public SQLiteDatabase getDatabase()
     {
-        return mSqlDB;
+        return mSqlDB.getReadableDatabase();
     }
     public SQLiteDatabase getReadableDatabase()
     {
-        return DatabaseManager.getInstance().getReadableDatabase();
+        return mSqlDB.getReadableDatabase();
     }
     public void executeQuery(String query) throws SQLException
     {
         try
         {
-            mSqlDB.execSQL(query);
+            mSqlDB.getWritableDatabase().execSQL(query);
         }
         catch (SQLiteException e)
         {
@@ -62,13 +62,13 @@ public class CallLogsHelper
         projection.add(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
         projection.add(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE);
         projection.add(IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION);
-        Cursor managedCursor = mSqlDB.query(
+        Cursor managedCursor = mSqlDB.getReadableDatabase().query(
                 IbalanceContract.CallLogEntry.TABLE_NAME,
                 projection.toArray(new String[projection.size()]),
                 IbalanceContract.CallLogEntry.COLUMN_NAME_DATE + ">=? AND " +
                         "" +
-                IbalanceContract.CallLogEntry.COLUMN_NAME_DATE +"<=?",
-                new String[] { String.valueOf(startDate),String.valueOf(endDate)},
+                        IbalanceContract.CallLogEntry.COLUMN_NAME_DATE + "<=?",
+                new String[]{String.valueOf(startDate), String.valueOf(endDate)},
                 null,
                 null,
                 IbalanceContract.CallLogEntry.COLUMN_NAME_ID + " ASC");
@@ -95,7 +95,7 @@ public class CallLogsHelper
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION, entry.out_duration);
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT, entry.miss_count);
 
-        mSqlDB.insert(IbalanceContract.ContactDetailEntry.TABLE_NAME, // table
+        mSqlDB.getWritableDatabase().insert(IbalanceContract.ContactDetailEntry.TABLE_NAME, // table
                 null, // nullColumnHack
                 values); // key/value -> keys = column names/ values = column
         // values
@@ -104,7 +104,7 @@ public class CallLogsHelper
     //This a exception to Update a days details, must have not done this
     public DateDurationModel getDateDurationModel(long date)
     {
-        Cursor c = mSqlDB.rawQuery("SELECT * FROM "+IbalanceContract.DateDurationEntry.TABLE_NAME+" WHERE "+IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE+" ="+date,null);
+        Cursor c = mSqlDB.getReadableDatabase().rawQuery("SELECT * FROM " + IbalanceContract.DateDurationEntry.TABLE_NAME + " WHERE " + IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE + " =" + date, null);
         DateDurationModel m;
         if(c.moveToFirst())
         {
@@ -130,7 +130,7 @@ public class CallLogsHelper
     public ContactDetailModel getContactDetailFromDb(String phNumber)
     {
 
-        Cursor c = mSqlDB.rawQuery("SELECT * FROM "+IbalanceContract.ContactDetailEntry.TABLE_NAME+" WHERE "+IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER+" = \""+phNumber+"\"",null);
+        Cursor c = mSqlDB.getReadableDatabase().rawQuery("SELECT * FROM " + IbalanceContract.ContactDetailEntry.TABLE_NAME + " WHERE " + IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER + " = \"" + phNumber + "\"", null);
         if(c.moveToFirst())
         {
             ContactDetailModel m = new ContactDetailModel(
@@ -165,7 +165,7 @@ public class CallLogsHelper
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION, entry.out_duration);
         values.put(IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT, entry.miss_count);
 
-        mSqlDB.replace(IbalanceContract.ContactDetailEntry.TABLE_NAME, // table
+        mSqlDB.getWritableDatabase().replace(IbalanceContract.ContactDetailEntry.TABLE_NAME, // table
                 null, // nullColumnHack
                 values); // key/value -> keys = column names/ values = column
         // values
@@ -314,8 +314,21 @@ public class CallLogsHelper
         }
         return 0;
     }
+    public Cursor getAllLocalCallLogs()
+    {
 
-    public Cursor getAllCallLogs(long id)
+
+        Cursor managedCursor = mSqlDB.getReadableDatabase().query(
+                IbalanceContract.CallLogEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                IbalanceContract.CallLogEntry.COLUMN_NAME_ID + " DESC");
+        return managedCursor;
+    }
+    public Cursor getAllSystemCallLogs(long id)
     {
 
         ArrayList<String> projection = new ArrayList<>();
