@@ -40,10 +40,8 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles 'proguard-project.txt'
-        }
-        debug {
-            ext.enableCrashlytics = false
         }
     }
 }
@@ -61,7 +59,7 @@ dependencies {
     compile 'com.parse.bolts:bolts-android:1.+'
     compile 'com.parse:parse-android:1.+'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile('com.crashlytics.sdk.android:crashlytics:2.4.0@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.5.2@aar') {
         transitive = true;
         compile 'com.google.android.gms:play-services:+'
     }

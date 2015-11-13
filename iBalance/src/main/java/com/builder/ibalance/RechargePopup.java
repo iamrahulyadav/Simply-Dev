@@ -8,8 +8,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -23,6 +25,7 @@ public class RechargePopup extends Activity implements View.OnClickListener
     int carrierId = 1, circleId = 1, amount = 0;
     TextView mobileNumberView,carrierCircleView,amountView;
     ImageButton paytmButton,mobiKwikButton,freeChargeButton;
+    Button cancelButton;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -44,7 +47,8 @@ public class RechargePopup extends Activity implements View.OnClickListener
         mobileNumberView.setText(number);
         carrierCircleView.setText(carrierExtra+", "+circleExtra);
         amountView.setText("Rs. "+amount);
-
+        cancelButton = (Button) findViewById(R.id.recharge_cancel);
+        cancelButton.setOnClickListener(this);
         paytmButton = (ImageButton) findViewById(R.id.paytm_recharge);
         paytmButton.setOnClickListener(this);
         mobiKwikButton = (ImageButton) findViewById(R.id.mobikwik_recharge);
@@ -62,7 +66,9 @@ public class RechargePopup extends Activity implements View.OnClickListener
         Intent intent = null;
         switch (v.getId())
         {
-
+            case R.id.recharge_cancel:
+                finish();
+                break;
             case R.id.paytm_recharge:
                 //Paytm
                 try
@@ -80,7 +86,8 @@ public class RechargePopup extends Activity implements View.OnClickListener
                 {
                     //Ask them to install the app
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=net.one97.paytm&referrer=utm_source=SimplyApp")));
-                    e.printStackTrace();
+                    Toast.makeText(this,"You must install Paytm before Recharge",Toast.LENGTH_LONG).show();
+                   // e.printStackTrace();
                 }
 
 
@@ -90,10 +97,12 @@ public class RechargePopup extends Activity implements View.OnClickListener
 
                 try
                 {
+
+
                     getPackageManager().getPackageInfo("com.mobikwik_new", 0);
                     //If app Installed
                     intent = new Intent("com.mobikwik_new.RECHARGE");
-                    intent.setComponent(new ComponentName("com.mobikwik_new", "com.mobikwik_new.billers.RechargeCategory"));
+                    intent.setComponent(new ComponentName("com.mobikwik_new", "com.mobikwik_new.home.activities.MainNavigationActivity"));
                     initializeMapForMobiKwik();
                     circleId = circle.get(circleExtra);
                     carrierId = carriers.get(carrierExtra);
@@ -108,11 +117,27 @@ public class RechargePopup extends Activity implements View.OnClickListener
                 {
                     //Ask them to install the app
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.mobikwik_new&referrer=utm_source=SimplyApp")));
-                    e.printStackTrace();
+                    Toast.makeText(this,"You must install Mobikwik before Recharge",Toast.LENGTH_LONG).show();
+                   //e.printStackTrace();
                 }
                 break;
             case R.id.freecharge_recharge:
                 //FeeCharge
+                try
+                {
+                    getPackageManager().getPackageInfo("com.freecharge.android", 0);
+                    intent = new Intent("com.freecharge.android");
+                    intent.setComponent(new ComponentName("com.freecharge.android", "com.freecharge.android.com.freecharge.ui.MainSplashActivity"));
+                    intent.putExtra("src", "SimplyApp");
+                    intent.putExtra("referralSource", "SimplyApp");
+                    intent.putExtra("referral", "SimplyApp");
+                    startActivity(intent);
+                } catch (PackageManager.NameNotFoundException e)
+                {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.freecharge.android&referrer=utm_source=SimplyApp")));
+                    Toast.makeText(this,"You must install FreeCharge before Recharge",Toast.LENGTH_LONG).show();
+                    //e.printStackTrace();
+                }
                 break;
             default:
         }

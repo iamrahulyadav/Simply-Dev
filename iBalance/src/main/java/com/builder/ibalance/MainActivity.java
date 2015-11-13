@@ -38,6 +38,7 @@ import de.greenrobot.event.EventBus;
 public class MainActivity extends Activity implements ActionBar.TabListener {
 	final String tag = MainActivity.class.getSimpleName();
 	SharedPreferences mSharedPreferences;
+	public static boolean sim1BalanceReminderShown = false,sim2BalanceReminderShown = false;
 	EditText input ;
 	//MoPubInterstitial mInterstitial;
 	Tracker t = ((MyApplication)MyApplication.context).getTracker(
@@ -66,7 +67,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the activity.
 		mainActivityAdapter = new MainActivityAdapter(getFragmentManager());
-
+		
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mainActivityAdapter);
@@ -97,10 +98,14 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 					.setTabListener(this));
 		}
 
+
 		
 	}
 
-
+	public void goToRechargepage()
+	{
+		mViewPager.setCurrentItem(3);
+	}
 	@Override
 	protected void onResume() {
 		// Logs 'install' and 'app activate' App Events.
@@ -199,7 +204,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		// create a dialog box to enter the minimum balance
 		final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
 		LayoutInflater inflater = getLayoutInflater();
-        View mView = inflater.inflate(R.layout.balance_reminder, null);
+        View mView = inflater.inflate(R.layout.set_balance_reminder, null);
 		alertBuilder.setView(mView);
 
 		// Set an EditText view to get user input
@@ -245,7 +250,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
                 alert.dismiss();
             }
         });
-        alert.show();;
+        alert.show();
 		//Log.d("CHART", "Dialog Creation done");
 		return true;
 
@@ -273,6 +278,8 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	protected void onDestroy() {
 		super.onDestroy();
 		mSharedPreferences.edit().putInt("FILTER",0).commit();
+		sim1BalanceReminderShown = false;
+		sim2BalanceReminderShown = false;
 		/*if(mInterstitial!=null)
 		mInterstitial.destroy();*/
 	}

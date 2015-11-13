@@ -189,6 +189,12 @@ public class DualSim
         else
         {
             sim_list = mSharedPreferenceHelper.getDualSimDetails();
+            /*//for US
+            int i=1;
+            if(i==1)
+            {
+                return sim_list;
+            }*/
             debugInfo.append("SIM From Prefs TYPE = "+type+"\n");
             debugInfo.append("SIM DETAILS = " + sim_list.toString() + "\n");
             if(sim_list.isEmpty())

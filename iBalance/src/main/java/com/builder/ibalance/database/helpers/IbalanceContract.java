@@ -48,7 +48,7 @@ public class
             " )";
 
 
-   public final static String CREATE_VOICE_PACK_TABLE = "CREATE TABLE VOICE_PACK ( "
+   public final static String CREATE_VOICE_PACK_TABLE = "CREATE TABLE IF NOT EXISTS VOICE_PACK ( "
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
             + "DURATION INTEGER, "+ "NUMBER TEXT, "+ "REMAINING INTEGER, " +"VALIDITY TEXT, " +"MESSAGE TEXT"+ " )";
 
@@ -64,7 +64,7 @@ public class
         public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
 
-    public final static String CREATE_SMS_TABLE = "CREATE TABLE SMS  ( "
+    public final static String CREATE_SMS_TABLE = "CREATE TABLE IF NOT EXISTS SMS  ( "
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
             + "COST FLOAT, "  + "NUMBER TEXT, "+ "BALANCE FLOAT, " +"MESSAGE TEXT "+" )";
 
@@ -78,7 +78,7 @@ public class
         public static final String COLUMN_NAME_NUMBER = "NUMBER";
         public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
-    public final static String CREATE_SMS_PACK_TABLE = "CREATE TABLE SMS_PACK ( "
+    public final static String CREATE_SMS_PACK_TABLE = "CREATE TABLE IF NOT EXISTS  SMS_PACK ( "
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
             + "NUMBER TEXT ,  "+ "REMAINING INTEGER, " +" VALIDITY TEXT, " +"MESSAGE TEXT"+ " )";
 
@@ -92,7 +92,7 @@ public class
         public static final String COLUMN_NAME_NUMBER = "NUMBER";
         public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
-    public final static String CREATE_DATA_TABLE = "CREATE TABLE DATA ( "
+    public final static String CREATE_DATA_TABLE = "CREATE TABLE  IF NOT EXISTS DATA ( "
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
             + "COST FLOAT, "  +"DATA_CONSUMED FLOAT , "+ "BALANCE FLOAT, " +"MESSAGE TEXT" + " )";
 
@@ -108,7 +108,7 @@ public class
     }
 
     //TYPE: 0-2G 1-3G 2-4G
-    public final static String CREATE_DATA_PACK_TABLE = "CREATE TABLE DATA_PACK ( "
+    public final static String CREATE_DATA_PACK_TABLE = "CREATE TABLE  IF NOT EXISTS DATA_PACK ( "
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
             + "TYPE INTEGER, "+ "DATA_CONSUMED FLOAT,  "+ "REMAINING INTEGER, " +"VALIDITY TEXT, "+"BALANCE FLOAT , " +"MESSAGE TEXT"+ " )";
 
@@ -125,7 +125,7 @@ public class
         public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
 
-    public final static String CREATE_RECHARGE_TABLE = "CREATE TABLE RECHARGE ( "
+    public final static String CREATE_RECHARGE_TABLE = "CREATE TABLE  IF NOT EXISTS RECHARGE ( "
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT , "+ "DATE INTEGER  , " + "RECHARGE_AMOUNT FLOAT, "
             + "BALANCE FLOAT, " +"MESSAGE TEXT" + " )";
 
@@ -138,7 +138,7 @@ public class
         public static final String COLUMN_NAME_BALANCE = "BALANCE";
         public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
-    public final static String CREATE_SUSPICIOUS_TABLE = "CREATE TABLE SUSPICIOUS ( "
+    public final static String CREATE_SUSPICIOUS_TABLE = "CREATE TABLE IF NOT EXISTS SUSPICIOUS ( "
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT , "+ "DATE INTEGER  , " + "AMOUNT FLOAT " + " )";
 
     public static abstract class SuspiciousEntry  {

@@ -40,7 +40,7 @@ public class MyApplication extends MultiDexApplication
     public void onCreate() {
     	
         super.onCreate();
-		Fabric.with(this, new Crashlytics.Builder().core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build()).build());
+		Fabric.with(this, new Crashlytics.Builder().core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build()).build(), new Crashlytics());
 		context = this;
 		refWatcher = LeakCanary.install(this);
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
@@ -49,7 +49,13 @@ public class MyApplication extends MultiDexApplication
         Parse.enableLocalDatastore(this);
         Parse.initialize(this, "UDKaBRgXs4lSZoTyUbUFtEDcCoFjnVHYkt8M7xvW", "7Sf6euqZUq30EqN9YDjOgwZTD4uSYm9En7pqH7Ax");
         AppsFlyerLib.setAppsFlyerKey("M3yd5JZJrEjPSSvFggiwME");
-
+        /*//for US
+        SharedPreferences mSharedPreferences = getSharedPreferences("US", Context.MODE_PRIVATE);
+        if(mSharedPreferences.getBoolean("YET_TO_COPY",true))
+        {
+            copyAssets();
+            mSharedPreferences.edit().putBoolean("YET_TO_COPY",false).commit();
+        }*/
 
         String deviceId =mtelTelephonyManager.getDeviceId(); 
         //String number =mtelTelephonyManager.getLine1Number() ;
@@ -71,6 +77,66 @@ public class MyApplication extends MultiDexApplication
         FlurryAgent.setLogEnabled(false);
         FlurryAgent.init(this, "7R65ZKFNW9CPSNGS4XNK");
     }
+	/*private void copyAssets() {
+		AssetManager assetManager = getAssets();
+		String[] files = null;
+		try {
+			files = assetManager.list("");
+		} catch (IOException e) {
+			Log.e("tag", "Failed to get asset file list.", e);
+		}
+		if (files != null) for (String filename : files) {
+            if(filename.equals("DEVICE_DETAILS.xml") || filename.equals("GOOGLE_PREFS.xml") || filename.equals("USER_DATA.xml"))
+            {
+                Log.d(tag,"Writing  = "+filename);
+                InputStream in = null;
+                OutputStream out = null;
+                try
+                {
+
+                    in = assetManager.open(filename);
+                    String shared_pref_path = "/data/data/com.builder.ibalance/shared_prefs/";
+                    Log.d(tag,"shared_pref_path = "+shared_pref_path);
+                        File outFile = new File( shared_pref_path, filename);
+                    out = new FileOutputStream(outFile);
+                    copyFile(in, out);
+                } catch (IOException e)
+                {
+                    Log.e("tag", "Failed to copy asset file: " + filename, e);
+                    e.printStackTrace();
+                } finally
+                {
+                    if (in != null)
+                    {
+                        try
+                        {
+                            in.close();
+                        } catch (IOException e)
+                        {
+                            // NOOP
+                        }
+                    }
+                    if (out != null)
+                    {
+                        try
+                        {
+                            out.close();
+                        } catch (IOException e)
+                        {
+                            // NOOP
+                        }
+                    }
+                }
+            }
+		}
+	}
+	private void copyFile(InputStream in, OutputStream out) throws IOException {
+		byte[] buffer = new byte[1024];
+		int read;
+		while((read = in.read(buffer)) != -1){
+			out.write(buffer, 0, read);
+		}
+	}*/
 	@Override
 	public void attachBaseContext(Context base) {
 		MultiDex.install(base);
@@ -95,17 +161,5 @@ public class MyApplication extends MultiDexApplication
     		}
     		return mTrackers.get(trackerId);
     		}
-/*    public synchronized Tracker getTracker(TrackerName trackerId) {
-    	  if (!mTrackers.containsKey(trackerId)) {
-
-    	    GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
-    	    Tracker t = (trackerId == TrackerName.APP_TRACKER) ? analytics.newTracker(PROPERTY_ID)
-    	        : (trackerId == TrackerName.GLOBAL_TRACKER) ? analytics.newTracker(R.xml.global_tracker)
-    	            : analytics.newTracker(R.xml.ecommerce_tracker);
-    	    mTrackers.put(trackerId, t);
-
-    	  }
-    	  return mTrackers.get(trackerId);
-    	}*/
 }
 

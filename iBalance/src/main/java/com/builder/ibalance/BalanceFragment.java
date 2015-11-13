@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -139,7 +138,10 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
             {
                 if(current_balance<minimum_balance)
                 {
-                    createReminderDialog(this.getActivity());
+                    if((sim_slot == 0 && MainActivity.sim1BalanceReminderShown==false) || (sim_slot==1 && MainActivity.sim2BalanceReminderShown==false))
+                    {
+                        createReminderDialog(this.getActivity());
+                    }
                 }
             }
         }//Catch exception when no sim are detected
@@ -151,23 +153,43 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 	}
 
 	private void createReminderDialog(Context context) {
+        if(sim_slot==0)
+        {
+            MainActivity.sim1BalanceReminderShown = true;
+        }
+        else
+        {
+            MainActivity.sim2BalanceReminderShown = true;
+        }
 		AlertDialog.Builder alertbox = new AlertDialog.Builder(context);
-		TextView myMsg = new TextView(context);
-		myMsg.setText("\nLow Balance Alert\n\n Your Current Balance is Rs." + current_balance
-				+ "\n   Please Recharge to stay connected!\n");
-		myMsg.setGravity(Gravity.CENTER_HORIZONTAL);
-		alertbox.setView(myMsg);
+		LayoutInflater inflater = getActivity().getLayoutInflater();
+		View mView = inflater.inflate(R.layout.recharge_reminder, null);
+		alertbox.setView(mView);
+		TextView infoText = (TextView) mView.findViewById(R.id.low_bal_text_id);
+		Button rechargeNow = (Button) mView.findViewById(R.id.recharge_now);
+		infoText.setText(" Your Current Balance is Rs." + current_balance);
+
+        final AlertDialog alert = alertbox.create();
+
+		rechargeNow.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+                ((MainActivity)getActivity()).goToRechargepage();
+                alert.dismiss();
+			}
+		});
 		Tracker t = ((MyApplication)context.getApplicationContext()).getTracker(
 				TrackerName.APP_TRACKER);
 		t.send(new HitBuilders.EventBuilder().setCategory("LOW_BALANCE")
 				.setAction(current_balance + "").setLabel("").build());
 		FlurryAgent.logEvent("LOW_BALANCE");
+		alert.show();
 		//AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "LOW_BALANCE", "current_balance");
 		// Set the message to display
 
 		// Set a positive/yes button and create a listener
-		alertbox.setNeutralButton("Okay", null);
-		alertbox.show();
 
 	}
 
@@ -290,8 +312,9 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		{
 			ViewGroup container = (ViewGroup) rootView.findViewById(R.id.parallax_container);
 			mListView = (ParallaxListView) rootView.findViewById(R.id.recents_list);
-            mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph,null,false);
-            mLineChart.setLayoutParams(new AbsListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, 600));
+            mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, null, false);
+			final float scale = getResources().getDisplayMetrics().density;
+            mLineChart.setLayoutParams(new AbsListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, (int)(300*scale)));
             createGraph();
           /*  mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
             createGraph();*/

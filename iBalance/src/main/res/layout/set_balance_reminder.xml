@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/dialog_background">
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:id="@+id/min_bal_header"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:weightSum="5">
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:id="@+id/imageView10"
+            android:gravity="right"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/textView48"
+            android:layout_toStartOf="@+id/textView48"
+            android:layout_weight="1"
+            android:src="@drawable/reminder_icon"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Set Minimun Balance"
+            android:textSize="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:id="@+id/textView48"
+            android:layout_weight="1"
+            android:textColor="@color/black" />
+
+
+    </LinearLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_below="@+id/min_bal_header"
+        android:background="#8c8c8c"
+        android:id="@+id/min_separator" />
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/min_bal_edit"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:orientation="horizontal"
+        android:layout_below="@+id/min_separator"
+        android:weightSum="1">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rupee_symbol"
+            android:gravity="right"
+            android:id="@+id/textView20"
+            android:layout_weight=".5"
+            android:layout_marginRight="2dp"
+            android:textSize="20dp" />
+
+        <EditText
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:inputType="number"
+            android:id="@+id/balance_value"
+            android:layout_weight="0.10"/>
+
+    </LinearLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_below="@+id/min_bal_edit"
+        android:background="#8c8c8c"
+        android:id="@+id/min_separator2" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:layout_below="@+id/min_separator2"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:weightSum="1" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:gravity="center" >
+
+            <Button
+                android:id="@+id/balance_reminder_cancel"
+                style="@style/ussd_popup_button"
+                android:text="CANCEL" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:gravity="center" >
+
+            <Button
+                android:id="@+id/balance_reminder_done"
+                style="@style/ussd_popup_button"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:text=" DONE " />
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

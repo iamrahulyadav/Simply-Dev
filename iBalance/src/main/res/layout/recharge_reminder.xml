@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/dialog_background"
+    >
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:id="@+id/low_bal_header"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:weightSum="5">
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:id="@+id/imageView10"
+            android:gravity="right"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/textView48"
+            android:layout_toStartOf="@+id/textView48"
+            android:layout_weight="1"
+            android:src="@drawable/alert_gray"/>
+        !--TODO  CHENGE BLACL COLOR-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Low Balance Alert"
+            android:textSize="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:id="@+id/textView48"
+            android:layout_weight="1"
+            android:textColor="@color/black" />
+
+
+    </LinearLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_below="@+id/low_bal_header"
+        android:background="#8c8c8c"
+        android:id="@+id/low_separator" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Current balance is Rs. 5.30"
+        android:id="@+id/low_bal_text_id"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="28dp"
+        android:textColor="@color/black"
+        android:layout_below="@+id/low_separator"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="please recharge to stay connect!"
+        android:id="@+id/textView51"
+        android:textColor="@color/black"
+        android:layout_below="@+id/low_bal_text_id"
+        android:layout_centerHorizontal="true" />
+
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+
+        android:layout_marginRight="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_below="@+id/textView51"
+        android:background="#8c8c8c"
+        android:layout_marginTop="30dp"
+        android:id="@+id/low_separator2" />
+    <Button
+        android:layout_width="wrap_content"
+        style="@style/ussd_popup_button"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:layout_below="@+id/low_separator2"
+        android:text="Recharge Now"
+        android:id="@+id/recharge_now"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>

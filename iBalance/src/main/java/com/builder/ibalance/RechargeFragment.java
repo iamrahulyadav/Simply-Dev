@@ -307,14 +307,6 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     }
     void populatePlans(List<ParseObject> plans)
     {
-        /*Type listType = new TypeToken<ArrayList<PlansModel>>()
-        {
-        }.getType();
-
-        List<PlansModel> plansList = null;
-        try
-        {
-            plansList = new Gson().fromJson(plansJsonString, listType);*/
         View plansLoading = rootView.findViewById(R.id.plans_loading);
             if(plans.size()>0)
             {
@@ -329,13 +321,9 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                 plansLoading.setVisibility(View.VISIBLE);
                 plansListView.setVisibility(View.GONE);
                 plansLoading.findViewById(R.id.progressBar).setVisibility(View.GONE);
-                ((TextView)plansLoading.findViewById(R.id.info_text)).setText("Sorry No Popular Plans Available for the select Operator and Circle");
+                ((TextView)plansLoading.findViewById(R.id.info_text)).setText("Sorry No Popular Plans Available for the selected Operator and Circle");
             }
-       /* } catch (Exception e)
-        {
-            e.printStackTrace();
-            Helper.toastHelper("Deserialization Failed");
-        }*/
+
     }
     void setUsageDetails(int same_local, int others_local, int same_std, int others_std)
     {

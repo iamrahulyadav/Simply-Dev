@@ -132,7 +132,9 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
     {
         long startTime = System.nanoTime();
         long last_indexed_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
-        boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME",true);
+        boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME", true);
+        /*//for US
+        last_indexed_id = Long.MAX_VALUE;*/
        //V10Log.d(TAG, "INDEXED ID = " + last_indexed_id);
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
         Cursor callLogCursor = mCallLogsHelper.getAllSystemCallLogs(last_indexed_id);
@@ -150,7 +152,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         long curr_date = 0l;
         //Update: did a better hack B-) sum it in a loop and if first time just insert else get and then add
         int total_duration = 0;
-        mMappingHelper = new MappingHelper();
+
 
         String number,normalizedNumber,query="",query_format = "INSERT INTO " +
                 IbalanceContract.CallLogEntry.TABLE_NAME +
@@ -163,12 +165,14 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                 IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER+
                 ") " +
                 "VALUES ( ? , ? , ? , ? , ? , ? )";
-        SQLiteStatement callLogInsertStatement = mCallLogsHelper.getWriteableDatabase().compileStatement(query_format);
+
         if(!callLogCursor.moveToFirst())
         {
             callLogCursor.close();
             return;
         }
+        SQLiteStatement callLogInsertStatement = mCallLogsHelper.getWriteableDatabase().compileStatement(query_format);
+        mMappingHelper = new MappingHelper();
        //V10Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
         mCallLogsHelper.getDatabase().beginTransaction();
         try
