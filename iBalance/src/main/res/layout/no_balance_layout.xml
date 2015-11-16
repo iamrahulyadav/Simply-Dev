@@ -4,10 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nobal"
     android:layout_width="wrap_content"
-    android:layout_height="0dp"
-    android:layout_weight="6"
+    android:layout_height="fill_parent"
     android:gravity="center"
-    android:visibility="gone"
     tools:showIn="@layout/fragment_balance">
 
     <LinearLayout
@@ -23,7 +21,7 @@
             android:layout_weight=".33"
             android:gravity="center"
             android:padding="25dp"
-            android:text="No balance track"
+            android:text="Balance NOT tracked"
             android:textColor="#FF6633"
             android:textSize="22dp"/>
 

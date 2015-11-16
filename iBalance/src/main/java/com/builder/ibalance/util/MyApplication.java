@@ -40,8 +40,11 @@ public class MyApplication extends MultiDexApplication
     public void onCreate() {
     	
         super.onCreate();
-		Fabric.with(this, new Crashlytics.Builder().core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build()).build(), new Crashlytics());
-		context = this;
+        Crashlytics crashlyticsKit = new Crashlytics.Builder()
+                .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
+                .build();
+		Fabric.with(this, crashlyticsKit);
+                context = this;
 		refWatcher = LeakCanary.install(this);
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);

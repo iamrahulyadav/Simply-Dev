@@ -123,8 +123,8 @@ public class RecorderUpdaterService extends AccessibilityService
                         .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 noUSSDMsgHandler.removeCallbacks(r);
                 noUSSDMsgHandler = null;
-                /*if (dismissNode != null)
-                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);*/
+                if (dismissNode != null)
+                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 dismissNode = null;
                 startActivity(popup_intent);
                 NormalCall entry = new NormalCall(_id,
@@ -230,7 +230,7 @@ public class RecorderUpdaterService extends AccessibilityService
         return "default";
     }
 
-
+boolean cancelButtonFound = false;
     public String getTextFromNode(AccessibilityNodeInfo accessibilityNodeInfo)
     {
         StringBuilder sb = new StringBuilder();
@@ -266,9 +266,16 @@ public class RecorderUpdaterService extends AccessibilityService
                 ////V10Log.d("TEST", "Number:" + i + "   " + sb);
             } else if (ac.getClassName().equals(EditText.class.getName()))
                 hasEditText = true;
-            else if (ac.getClassName().equals(Button.class.getName()))
+            else if (ac.getClassName().equals(Button.class.getName()) && !cancelButtonFound)
             {
                //V10Log.d("TEST", "Button " + ac.getText());
+                if(ac.getText()!=null )
+                {
+                    if(ac.getText().toString().toUpperCase().replace(" ","").equals("CANCEL"))
+                    {
+                        cancelButtonFound = true;
+                    }
+                }
                 dismissNode = ac;
                //V10Log.d("TEST", "Performed a Click ");
             }
@@ -280,6 +287,7 @@ public class RecorderUpdaterService extends AccessibilityService
     public void onAccessibilityEvent(AccessibilityEvent event)
     {
         mCallDetailsModel = null;
+        cancelButtonFound = false;
         text = getTextFromNode(event.getSource());// getEventText(event);
         text = text.replace("\r\n", "").replace("\n", "");
        //V10Log.d(TAG, "Dismissed AccessibilityNodeInfo");

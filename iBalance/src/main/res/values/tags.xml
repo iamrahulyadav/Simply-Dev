@@ -1,0 +1,4 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <item name="KEY_NUMBER" type="id"/>
+    <item name="KEY_HOLDER" type="id"/>
+</resources>

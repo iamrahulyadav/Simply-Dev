@@ -55,7 +55,7 @@ import de.greenrobot.event.EventBus;
 
 public class RechargeFragment extends Fragment implements OnClickListener,AdapterView.OnItemClickListener
 {
-
+    public final int PICK_CONTACT = 2015;
     private static final int CONTACT_PICKER_RESULT = 1001;
     final String TAG = RechargeFragment.class.getSimpleName();
     View rootView;
@@ -97,6 +97,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         rechargePhoneNumber = ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
         if (rechargePhoneNumber != null)
         {
+            rechargePhoneNumber = Helper.normalizeNumber(rechargePhoneNumber);
             numberField.setText(rechargePhoneNumber);
         }
         numberField.addTextChangedListener(new TextWatcher()
@@ -110,15 +111,14 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                if (s==null ||rechargePhoneNumber.equals(s.toString()) || s.length() < 10)
+                if(s==null)
+                    return;
+                if (s.toString().equals(rechargePhoneNumber) || s.length() < 10)
                 {
                     //DoNothing
                 } else
                 {
-                    rechargePhoneNumber = s.toString();
-                    MappingHelper m = new MappingHelper();
-                    ArrayList<String> carrier_circle = m.getMapping(s.toString());
-                    updateUserCarrierCircle(carrier_circle);
+                   numberChanged(Helper.normalizeNumber(s.toString())); //Do what you should when a number Changes
                 }
             }
 
@@ -258,6 +258,13 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
 		mLayout.setVisibility(View.VISIBLE);
 		}*/
         return rootView;
+    }
+
+    private void numberChanged(String normalizedNumber)
+    {
+        MappingHelper m = new MappingHelper();
+        ArrayList<String> carrier_circle = m.getMapping(normalizedNumber);
+        updateUserCarrierCircle(carrier_circle);
     }
 
     private void updateUserCarrierCircle(ArrayList<String> carrier_circle)
@@ -455,31 +462,26 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == CONTACT_PICKER_RESULT)
+        if (requestCode == PICK_CONTACT && resultCode == getActivity().RESULT_OK)
         {
-
-            Uri result = data.getData();
-            String id = result.getLastPathSegment();
-
-            Cursor cursor = MyApplication.context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ",
-                    new String[]{id}, null);
-            Log.d(TAG, "Cursor count = " + cursor.getCount());
-            int phoneIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-            if (cursor.moveToFirst())
-            {
-                rechargePhoneNumber = cursor.getString(phoneIdx);
-            }
+            Uri contactUri = data.getData();
+            Cursor cursor = MyApplication.context.getContentResolver().query(contactUri, null, null, null, null);
+            cursor.moveToFirst();
+            int column = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+            rechargePhoneNumber = cursor.getString(column);
+            cursor.close();
             if (rechargePhoneNumber != null)
             {
-
+                rechargePhoneNumber = Helper.normalizeNumber(rechargePhoneNumber);
                 numberField.setText(rechargePhoneNumber);
+                numberChanged(rechargePhoneNumber);
+            } else
+            {
+                Helper.toastHelper("Error: Invalid Contact");
             }
-        } else
-        {
-            Helper.toastHelper("Error: Inavlid Contact");
         }
+
+
     }
 
     private String getDurationFormatted(int totalSecs)
@@ -512,19 +514,25 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         switch (v.getId())
         {
             case R.id.conatact_select:
-                Intent contactPickerIntent = new Intent(Intent.ACTION_PICK, Uri.parse("content://contacts"));
-                //contactPickerIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE); // Show user only contacts w/ phone numbers
-                startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT);
+                Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+                startActivityForResult(i, PICK_CONTACT);
 
                 break;
             case R.id.recharge_butt_id:
-                Intent rechargeIntent = new Intent(this.getActivity(),RechargePopup.class);
-                rechargeIntent.putExtra("NUMBER",numberField.getText().toString());
-                rechargeIntent.putExtra("CARRIER",currentCarrier);
-                rechargeIntent.putExtra("CIRCLE",currentCircle);
-                rechargeIntent.putExtra("AMOUNT",Integer.parseInt(amountField.getText().toString()));
-                startActivity(rechargeIntent);
-                Helper.toastHelper("Recharging for " + rechargePhoneNumber);
+                if(numberField.getText()==null || numberField.getText().toString().length()<10)
+                {
+                    Helper.toastHelper("Mobile Number not valid");
+                }
+                else
+                {
+                    Intent rechargeIntent = new Intent(this.getActivity(), RechargePopup.class);
+                    rechargeIntent.putExtra("NUMBER", numberField.getText().toString());
+                    rechargeIntent.putExtra("CARRIER", currentCarrier);
+                    rechargeIntent.putExtra("CIRCLE", currentCircle);
+                    rechargeIntent.putExtra("AMOUNT", Integer.parseInt(amountField.getText().toString()));
+                    startActivity(rechargeIntent);
+                    Helper.toastHelper("Recharging for " + rechargePhoneNumber);
+                }
                 break;
             case R.id.call_summary_expand_button:
                 //toggle visibility
@@ -667,15 +675,20 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
     {
-        Log.d(TAG,view.getTag().toString());
+        Log.d(TAG, view.getTag().toString());
         String temp = view.getTag().toString();
         amountField.setText(temp);
-        Intent rechargeIntent = new Intent(this.getActivity(),RechargePopup.class);
-        rechargeIntent.putExtra("NUMBER",numberField.getText().toString());
-        rechargeIntent.putExtra("CARRIER",currentCarrier);
-        rechargeIntent.putExtra("CIRCLE",currentCircle);
-        rechargeIntent.putExtra("AMOUNT",Integer.parseInt(amountField.getText().toString()));
-        startActivity(rechargeIntent);
-        Helper.toastHelper("Recharging for " + rechargePhoneNumber);
+        if(numberField.getText()==null || numberField.getText().toString().length()<10)
+        {
+            Helper.toastHelper("Mobile Number not valid");
+        }else
+        {
+            Intent rechargeIntent = new Intent(this.getActivity(), RechargePopup.class);
+            rechargeIntent.putExtra("NUMBER", numberField.getText().toString());
+            rechargeIntent.putExtra("CARRIER", currentCarrier);
+            rechargeIntent.putExtra("CIRCLE", currentCircle);
+            rechargeIntent.putExtra("AMOUNT", Integer.parseInt(amountField.getText().toString()));
+            startActivity(rechargeIntent);
+        }
     }
 }

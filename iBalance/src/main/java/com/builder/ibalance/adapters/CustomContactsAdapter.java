@@ -66,7 +66,7 @@ public class CustomContactsAdapter extends BaseAdapter {
         circle_state.setTypeface(tf);
         TextView total_duration = (TextView) convertView.findViewById(R.id.recents_duration);
         total_duration.setTypeface(tf);
-        TextView cost = (TextView) convertView.findViewById(R.id.recents_cost);
+        TextView cost = (TextView) convertView.findViewById(R.id.contact_spent);
         cost.setTypeface(tf);
         // getting movie data for the row
         ContactDetailModel m = contactItems.get(position);

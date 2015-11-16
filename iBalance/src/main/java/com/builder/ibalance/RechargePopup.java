@@ -127,7 +127,7 @@ public class RechargePopup extends Activity implements View.OnClickListener
                 {
                     getPackageManager().getPackageInfo("com.freecharge.android", 0);
                     intent = new Intent("com.freecharge.android");
-                    intent.setComponent(new ComponentName("com.freecharge.android", "com.freecharge.android.com.freecharge.ui.MainSplashActivity"));
+                    intent.setComponent(new ComponentName("com.freecharge.android", "com.freecharge.ui.MainSplashActivity"));
                     intent.putExtra("src", "SimplyApp");
                     intent.putExtra("referralSource", "SimplyApp");
                     intent.putExtra("referral", "SimplyApp");

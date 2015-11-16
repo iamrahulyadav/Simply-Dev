@@ -224,7 +224,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 					.build());
 //Todo call icon in contactdetail action bar is huge
 	FlurryAgent.logEvent("CALL");
-			Intent intent = new Intent(Intent.ACTION_CALL);
+			Intent intent = new Intent(Intent.ACTION_DIAL);
 			intent.setData(Uri.parse("tel:"+phnumber));
 			startActivity(intent); 
 			break;

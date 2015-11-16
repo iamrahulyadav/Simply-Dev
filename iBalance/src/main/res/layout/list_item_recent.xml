@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
-                android:layout_height="90dp"
+                android:layout_height="95dp"
                 android:background="@drawable/list_row_selector"
                 android:padding="8dp"
                 android:id="@+id/contact_list" >
@@ -50,26 +50,25 @@
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:ellipsize="end"
-        android:text="| TATA-DOCOMO,Maharashtra-Goa"
+        android:text="TATA-DOCOMO,Maharashtra-Goa"
         android:textColor="@android:color/darker_gray"
         android:textSize="13sp"
-        android:layout_alignTop="@+id/recents_number"
-        android:layout_toRightOf="@+id/recents_number"
-        android:layout_toLeftOf="@+id/recents_duration"
-        android:layout_toStartOf="@+id/recents_duration"/>
+        android:layout_marginTop="8dp"
+        android:layout_toRightOf="@+id/recents_picture"
+        android:layout_below="@+id/recents_number"
+        android:layout_alignBaseline="@+id/recent_cost"/>
 
     <!-- Duration in HH::MM::SS format -->
 
     <TextView
-        android:id="@+id/recents_cost"
+        android:id="@+id/recent_cost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
         android:text="Rs --.--"
-        android:visibility="gone"
-        android:layout_alignParentRight="true"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_above="@+id/recents_duration"/>
+        android:layout_above="@+id/recents_duration"
+        android:layout_alignRight="@+id/recents_duration"
+        android:layout_alignEnd="@+id/recents_duration"/>
     <!-- Cost -->
     <TextView
         android:id="@+id/recents_duration"

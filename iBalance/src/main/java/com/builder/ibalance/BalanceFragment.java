@@ -11,6 +11,8 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +35,7 @@ import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.GlobalData;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -99,7 +102,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		dataTextView = (TextView) rootView.findViewById(R.id.dataView);
 		dataTextView.setTypeface(tf);
 		balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
-        contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
         //mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
         if(GlobalData.globalSimList.size()>=2)
         {
@@ -307,10 +309,8 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		});
         Log.d(tag, "Bal Frag currBalance = " + currBalance);
 
-
 		if(currBalance>-1.0)
 		{
-			ViewGroup container = (ViewGroup) rootView.findViewById(R.id.parallax_container);
 			mListView = (ParallaxListView) rootView.findViewById(R.id.recents_list);
             mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, null, false);
 			final float scale = getResources().getDisplayMetrics().density;
@@ -320,17 +320,17 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
             createGraph();*/
             //have to set the header before setting the adapter
             mListView.addParallaxedHeaderView(mLineChart);
-            RecentListAdapter mRecentListAdapter = new RecentListAdapter(getActivity(), new CallLogsHelper().getAllLocalCallLogs(), false);
+            RecentListAdapter mRecentListAdapter = new RecentListAdapter(getActivity(), new CallLogsHelper().getAllOutGoingLocalCallLogs(), false);
 			mListView.setAdapter(mRecentListAdapter);
 			mListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
             {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id)
                 {
-                    Intent intent = new Intent(Intent.ACTION_CALL);
+                    Intent intent = new Intent(Intent.ACTION_DIAL);
 
                     /** Creating a uri object to store the telephone number */
-                    Uri data = Uri.parse("tel:" + view.getTag());
+                    Uri data = Uri.parse("tel:" + view.getTag(R.id.KEY_NUMBER));
 
                     /** Setting intent data */
                     intent.setData(data);
@@ -358,7 +358,10 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		}
 		else
         {
-            /*mListView.setParallaxView(this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, mListView, false));
+			ViewGroup container = (ViewGroup) rootView.findViewById(R.id.parallax_container);
+            container.removeView(rootView.findViewById(R.id.recents_list));
+			this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, container, true);
+            contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
             contactUsButton.setOnClickListener(new OnClickListener()
             {
                 @Override
@@ -367,17 +370,22 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                     if (!Helper.contactExists("+919739663487"))
                     {
                        //V10Log.d(tag, "Whatsapp contact not found adding contact");
-                        Intent addContactIntent = new Intent(Contacts.Intents.Insert.ACTION, Contacts.People.CONTENT_URI);
-                        addContactIntent.putExtra(Contacts.Intents.Insert.NAME, "Simply App Support"); // an example, there is other data available
-                        addContactIntent.putExtra(Contacts.Intents.Insert.PHONE, "+919739663487");
-                        startActivity(addContactIntent);
+						Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+						intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+						intent.putExtra(ContactsContract.Intents.Insert.EMAIL, "simplyappcontact@gmail.com")
+                                .putExtra(ContactsContract.Intents.Insert.NAME, "Simply App")
+								.putExtra(ContactsContract.Intents.Insert.EMAIL_TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK)
+								.putExtra(ContactsContract.Intents.Insert.PHONE,"+919739663487" )
+								.putExtra(ContactsContract.Intents.Insert.PHONE_TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_WORK);
+
+                        startActivity(intent);
                     } else
                     {
                         //Sending Device Id doesn't work
                         startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
                     }
 				}
-			});*/
+			});
 		}
 		if (currData > 0.0)
 		{

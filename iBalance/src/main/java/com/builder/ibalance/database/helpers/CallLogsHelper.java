@@ -314,6 +314,20 @@ public class CallLogsHelper
         }
         return 0;
     }
+    public Cursor getAllOutGoingLocalCallLogs()
+    {
+
+
+        Cursor managedCursor = mSqlDB.getReadableDatabase().query(
+                IbalanceContract.CallLogEntry.TABLE_NAME,
+                null,
+                IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE +" = ? ",
+                new String[]{ String.valueOf(CallLog.Calls.OUTGOING_TYPE)},
+                null,
+                null,
+                IbalanceContract.CallLogEntry.COLUMN_NAME_ID + " DESC");
+        return managedCursor;
+    }
     public Cursor getAllLocalCallLogs()
     {
 

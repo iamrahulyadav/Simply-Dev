@@ -61,7 +61,7 @@
  <!-- Duration in HH::MM::SS format -->
 
     <TextView
-        android:id="@+id/recents_cost"
+        android:id="@+id/contact_spent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

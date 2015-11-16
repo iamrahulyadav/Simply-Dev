@@ -1,2 +1,2 @@
 
-include ':iBalance', ':mediatek-android'
+include ':iBalance', ':mediatek-android', ':regexcreator'

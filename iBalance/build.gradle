@@ -43,6 +43,10 @@ android {
             shrinkResources true
             proguardFiles 'proguard-project.txt'
         }
+        debug {
+            // Disable fabric build ID generation for debug builds
+            ext.enableCrashlytics = false
+        }
     }
 }
 
