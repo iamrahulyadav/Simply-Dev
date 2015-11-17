@@ -319,7 +319,23 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:weightSum="1" >
+        android:weightSum="1"
+        android:id="@+id/ussd_recharge_layout"
+        android:gravity="center"
+        android:visibility="gone">
+        <Button
+            android:id="@+id/ussd_recharge"
+            android:layout_gravity="center"
+            style="@style/ussd_popup_button"
+            android:text="Recharge Now" />
+        </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:id="@+id/ussd_normal_layout">
 
         <LinearLayout
             android:layout_width="match_parent"

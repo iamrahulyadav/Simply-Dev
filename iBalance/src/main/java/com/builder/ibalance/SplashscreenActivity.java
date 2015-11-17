@@ -57,7 +57,7 @@ public class SplashscreenActivity extends Activity
     String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";//to check if service is on
     Helper.SharedPreferenceHelper mSharedPreferenceHelper = new Helper.SharedPreferenceHelper();
     ProgressBar dual_sim_bar;
-
+    boolean recharge = false;
 
     @Override
     protected void onStart()
@@ -106,14 +106,29 @@ public class SplashscreenActivity extends Activity
             }
             if ((app_open_from != null) && app_open_from.equals("POPUP"))
             {
-                Tracker t = ((MyApplication) this.getApplication()).getTracker(
-                        TrackerName.APP_TRACKER);
-                t.send(new HitBuilders.EventBuilder()
-                        .setCategory("APP_OPEN")
-                        .setAction("POPUP")
-                        .setLabel("POPUP")
-                        .build());
-                FlurryAgent.logEvent("POPUP_APP_OPEN");
+                if(this.getIntent().getBooleanExtra("RECHARGE",false))
+                {
+                    recharge = true;
+                    Tracker t = ((MyApplication) this.getApplication()).getTracker(
+                            TrackerName.APP_TRACKER);
+                    t.send(new HitBuilders.EventBuilder()
+                            .setCategory("APP_OPEN")
+                            .setAction("POPUP")
+                            .setLabel("RECHARGE")
+                            .build());
+                    FlurryAgent.logEvent("POPUP_APP_OPEN_RECHARGE");
+                }
+                else
+                {
+                    Tracker t = ((MyApplication) this.getApplication()).getTracker(
+                            TrackerName.APP_TRACKER);
+                    t.send(new HitBuilders.EventBuilder()
+                            .setCategory("APP_OPEN")
+                            .setAction("POPUP")
+                            .setLabel("POPUP")
+                            .build());
+                    FlurryAgent.logEvent("POPUP_APP_OPEN");
+                }
                //V10AppsFlyerLib.sendTrackingWithEvent(getApplicationContext(), "POPUP_APP_OPEN", "");
             }
             else
@@ -375,7 +390,7 @@ public class SplashscreenActivity extends Activity
                 {
                     //Log.d(TAG, "Accesibilty  Enabled!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     //mBalanceHelper.addDemoentries();
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class).putExtra("RECHARGE",recharge));
                     finish();
                 }
             }

@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Contacts;
+import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -86,10 +86,15 @@ public class ContactUs extends Activity implements OnClickListener
                 if (!Helper.contactExists("+919739663487"))
                 {
                    //V10Log.d(tag, "Whatsapp contact not found adding contact");
-                    Intent addContactIntent = new Intent(Contacts.Intents.Insert.ACTION, Contacts.People.CONTENT_URI);
-                    addContactIntent.putExtra(Contacts.Intents.Insert.NAME, "Simply App Support"); // an example, there is other data available
-                    addContactIntent.putExtra(Contacts.Intents.Insert.PHONE, "+919739663487");
-                    startActivity(addContactIntent);
+                    Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+                    intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+                    intent.putExtra(ContactsContract.Intents.Insert.EMAIL, "simplyappcontact@gmail.com")
+                            .putExtra(ContactsContract.Intents.Insert.NAME, "Simply App")
+                            .putExtra(ContactsContract.Intents.Insert.EMAIL_TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK)
+                            .putExtra(ContactsContract.Intents.Insert.PHONE,"+919739663487" )
+                            .putExtra(ContactsContract.Intents.Insert.PHONE_TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_WORK);
+
+                    startActivity(intent);
                 } else
                 {
                     startActivity(Helper.openWhatsApp("+919739663487", deviceId));
@@ -102,9 +107,8 @@ public class ContactUs extends Activity implements OnClickListener
                 sendIntent.setType("text/html");
                 //sendIntent.setType("message/rfc822");
                 sendIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"simplyappcontact@gmail.com"});
-                //sendIntent.putExtra(Intent.EXTRA_EMAIL, "ibalanceapp@gmail.com");
                 sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Simply FeedBack");
-                sendIntent.putExtra(Intent.EXTRA_TEXT, "-----Support Info---------\n" + deviceId + "-------Don't delete--------\n");
+                sendIntent.putExtra(Intent.EXTRA_TEXT, "-----Support Info---------\n" + deviceId + "\n-------Don't delete--------\n");
                 startActivity(Intent.createChooser(sendIntent, "Send FeedBack"));
                 break;
             case R.id.share_debug_button:

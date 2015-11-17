@@ -219,7 +219,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 		case R.id.call:
 			t.send(new HitBuilders.EventBuilder()
 					.setCategory("CALL")
-					.setAction("CALL")
+					.setAction("CONTACT_DETAIL")
 					.setLabel("")
 					.build());
 //Todo call icon in contactdetail action bar is huge

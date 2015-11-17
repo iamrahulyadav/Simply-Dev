@@ -97,6 +97,11 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 					.setText(mainActivityAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+		//If Recharge was called
+		if(this.getIntent().getBooleanExtra("RECHARGE",false))
+		{
+			goToRechargepage();
+		}
 
 
 		

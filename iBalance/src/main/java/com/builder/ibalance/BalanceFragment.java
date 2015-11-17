@@ -327,6 +327,14 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id)
                 {
+					Tracker t = ((MyApplication) MyApplication.context).getTracker(
+							TrackerName.APP_TRACKER);
+							t.send(new HitBuilders.EventBuilder()
+									.setCategory("CALL")
+									.setAction("RECENTS")
+									.setLabel("")
+									.build());
+							FlurryAgent.logEvent("CALL");
                     Intent intent = new Intent(Intent.ACTION_DIAL);
 
                     /** Creating a uri object to store the telephone number */

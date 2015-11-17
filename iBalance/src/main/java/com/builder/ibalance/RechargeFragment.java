@@ -511,9 +511,18 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     @Override
     public void onClick(View v)
     {
+
+        Tracker t = ((MyApplication) MyApplication.context).getTracker(
+                TrackerName.APP_TRACKER);
         switch (v.getId())
         {
             case R.id.conatact_select:
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("RECHARGE")
+                        .setAction("CONTACT_PICKED")
+                        .setLabel("")
+                        .build());
+                FlurryAgent.logEvent("CONTACT_PICKED");
                 Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
                 startActivityForResult(i, PICK_CONTACT);
 
@@ -525,6 +534,14 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                 }
                 else
                 {
+
+
+                    t.send(new HitBuilders.EventBuilder()
+                            .setCategory("RECHARGE_INIT")
+                            .setAction(numberField.getText().toString())
+                            .setLabel(amountField.getText().toString())
+                            .build());
+                    FlurryAgent.logEvent("RECHARGE_INIT");
                     Intent rechargeIntent = new Intent(this.getActivity(), RechargePopup.class);
                     rechargeIntent.putExtra("NUMBER", numberField.getText().toString());
                     rechargeIntent.putExtra("CARRIER", currentCarrier);
@@ -536,6 +553,12 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                 break;
             case R.id.call_summary_expand_button:
                 //toggle visibility
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("CALL_SUMMARY")
+                        .setAction("TOGGLED")
+                        .setLabel("")
+                        .build());
+                FlurryAgent.logEvent("CALL_SUMMARY");
                 callSummary.setVisibility((callSummary.getVisibility() == View.GONE)?View.VISIBLE:View.GONE);
                 break;
             default:

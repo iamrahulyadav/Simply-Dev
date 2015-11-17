@@ -1,7 +1,9 @@
 package com.builder.ibalance;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
@@ -15,6 +17,7 @@ import android.widget.Toast;
 import com.builder.ibalance.services.CallDetailsModel;
 import com.builder.ibalance.util.CircleTransform;
 import com.builder.ibalance.util.Helper;
+import com.builder.ibalance.util.MyApplication;
 import com.squareup.picasso.Picasso;
 
 public class UssdPopup extends Activity {
@@ -37,6 +40,7 @@ public class UssdPopup extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		boolean recharge = false;
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ussd_popup);
 		Typeface tf = Typeface.createFromAsset(getAssets(), "Roboto-Regular.ttf");
@@ -85,6 +89,13 @@ public class UssdPopup extends Activity {
 			field1.setText(rupee_symbol+" "+details.getCall_cost());
 
 			head2.setText("Current Balance");
+            float minimum_bal = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE).getFloat("MINIMUM_BALANCE",10.0f);
+
+			if(details.getCurrent_balance() <= minimum_bal)
+			{
+				field2.setTextColor(Color.parseColor("#ff0000"));
+				recharge = true;
+			}
 			field2.setText(rupee_symbol+" "+details.getCurrent_balance());
 
 			head3.setText("Call Duration");
@@ -174,41 +185,71 @@ public class UssdPopup extends Activity {
 		default:
 			break;
 		}
-		
-		dismiss = (Button) findViewById(R.id.ussd_dismiss);
-		ImageView infoButton = (ImageView) findViewById(R.id.info_button);
-		open_app = (Button) findViewById(R.id.ussd_open_app);
-		infoButton.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				
-				Toast.makeText(getApplicationContext(), "This is a Custom message,With call rate info.",Toast.LENGTH_LONG).show();
-				
-			}
-		});
-		dismiss.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-                Helper.logUserEngageMent(from+"_DISMISS");
-				finish();
-				
-			}
-		});
-		open_app.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				Intent mIntent = new Intent(getApplicationContext(),SplashscreenActivity.class);
-				mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-				mIntent.putExtra("FROM", "POPUP");
-                Helper.logUserEngageMent(from+"_OPEN");
-				startActivity(mIntent);
-     			finish();
-				
-			}
-		});
+		if(recharge)
+		{
+			findViewById(R.id.ussd_normal_layout).setVisibility(View.GONE);
+			View v = findViewById(R.id.ussd_recharge_layout);
+                    v.setVisibility(View.VISIBLE);
+            Button rechargeButton = (Button) v.findViewById(R.id.ussd_recharge);
+            rechargeButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
+                    mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    mIntent.putExtra("FROM", "POPUP");
+                    mIntent.putExtra("RECHARGE", true);
+                    Helper.logUserEngageMent(from + "_RECHARGE");
+                    startActivity(mIntent);
+                    finish();
+                }
+            });
+
+		}
+		else
+		{
+			dismiss = (Button) findViewById(R.id.ussd_dismiss);
+			ImageView infoButton = (ImageView) findViewById(R.id.info_button);
+			open_app = (Button) findViewById(R.id.ussd_open_app);
+			infoButton.setOnClickListener(new View.OnClickListener()
+			{
+
+				@Override
+				public void onClick(View v)
+				{
+
+					Toast.makeText(getApplicationContext(), "This is a Custom message,With call rate info.", Toast.LENGTH_LONG).show();
+
+				}
+			});
+			dismiss.setOnClickListener(new View.OnClickListener()
+			{
+
+				@Override
+				public void onClick(View v)
+				{
+					Helper.logUserEngageMent(from + "_DISMISS");
+					finish();
+
+				}
+			});
+			open_app.setOnClickListener(new View.OnClickListener()
+			{
+
+				@Override
+				public void onClick(View v)
+				{
+					Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
+					mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+					mIntent.putExtra("FROM", "POPUP");
+					Helper.logUserEngageMent(from + "_OPEN");
+					startActivity(mIntent);
+					finish();
+
+				}
+			});
+		}
 	}
 	private String getTimeFormatted(int totalSecs) {
 		String min,sec,hr;

@@ -13,6 +13,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.builder.ibalance.util.Helper;
+import com.builder.ibalance.util.MyApplication;
+import com.flurry.android.FlurryAgent;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.parse.ParseObject;
+
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -64,8 +71,62 @@ public class RechargePopup extends Activity implements View.OnClickListener
     {
 
         Intent intent = null;
+        Tracker t = ((MyApplication) MyApplication.context).getTracker(
+                MyApplication.TrackerName.APP_TRACKER);
+        ParseObject pObj = new ParseObject("SIMPLY_RECHARGE");
+        pObj.put("DEVICE_ID", Helper.getDeviceId());
+        pObj.put("NUMBER", number);
+        pObj.put("CARRIER", carrierExtra);
+        pObj.put("CIRCLE", circleExtra);
+        pObj.put("AMOUNT", amount);
         switch (v.getId())
         {
+
+            case R.id.recharge_cancel:
+                pObj.put("TYPE","CANCELLED");
+                pObj.saveEventually();
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("RECHARGE")
+                        .setAction("CANCELLED")
+                        .setLabel("")
+                        .build());
+                FlurryAgent.logEvent("RECHARGE_CANCELLED");
+                finish();
+
+                break;
+            case R.id.paytm_recharge:
+                pObj.put("TYPE","PAYTM");
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("RECHARGE")
+                        .setAction("PAYTM")
+                        .setLabel(amount+"")
+                        .build());
+                FlurryAgent.logEvent("RECHARGE_PAYTM");
+                break;
+            case R.id.mobikwik_recharge:
+                pObj.put("TYPE","MOBIKWIK");
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("RECHARGE")
+                        .setAction("MOBIKWIK")
+                        .setLabel(amount+"")
+                        .build());
+                FlurryAgent.logEvent("RECHARGE_MOBIKWIK");
+                break;
+            case R.id.freecharge_recharge:
+                pObj.put("TYPE","FREECHARGE");
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("RECHARGE")
+                        .setAction("FREECHARGE")
+                        .setLabel(amount+"")
+                        .build());
+                FlurryAgent.logEvent("RECHARGE_FREECHARGE");
+                break;
+        }
+        pObj.saveEventually();
+
+        switch (v.getId())
+        {
+
             case R.id.recharge_cancel:
                 finish();
                 break;
@@ -84,6 +145,12 @@ public class RechargePopup extends Activity implements View.OnClickListener
 
                 } catch (PackageManager.NameNotFoundException e)
                 {
+                    t.send(new HitBuilders.EventBuilder()
+                            .setCategory("REFERRAL")
+                            .setAction("PAYTM")
+                            .setLabel("")
+                            .build());
+                    FlurryAgent.logEvent("REFERRAL_PAYTM");
                     //Ask them to install the app
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=net.one97.paytm&referrer=utm_source=SimplyApp")));
                     Toast.makeText(this,"You must install Paytm before Recharge",Toast.LENGTH_LONG).show();
@@ -115,6 +182,12 @@ public class RechargePopup extends Activity implements View.OnClickListener
 
                 } catch (PackageManager.NameNotFoundException e)
                 {
+                    t.send(new HitBuilders.EventBuilder()
+                            .setCategory("REFERRAL")
+                            .setAction("MOBIKWIK")
+                            .setLabel("")
+                            .build());
+                    FlurryAgent.logEvent("REFERRAL_MOBIKWIK");
                     //Ask them to install the app
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.mobikwik_new&referrer=utm_source=SimplyApp")));
                     Toast.makeText(this,"You must install Mobikwik before Recharge",Toast.LENGTH_LONG).show();
@@ -134,6 +207,12 @@ public class RechargePopup extends Activity implements View.OnClickListener
                     startActivity(intent);
                 } catch (PackageManager.NameNotFoundException e)
                 {
+                    t.send(new HitBuilders.EventBuilder()
+                            .setCategory("REFERRAL")
+                            .setAction("FREECHARGE")
+                            .setLabel("")
+                            .build());
+                    FlurryAgent.logEvent("REFERRAL_FREECHARGE");
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.freecharge.android&referrer=utm_source=SimplyApp")));
                     Toast.makeText(this,"You must install FreeCharge before Recharge",Toast.LENGTH_LONG).show();
                     //e.printStackTrace();

@@ -31,6 +31,7 @@ import java.util.Map;
  * Created by Shabaz on 7/28/2015.
  */
 public  class Helper {
+    static SharedPreferences mSharedPreferences;
     public static String getTotalDurationFormatted(int totalSecs) {
         String min, sec, hr;
         Integer hrs, mins, secs;
@@ -116,6 +117,14 @@ public  class Helper {
             return it;
         }
 
+    }
+    public static String getFromSharedPrefence(String KEY)
+    {
+        if(mSharedPreferences==null)
+        {
+            mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+        }
+        return mSharedPreferences.getString(KEY,null);
     }
     public static String normalizeNumber(String number)
     {
