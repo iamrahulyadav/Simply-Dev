@@ -1,24 +1,10 @@
 package com.builder.ibalance.datainitializers;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.telephony.TelephonyManager;
-import android.util.Log;
-
-import com.builder.ibalance.messages.SmsData;
-import com.builder.ibalance.util.MyApplication;
-import com.google.gson.Gson;
-import com.parse.ParseObject;
-
-import java.util.ArrayList;
-
 /**
  * Created by Shabaz on 19-Oct-15.
  * Need to update for SMS count and DB update
  */
+/*
 public class SmsDataInitializer extends AsyncTask<Void,Void,Void>
 {
     final static String tag = SmsDataInitializer.class.getSimpleName();
@@ -87,3 +73,4 @@ public class SmsDataInitializer extends AsyncTask<Void,Void,Void>
         return null;
     }
 }
+*/

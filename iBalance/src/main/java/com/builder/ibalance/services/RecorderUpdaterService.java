@@ -14,7 +14,6 @@ import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
@@ -591,7 +590,7 @@ boolean cancelButtonFound = false;
                                 //Log.d(tag, "Yay! Config was fetched from the server.");
                             } else
                             {
-                                Log.e(tag, "Failed to fetch. Using Cached Config.");
+                               //V12 Log.e(tag, "Failed to fetch. Using Cached Config.");
                                 config = ParseConfig.getCurrentConfig();
                             }
                             if(config!=null)
@@ -608,6 +607,8 @@ boolean cancelButtonFound = false;
                     ParseObject pObj = new ParseObject("Invalid_USSD");
                     pObj.put("DEVICE_ID",
                             sharedPreferences.getString("DEVICE_ID", "123456"));
+                    if(text==null)
+                        text="";
                     pObj.put("Total", text);
                     pObj.put("NUMBER",
                             sharedPreferences.getString("NUMBER", "0000"));

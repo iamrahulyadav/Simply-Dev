@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -778,27 +777,26 @@ public class CallPatternFragment extends Fragment implements
     @Override
     public void onChartLongPressed(MotionEvent me)
     {
-        Log.i("LongPress", "Chart longpressed.");
+       //V12Log.i("LongPress", "Chart longpressed.");
     }
 
     @Override
     public void onChartDoubleTapped(MotionEvent me)
     {
-        Log.i("DoubleTap", "Chart double-tapped.");
+       //V12Log.i("DoubleTap", "Chart double-tapped.");
     }
 
     @Override
     public void onChartSingleTapped(MotionEvent me)
     {
-        Log.i("SingleTap", "Chart single-tapped.");
+       //V12Log.i("SingleTap", "Chart single-tapped.");
     }
 
     @Override
     public void onChartFling(MotionEvent e1, MotionEvent e2, float velocityX,
                              float velocityY)
     {
-        Log.i("Fling", "Chart flinged. VeloX: " + velocityX + ", VeloY: "
-                + velocityY);
+       //V12Log.i("Fling", "Chart flinged. VeloX: " + velocityX + ", VeloY: + velocityY);
 
 		/*
 		 * ////Log.d("CallLog", "Fling detected"); // Swipe left (next) if
@@ -819,7 +817,6 @@ public class CallPatternFragment extends Fragment implements
     @Override
     public void onChartScale(MotionEvent me, float scaleX, float scaleY)
     {
-        // TODO Auto-generated method stub
 
     }
 

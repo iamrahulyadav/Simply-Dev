@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -262,7 +261,7 @@ public class SplashscreenActivity extends Activity
                 Constants.HAS_TWO_SLOTS = false;
                 Constants.IS_SINGLE_SIM = true;
             }
-
+            //Log.d(TAG,GlobalData.globalSimList.toString());
             mSharedPreferenceHelper.saveDualSimDetails(GlobalData.globalSimList);
 
 
@@ -303,7 +302,7 @@ public class SplashscreenActivity extends Activity
                         //Log.d(tag, "Yay! Config was fetched from the server.");
                     } else
                     {
-                        Log.e(TAG, "Failed to fetch. Using Cached Config.");
+                       //V12Log.e(TAG, "Failed to fetch. Using Cached Config.");
                         config = ParseConfig.getCurrentConfig();
                     }
                     if ((config != null))

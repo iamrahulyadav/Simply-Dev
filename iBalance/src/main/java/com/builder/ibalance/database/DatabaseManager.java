@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
-import android.util.Log;
 
+import com.builder.ibalance.BuildConfig;
 import com.builder.ibalance.database.helpers.IbalanceContract;
 import com.builder.ibalance.util.MyApplication;
 
@@ -29,17 +29,91 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private final static String OLD_DATABASE_NAME = "ibalance.db";
     private static final int DATABASE_VERSION = 3;
     private static DatabaseManager sInstance;
-
     public static synchronized DatabaseManager getInstance() {
-
-        // Use the application context, which will ensure that you
-        // don't accidentally leak an Activity's context.
-        // See this article for more information: http://bit.ly/6LRzfx
         if (sInstance == null) {
+
+            //to  trigger on update
+            //Hack level 1729
+            //All because I was copying a db which has db version 0!!!!!!!!!!!!
+            //on getWriteableDB when version 0 upgrade is not called and creates a database
+                if(BuildConfig.VERSION_CODE>=12)
+                {
+
+                    try
+                    {
+                        String myPath = MyApplication.context.getDatabasePath(DATABASE_NAME).toString();
+                        SQLiteDatabase myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
+                        if (myDataBase.getVersion() == 0)
+                        {
+                            myDataBase.execSQL("PRAGMA user_version = " + 2);
+                        }
+                        myDataBase.close();
+                    }
+                    catch (Exception e)
+                    {
+                        //Do Nothing a fresh install happened
+                    }
+                }
             sInstance = new DatabaseManager(MyApplication.context.getApplicationContext());
+
+
         }
         return sInstance;
     }
+    /**
+     * Constructor should be private to prevent direct instantiation.
+     * make call to static method "getInstance()" instead.
+     */
+    private DatabaseManager(Context context)
+    {
+
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        //V10Log.d(tag, "DatabaseManager");
+        try {
+            createDataBase();
+        }
+        catch (IOException e)
+        {
+            //V10Log.d(tag,"Failed to Create Databse");
+            //V10e.printStackTrace();
+        }
+
+    }
+
+    public void createDataBase() throws IOException {
+        //V10Log.d(tag,"createDataBase");
+        boolean dbExist = checkDataBase(DATABASE_NAME);
+
+        if (dbExist) {
+            // do nothing - database already exist
+            //Log.d("database", "Database Already Exists");
+        } else {
+
+            // By calling this method and empty database will be created into
+            // the default system path
+            // of the application so that will be able to overwrite that
+            // database with asset database.
+            //Log.d(TAG, "Database does NOT Exist");
+            this.getReadableDatabase();
+
+            try {
+                //Log.d(TAG, "Trying to copy");
+                // copy the mapping mobile number to circle, operator database
+                copyDataBase();
+                createTables();
+
+            }
+            catch (IOException e)
+            {
+                //V10Log.d(tag,"CopyingFailed Check Assets");//what did you screw up???
+                //V10e.printStackTrace();
+            }
+            //Create TABLEs Here
+
+
+        }
+    }
+
     void createTables()
     {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -76,58 +150,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.execSQL(IbalanceContract.CREATE_SUSPICIOUS_TABLE);
         //Log.d("databse", "executed " + CREATE_SUSPICIOUS_TABLE);
     }
-    /**
-     * Constructor should be private to prevent direct instantiation.
-     * make call to static method "getInstance()" instead.
-     */
-    private DatabaseManager(Context context) {
-
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
-       //V10Log.d(tag, "DatabaseManager");
-        try {
-            createDataBase();
-        }
-        catch (IOException e)
-        {
-           //V10Log.d(tag,"Failed to Create Databse");
-           //V10e.printStackTrace();
-        }
-
-    }
-
-    public void createDataBase() throws IOException {
-       //V10Log.d(tag,"createDataBase");
-        boolean dbExist = checkDataBase(DATABASE_NAME);
-
-        if (dbExist) {
-            // do nothing - database already exist
-            //Log.d("database", "Database Already Exists");
-        } else {
-
-            // By calling this method and empty database will be created into
-            // the default system path
-            // of the application so that will be able to overwrite that
-            // database with asset database.
-            //Log.d(TAG, "Database does NOT Exist");
-            this.getReadableDatabase();
-
-            try {
-                //Log.d(TAG, "Trying to copy");
-                // copy the mapping mobile number to circle, operator database
-                copyDataBase();
-                createTables();
-
-            }
-            catch (IOException e)
-            {
-               //V10Log.d(tag,"CopyingFailed Check Assets");//what did you screw up???
-               //V10e.printStackTrace();
-            }
-            //Create TABLEs Here
 
 
-        }
-    }
+
 
     /* Check if the database already exist to avoid re-copying the file each
     * time you open the application.
@@ -259,40 +284,37 @@ public class DatabaseManager extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
-        Log.d(tag,"Oldversion = "+ oldVersion + "newVersion = "+ newVersion );
+        //V12Log.d(tag,"Oldversion = "+ oldVersion + "newVersion = "+ newVersion );
         if(oldVersion==2 && newVersion==3)
         {
             String tempTable = "temp_table";
-            db.beginTransaction();
             db.execSQL("ALTER TABLE " + IbalanceContract.CallEntry.TABLE_NAME + " RENAME TO " + tempTable);
-            Log.d(tag, "Call Entry Rename complete");
+            //V12Log.d(tag, "Call Entry Rename complete");
             db.execSQL(IbalanceContract.CREATE_CALL_TABLE);
-            db.execSQL("INSERT INTO "+IbalanceContract.CallEntry.TABLE_NAME+ " select * from " + tempTable);
-            Log.d(tag, "Call Entry Copy over complete");
+            db.execSQL("INSERT INTO " + IbalanceContract.CallEntry.TABLE_NAME + " select * from " + tempTable);
+            //V12Log.d(tag, "Call Entry Copy over complete");
             db.execSQL("DROP TABLE " + tempTable);
-            Log.d(tag, "TEMP  Call Entry DRop complete");
+            //V12Log.d(tag, "TEMP  Call Entry DRop complete");
             db.execSQL("ALTER TABLE " + IbalanceContract.CallLogEntry.TABLE_NAME + " RENAME TO " + tempTable);
-            Log.d(tag, "Call LOG Entry Rename complete");
+            //V12Log.d(tag, "Call LOG Entry Rename complete");
             db.execSQL(IbalanceContract.CREATE_CALL_LOG_TABLE);
-            db.execSQL("INSERT INTO "+IbalanceContract.CallLogEntry.TABLE_NAME+ "(" +
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_ID+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER+" ) "+
+            db.execSQL("INSERT INTO " + IbalanceContract.CallLogEntry.TABLE_NAME + "(" +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_ID + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_DATE + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER + " ) " +
                     " select  " +
-                    "_ID , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_DATE+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT+" , "+
-                    IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER+" "+
+                    "_ID , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_DATE + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT + " , " +
+                    IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER + " " +
                     " from " + tempTable);
-            Log.d(tag, "Call LOG Entry CopyOver complete");
-            db.setTransactionSuccessful();
-            db.endTransaction();
-            Log.d(tag, "Everything Successful");
+            //V12Log.d(tag, "Call LOG Entry CopyOver complete");
+            //V12Log.d(tag, "Everything Successful");
         }
 
 

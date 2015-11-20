@@ -173,13 +173,12 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		case R.id.set_bal:
 			//Log.d(tag, "Set Bal");
 			return setbal();
-		/*case R.id.help:
-			//Log.d(tag, "help chat");
-			startActivity(new Intent(this, ChatActivity.class));
-			break;*/
-		case R.id.preferences:
+		case R.id.privacy:
 			//Log.d(tag, "Prefrences selected");
-			startActivity(new Intent(this, Preferences.class));
+			String url = "http://ibalanceapp.com/privacy-policy/";
+			Intent i = new Intent(Intent.ACTION_VIEW);
+			i.setData(Uri.parse(url));
+			startActivity(i);
 			break;
 		case R.id.contact_us:
 			//Log.d(tag, "contact_us selected");

@@ -21,9 +21,9 @@
     android:actionViewClass="android.widget.Spinner"
     android:title="Date" />
     <item
-        android:id="@+id/preferences"
+        android:id="@+id/privacy"
         android:orderInCategory="100"
-        android:title="Preferences"/>
+        android:title="Privacy"/>
     <item
         android:id="@+id/contact_us"
         android:orderInCategory="100"

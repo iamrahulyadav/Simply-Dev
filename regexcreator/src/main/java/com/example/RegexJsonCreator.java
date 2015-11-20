@@ -22,7 +22,7 @@ public class RegexJsonCreator
     String regex;
     JSONArray allJson = null;
     File call_json = new File("G:/SimplyV2/TextMining/json/CALL_PATTERNS.json");
-    String carrier = "AIRTEL";
+    String carrier = "AIRCEL";
     int costPos = -1, durationSecPos = -1,mainBalPos = -1,durationClockPosHH = -1,durationClockPosMM = -1,durationClockPosSS = -1;
     int cont = -1;
     FileInputStream mFileReader ;
@@ -44,8 +44,17 @@ public class RegexJsonCreator
                 mJsonArray = new JSONArray(str);
             do
             {
+                //regex
+                //cost
+                //durationSec -1 if not applicable
+                //mainBal
+                //d HH
+                //d MM
+                //d SS
                 ptln("Enter the regex for call");
                 regex = reader.readLine();
+                if(regex.equals("-1"))
+                    break;
                 ptln("Enter cost Position");
                 costPos = Integer.parseInt(reader.readLine());
                 ptln("Enter Duration Seconds position");
@@ -80,19 +89,29 @@ public class RegexJsonCreator
 
                 mJsonArray.put(entry);
 
-                cont = Integer.parseInt(reader.readLine());
-            }while (cont!=-1);
+            }while (true);
 
             mFileWriter = new FileOutputStream(call_json);
             mFileWriter.write(mJsonArray.toString().getBytes());
             mFileWriter.flush();
-            mFileWriter.close();
+
         } catch (IOException e)
         {
             e.printStackTrace();
         } catch (JSONException e)
         {
             e.printStackTrace();
+
+        }
+        finally
+        {
+            try
+            {
+                mFileWriter.close();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
 
 

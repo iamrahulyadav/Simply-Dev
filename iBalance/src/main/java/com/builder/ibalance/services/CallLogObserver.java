@@ -63,7 +63,7 @@ public class CallLogObserver extends ContentObserver
                 null,
                 CallLog.Calls._ID + ">?",
                 new String[]{String.valueOf(previous_id)}, CallLog.Calls._ID + " ASC");
-        int id_idex = cursor.getColumnIndex(CallLog.Calls._ID);
+        int id_idx = cursor.getColumnIndex(CallLog.Calls._ID);
         int type_index =cursor.getColumnIndex(CallLog.Calls.TYPE);
         int number_index =cursor.getColumnIndex( CallLog.Calls.NUMBER);
         int duration_index =cursor.getColumnIndex(CallLog.Calls.DURATION);
@@ -99,7 +99,7 @@ public class CallLogObserver extends ContentObserver
                                         slot_id = getSlotIdforLG(iccId);
                                     } else
                                     {
-                                        long subid = cursor.getLong(cursor.getColumnIndex(column_name));
+                                        String subid = cursor.getString(cursor.getColumnIndex(column_name));
                                         slot_id = getSlotIdforSub(subid);
                                     }
 
@@ -107,7 +107,19 @@ public class CallLogObserver extends ContentObserver
                                 {
                                     String sim_index = cursor.getString(cursor.getColumnIndex(column_name));
                                     slot_id = getSlotIdforAsus(sim_index);
-                                } else
+                                }
+                                //ZTE
+                                else if (column_name.toLowerCase().equals("mode_id") || column_name.toLowerCase().equals("modeid"))
+                                {
+                                    String simid = cursor.getString(cursor.getColumnIndex(column_name));
+                                    try
+                                    {
+                                        slot_id = Integer.parseInt(simid)-1;
+                                    } catch (Exception e)
+                                    {
+                                        slot_id = 0;
+                                    }
+                                }else
                                 {
                                     String temp = cursor.getString(cursor.getColumnIndex(column_name));
                                     if (temp != null)
@@ -130,12 +142,12 @@ public class CallLogObserver extends ContentObserver
                     Message msg = accessibiltyServiceHandler.obtainMessage();
                     msg.arg1 = slot_id;
                     msg.what = 1729;
-                    long call_id = cursor.getLong(id_idex);
+                    long call_id = cursor.getLong(id_idx);
                     msg.obj = new OutgoingCallMessage(number,duration,call_id);
                     accessibiltyServiceHandler.sendMessage(msg);
                 }
             }
-            previous_id = cursor.getLong(id_idex);
+            previous_id = cursor.getLong(id_idx);
         }
         cursor.close();
         mSharedPreferences.edit().putLong("PREV_ID",previous_id).commit();
@@ -161,12 +173,12 @@ public class CallLogObserver extends ContentObserver
         return 0;
     }
 
-    private int getSlotIdforSub(long subid)
+    private int getSlotIdforSub(String subid)
     {
 
         for (SimModel model: GlobalData.globalSimList)
         {
-            if(model.subid == subid)
+            if(String.valueOf(model.subid).equals(subid) || model.serial.equals(String.valueOf(subid)))
                 return model.getSimslot();
         }
         return 0;

@@ -9,11 +9,9 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.builder.ibalance.database.helpers.IMSIHelper;
 import com.builder.ibalance.util.Constants;
-import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.Helper.SharedPreferenceHelper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.ReflectionHelper;
@@ -54,12 +52,12 @@ public class DualSim
             debugInfo.append("Detecting Fresh\n");
             sim_details_known = false; //details no yet known
             sim_list.clear();
-           Log.d(tag, "getSimList");
+          //V12Log.d(tag, "getSimList");
             try
             {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) //API 22,Yay Dual Sim Support
                 {
-                    Log.d(tag, "getSimListForLolipop");
+                   //V12Log.d(tag, "getSimListForLolipop");
                     debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_LOLIPOP) + "\n");
                     SimModel.dual_type = Constants.TYPE_LOLIPOP;
                     getSimListForLolipop(sim_details_known);
@@ -197,15 +195,23 @@ public class DualSim
             }*/
             debugInfo.append("SIM From Prefs TYPE = "+type+"\n");
             debugInfo.append("SIM DETAILS = " + sim_list.toString() + "\n");
-            if(sim_list.isEmpty())
-                getSimList(0);
+            if(sim_list.isEmpty() )
+                return getSimList(0);
             for(SimModel model:sim_list)
             {
-                if(model.getCarrier().equals(""))
+                if(model.sim_imsi==null)
                 {
-                    ArrayList<String> carrier_circle = getCarrierCirclefromIMSI(model.sim_imsi);
-                    model.setCarrier(carrier_circle.get(0));
-                    model.setCircle(carrier_circle.get(0));
+                    return getSimList(0);
+
+                }
+                else
+                {
+                    if (model.getCarrier().equals(""))
+                    {
+                        ArrayList<String> carrier_circle = getCarrierCirclefromIMSI(model.sim_imsi);
+                        model.setCarrier(carrier_circle.get(0));
+                        model.setCircle(carrier_circle.get(0));
+                    }
                 }
             }
             if(SimModel.dual_type == Constants.TYPE_SINGLE_SIM)
@@ -607,7 +613,7 @@ public class DualSim
     private void getSimListForSubscriptionManager(boolean sim_details_known)
     {try
     {
-        Log.d(tag, "Function getSimListForSubscriptionManager");
+       //V12Log.d(tag, "Function getSimListForSubscriptionManager");
         String imei0 = null, imei1 = null;
         Object sim[] = new Object[3]; //just to be safe
         //        SimModel.two_slots = true;
@@ -626,7 +632,7 @@ public class DualSim
         ArrayList<?> subInfoList = new ArrayList<>();
 
         subInfoList = (ArrayList<?>) ReflectionHelper.getObject(null, "android.telephony.SubscriptionManager", "getActiveSubInfoList", new Class[0]);
-        Log.d(tag, "subInfoList = " + subInfoList.toString());
+       //V12Log.d(tag, "subInfoList = " + subInfoList.toString());
         if (sim_details_known) //already known then just check serials
         {
             if (subInfoList.size() < 2)
@@ -700,7 +706,7 @@ public class DualSim
 
             //
             sim[i] = subInfoList.get(i);
-            Log.d(tag, "Sub " + i + " =" + sim[i].toString());
+           //V12Log.d(tag, "Sub " + i + " =" + sim[i].toString());
             Field iccField = null, subField = null, slotField = null, mccField = null, mncField = null, display_carier_field = null;
             String serial = null, sim_imsi = null, network_imsi = null, imei = null, display_carier = null;
             long subsciption = 1;
@@ -722,7 +728,7 @@ public class DualSim
                 display_carier_field.setAccessible(true);
             } catch (NoSuchFieldException e)
             {
-                Log.d(tag, "Field Notavailable");
+               //V12Log.d(tag, "Field Notavailable");
                 e.printStackTrace();
             }
             try
@@ -762,7 +768,7 @@ public class DualSim
         {
             SimModel.dual_type = Constants.TYPE_UNKNOWN;
             sim_list.clear();
-            Log.d(tag, "Network Not Available");
+           //V12Log.d(tag, "Network Not Available");
         }
 
     }
@@ -1507,10 +1513,10 @@ public class DualSim
             Object[] empty_parameter = new Object[0];
             TelephonyManager mTelephonyManager = (TelephonyManager)multiSimTelephonyManager;
             {
-               Log.d("ASUS","getDeviceId = "+mTelephonyManager.getDeviceId());
-               Log.d("ASUS","getSimOperator = "+mTelephonyManager.getSimOperator());
-               Log.d("ASUS","getSimSerialNumber = "+mTelephonyManager.getSimSerialNumber());
-               Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
+              //V12Log.d("ASUS","getDeviceId = "+mTelephonyManager.getDeviceId());
+              //V12Log.d("ASUS","getSimOperator = "+mTelephonyManager.getSimOperator());
+              //V12Log.d("ASUS","getSimSerialNumber = "+mTelephonyManager.getSimSerialNumber());
+              //V12Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
             }
             serial0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getSimSerialNumber", empty_parameter);
             imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);imei0 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
@@ -1547,10 +1553,10 @@ public class DualSim
         {
             TelephonyManager mTelephonyManager = (TelephonyManager)multiSimTelephonyManager;
             {
-               Log.d("ASUS","getDeviceId = "+mTelephonyManager.getDeviceId());
-               Log.d("ASUS","getSimOperator = "+mTelephonyManager.getSimOperator());
-               Log.d("ASUS","getSimSerialNumber = "+mTelephonyManager.getSimSerialNumber());
-               Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
+              //V12Log.d("ASUS","getDeviceId = "+mTelephonyManager.getDeviceId());
+              //V12Log.d("ASUS","getSimOperator = "+mTelephonyManager.getSimOperator());
+              //V12Log.d("ASUS","getSimSerialNumber = "+mTelephonyManager.getSimSerialNumber());
+              //V12Log.d("ASUS","getSubscriberId = "+mTelephonyManager.getSubscriberId());
             }
             Object[] empty_parameter = new Object[0];
             imei1 = (String) ReflectionHelper.getObject(multiSimTelephonyManager, null, "getDeviceId", empty_parameter);
@@ -1865,10 +1871,10 @@ public class DualSim
     private void getSimListForLolipop(boolean sim_details_known)
     {
 
-       Log.d(tag, "Function getSimListForLolipop");
+      //V12Log.d(tag, "Function getSimListForLolipop");
         String imei0=null,imei1=null;
         SubscriptionManager mSubscriptionManager = SubscriptionManager.from(MyApplication.context);
-       Log.d(tag, "SimInfo LIst:" + mSubscriptionManager.getActiveSubscriptionInfoList().toString());
+      //V12Log.d(tag, "SimInfo LIst:" + mSubscriptionManager.getActiveSubscriptionInfoList().toString());
         SubscriptionInfo sim1, sim0;
         SimModel.two_slots = true;
         SimModel.uses_subscription = true;
@@ -1999,18 +2005,35 @@ public class DualSim
                     imsi1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getSimOperator", parameter);
                     debugInfo.append("Lolipop Reflection getSimOperator"+ imsi1);
                 }
-               Log.d(tag, "IMSI 0 = " + imsi0 + "\nIMSI1 = " + imsi1);
+              //V12Log.d(tag, "IMSI 0 = " + imsi0 + "\nIMSI1 = " + imsi1);
                 if (imsi0.equals(imsi1) && !sim0.getCarrierName().equals(sim1.getCarrierName())) // If MNCs are same get carrier name an see if it is different
                 {                                                                       //If yes then Qtiyappa happened try for the general approach
                     int subid_0 = 1, subid_1 = 2;
                     subid_0 = sim0.getSubscriptionId();
                     subid_1 = sim1.getSubscriptionId();
+                    String temp_imsi0,temp_imsi1;
                     //if both IMSI are same though carriers are different then do reelection to find out
                     Object[] parameter = new Object[1];
                     parameter[0] = subid_0;
-                    imsi0 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getSimOperatorForSubscription", parameter);
+                    temp_imsi0 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getSimOperatorForSubscription", parameter);
+                    if(temp_imsi0==null)
+                    {
+                        //Lolipop Api 22 hack
+                        temp_imsi0 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getSimOperatorNumericForSubscription", parameter);
+
+                    }
                     parameter[0] = subid_1;
-                    imsi1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getSimOperatorForSubscription", parameter);
+                    temp_imsi1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getSimOperatorForSubscription", parameter);
+                    if(temp_imsi1==null)
+                    {
+                        //Lolipop Api 22 hack
+                        temp_imsi1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getSimOperatorNumericForSubscription", parameter);
+
+                    }
+                    if(temp_imsi0!=null)
+                        imsi0 = temp_imsi0;
+                    if (temp_imsi1!=null)
+                        imsi1 = temp_imsi1;
                 } //If everything is Okay.
                 ArrayList<String> carrier_circle = getCarrierCirclefromIMSI(imsi0);
                 if (carrier_circle == null)
@@ -2044,7 +2067,7 @@ public class DualSim
             {
                 SimModel.dual_type = Constants.TYPE_UNKNOWN;
                 sim_list.clear();
-               Log.d(tag, "Network Not Available");
+              //V12Log.d(tag, "Network Not Available");
             }
         }
 
@@ -2061,7 +2084,7 @@ public class DualSim
 
     private void getSimListforMediaTek(boolean sim_details_known)
     {
-       Log.d(tag, "MediaTek");
+      //V12Log.d(tag, "MediaTek");
         TelephonyManagerEx mediaTekTelephonyManager = new TelephonyManagerEx(MyApplication.context);
         String imsi0 = "", imsi1 = "", serial0 = null, serial1 = null;
         long subId0=-1,subId1=-1;
@@ -2153,7 +2176,7 @@ public class DualSim
         {
             SimModel.dual_type = Constants.TYPE_UNKNOWN;
             //Both sims have some problem
-           Log.d(tag, "Error in getting the Sims");
+          //V12Log.d(tag, "Error in getting the Sims");
             sim_list.clear();
         }
 
@@ -2184,11 +2207,11 @@ public class DualSim
         } else //Normal Flow
         {
             carrier_circle = imsiHelper.getMapping(IMSI);
-            Log.d(tag,"Remove Zero and check");
+           //V12Log.d(tag,"Remove Zero and check");
             if(carrier_circle==null && IMSI.length()>=4)
             {
                 String temp = IMSI.substring(0,3)+(Integer.parseInt(IMSI.substring(3))+"");
-                Log.d(tag, "Remove Zero and check"+temp);
+               //V12Log.d(tag, "Remove Zero and check"+temp);
                 carrier_circle = imsiHelper.getMapping(temp);
             }
         }
@@ -2258,10 +2281,10 @@ public class DualSim
                 obParameter[0] = 0; //sim 1
                 Object returned_object = getSimStateMethod.invoke(mTelephonyManager, obParameter);
                 TelephonyManager tel = (TelephonyManager) returned_object;
-               Log.d(tag, "Telphony 0 = " + tel.getNetworkOperatorName());
+              //V12Log.d(tag, "Telphony 0 = " + tel.getNetworkOperatorName());
                 obParameter[0] = 2; //sim 1
                 returned_object = getSimStateMethod.invoke(mTelephonyManager, obParameter);
-               Log.d(tag, "Telphony 1 = " + tel.getNetworkOperatorName());
+              //V12Log.d(tag, "Telphony 1 = " + tel.getNetworkOperatorName());
                 if (returned_object == null)
                 {
                     isDualSim = false;
@@ -2283,7 +2306,7 @@ public class DualSim
 
     public final String checkDualSim(boolean classMethods) //for Debug only
     {
-       Log.d(tag, "Testing Dual SIM Support");
+      //V12Log.d(tag, "Testing Dual SIM Support");
         StringBuilder mStringBuilder = new StringBuilder("Debuf Info :");
         String[] arrayOfString1 = {"android.provider.", "android.telephony.", "com.mediatek.telephony."};
         String[] arrayOfString2 = {"TelephonyManager", "TelephonyManagerEx", "MSimTelephonyManager", "MultiSimTelephonyManager", "SubscriptionManager", "SubInfoRecord", "Telephony", "Telephony$SIMInfo", "MSimCardUtils", "SimManager"};
@@ -2388,8 +2411,8 @@ public class DualSim
         Cursor managedCursor = MyApplication.context.getContentResolver().query(
                 CallLog.Calls.CONTENT_URI, null, null, null, null);
         SimModel.call_log_columns.clear();
-        Helper.toastHelper("Checking Call Logs");
-        final String[] colPrefixList = {"subscription", "slot", "icc", "sim", "sub","phone"};
+        //Helper.toastHelper("Checking Call Logs");
+        final String[] colPrefixList = {"subscription", "slot", "icc", "sim", "sub","phone","mode"};
         final String[] colSuffixList = {"", "index", "indx", "idx", "id", "_index", "Slot", "_subscription", "_id", "num","type"};
         int prefix_length = colPrefixList.length;
         int suffix_length = colSuffixList.length;

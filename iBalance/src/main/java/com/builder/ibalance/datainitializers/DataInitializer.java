@@ -116,7 +116,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 			updateWidgetInitially(MyApplication.context);
 			done = true;
             long endTime = System.nanoTime();
-           Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
+          //V12 Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
 
 			//Log.d("DataInit", "WORKING IN InitializeSmsMap");
 			//InitializeSmsMap(MyApplication.context);
@@ -336,7 +336,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             }
             mCallLogsHelper.getDatabase().setTransactionSuccessful();
             long endTime = System.nanoTime();
-           Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
+          //V12 Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
         }
         catch (SQLException e)
         {
@@ -682,7 +682,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 		super.onPostExecute(result);
    //V10Log.d(TAG, "POSTING DataLoadingDone Event");
         EventBus.getDefault().postSticky(new DataLoadingDone());
-        new SmsDataInitializer().execute();
+        //new SmsDataInitializer().execute();
     }
 
 	private void updateWidgetInitially(Context ctx) {

@@ -22,6 +22,7 @@ public class DuplicationRemover
     static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     FileInputStream mFileReader ;
     byte[] data;
+    int cont =0;
     public DuplicationRemover()
     {
         FileInputStream mReader;
@@ -39,8 +40,13 @@ public class DuplicationRemover
             mJsonArray = new JSONArray(str);
             Pattern mPattern;
             Matcher mMatcher;
-            String testString = reader.readLine();
+
             int len = mJsonArray.length();
+            String testString = "-1";
+            do
+            {
+                ptln("Enter Regex");
+                testString = reader.readLine();
             for(int i=0;i<len;i++)
             {
                 JSONObject currentObject = (JSONObject) mJsonArray.get(i);
@@ -67,16 +73,23 @@ public class DuplicationRemover
                         if(ss!=-1)
                         ptln("Duration SS = "+mMatcher.group(ss));
                     }
-
+                ptln("Match!");
 
                 }
-
-            }
+                else
+                {
+                    ptln("Failed");
+                }
+                }
+                ptln("Enter -1 ");
+            }while (!testString.equals("-1"));
             mFileReader.close();
-        }catch (Exception e)
+            }catch (Exception e)
         {
-
+            e.printStackTrace();
         }
+
     }
+
 
 }

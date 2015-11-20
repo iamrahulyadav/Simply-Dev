@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -131,7 +132,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         String carrier = "Unknown";
         try
         {
-            Log.d(tag,"Bal Frag Loading Slot = "+sim_slot);
+           //V12Log.d(tag,"Bal Frag Loading Slot = "+sim_slot);
            carrier = GlobalData.globalSimList.get(sim_slot).carrier;
 
             current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, (float)-1.0);
@@ -202,7 +203,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         @Override
         protected void onPreExecute()
         {
-            Log.d(tag,"Bal Frag onPreExecute");
+           //V12Log.d(tag,"Bal Frag onPreExecute");
 
             super.onPreExecute();
             rootView.findViewById(R.id.rootRL).setVisibility(View.GONE);
@@ -217,7 +218,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         @Override
         protected Void doInBackground(Integer... params)
         {
-            Log.d(tag,"Bal Frag doInBackground");
+           //V12Log.d(tag,"Bal Frag doInBackground");
             DataInitializer.initializeUSSDData(params[0]);
             return null;
         }
@@ -225,7 +226,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         @Override
         protected void onPostExecute(Void aVoid)
         {
-            Log.d(tag,"Bal Frag onPostExecute");
+           //V12Log.d(tag,"Bal Frag onPostExecute");
             super.onPostExecute(aVoid);
             if(isAdded())
             {
@@ -239,7 +240,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
             }
             else
             {
-                Log.d(tag,"Bal Frag not added");
+               //V12Log.d(tag,"Bal Frag not added");
             }
         }
     }
@@ -272,15 +273,15 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
     }
     void intializeScreen(int sim_slot)
 	{
-        Log.d(tag,"Bal Frag intializeScreen");
+       //V12Log.d(tag,"Bal Frag intializeScreen");
 		if(sim_slot==0)
 		{
-            Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
+           //V12Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
 			currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot, mSharedPreferences.getFloat("CURRENT_BALANCE",(float)-1.0));
 		}
 		else
 		{
-            Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
+           //V12Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
 			currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_"+sim_slot,(float)-1.0);
 		}
 		currData = mSharedPreferences.getFloat("CURRENT_DATA_"+sim_slot, mSharedPreferences.getFloat("CURRENT_DATA",(float)-1.0));
@@ -307,46 +308,57 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 				startActivity(new Intent(MyApplication.context, HistoryActivity.class));
 			}
 		});
-        Log.d(tag, "Bal Frag currBalance = " + currBalance);
+       //V12Log.d(tag, "Bal Frag currBalance = " + currBalance);
 
 		if(currBalance>-1.0)
 		{
 			mListView = (ParallaxListView) rootView.findViewById(R.id.recents_list);
-            mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, null, false);
-			final float scale = getResources().getDisplayMetrics().density;
-            mLineChart.setLayoutParams(new AbsListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, (int)(300*scale)));
+			mListView.setVisibility(View.VISIBLE);
+			if(mLineChart==null)
+			{
+
+				mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, null, false);
+				final float scale = getResources().getDisplayMetrics().density;
+				mLineChart.setLayoutParams(new AbsListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, (int)(300*scale)));
+			}
             createGraph();
           /*  mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
             createGraph();*/
             //have to set the header before setting the adapter
+			mListView.removeHeaderView(mLineChart);
             mListView.addParallaxedHeaderView(mLineChart);
-            RecentListAdapter mRecentListAdapter = new RecentListAdapter(getActivity(), new CallLogsHelper().getAllOutGoingLocalCallLogs(), false);
+            RecentListAdapter mRecentListAdapter = null;
+            if(mRecentListAdapter==null)
+            {
+                Cursor recentListCursor = new CallLogsHelper().getAllOutGoingLocalCallLogs();
+                mRecentListAdapter = new RecentListAdapter(getActivity(),recentListCursor , false);
+            }
 			mListView.setAdapter(mRecentListAdapter);
 			mListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-            {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-                {
+			{
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+				{
 					Tracker t = ((MyApplication) MyApplication.context).getTracker(
 							TrackerName.APP_TRACKER);
-							t.send(new HitBuilders.EventBuilder()
-									.setCategory("CALL")
-									.setAction("RECENTS")
-									.setLabel("")
-									.build());
-							FlurryAgent.logEvent("CALL");
-                    Intent intent = new Intent(Intent.ACTION_DIAL);
+					t.send(new HitBuilders.EventBuilder()
+							.setCategory("CALL")
+							.setAction("RECENTS")
+							.setLabel("")
+							.build());
+					FlurryAgent.logEvent("CALL");
+					Intent intent = new Intent(Intent.ACTION_DIAL);
 
-                    /** Creating a uri object to store the telephone number */
-                    Uri data = Uri.parse("tel:" + view.getTag(R.id.KEY_NUMBER));
+					/** Creating a uri object to store the telephone number */
+					Uri data = Uri.parse("tel:" + view.getTag(R.id.KEY_NUMBER));
 
-                    /** Setting intent data */
-                    intent.setData(data);
+					/** Setting intent data */
+					intent.setData(data);
 
-                    /** Starting the caller activity by the implicit intent */
-                    startActivity(intent);
-                }
-            });
+					/** Starting the caller activity by the implicit intent */
+					startActivity(intent);
+				}
+			});
 		/*((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
 		mLineChart.setVisibility(View.VISIBLE);*/
 
@@ -367,7 +379,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		else
         {
 			ViewGroup container = (ViewGroup) rootView.findViewById(R.id.parallax_container);
-            container.removeView(rootView.findViewById(R.id.recents_list));
+            rootView.findViewById(R.id.recents_list).setVisibility(View.GONE);
 			this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, container, true);
             contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
             contactUsButton.setOnClickListener(new OnClickListener()
