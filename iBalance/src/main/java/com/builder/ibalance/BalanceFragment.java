@@ -390,9 +390,11 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                 @Override
                 public void onClick(View v)
                 {
-                    if (!Helper.contactExists("+919739663487"))
+
+					if (!Helper.contactExists("+919739663487"))
                     {
                        //V10Log.d(tag, "Whatsapp contact not found adding contact");
+
 						Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
 						intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
 						intent.putExtra(ContactsContract.Intents.Insert.EMAIL, "simplyappcontact@gmail.com")

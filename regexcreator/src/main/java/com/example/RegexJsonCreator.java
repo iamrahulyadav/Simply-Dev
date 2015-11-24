@@ -18,12 +18,13 @@ import static com.example.Choice.ptln;
  */
 public class RegexJsonCreator
 {
-    static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     String regex;
     JSONArray allJson = null;
-    File call_json = new File("G:/SimplyV2/TextMining/json/CALL_PATTERNS.json");
-    String carrier = "AIRCEL";
+    File call_json = new File("G:/SimplyV2/TextMining/json/DATA_PATTERNS.json");
+    String carrier = "AIRTEL";
     int costPos = -1, durationSecPos = -1,mainBalPos = -1,durationClockPosHH = -1,durationClockPosMM = -1,durationClockPosSS = -1;
+    int usedData = -1, leftData = -1,type = -1,usedDataMetric = -1,leftDataMetric = -1,validity = -1,mainbalance = -1;
     int cont = -1;
     FileInputStream mFileReader ;
     FileOutputStream mFileWriter;
@@ -51,6 +52,15 @@ public class RegexJsonCreator
                 //d HH
                 //d MM
                 //d SS
+                ptln("Enter the regex for call -1 to Stop OR 0 to Commit");
+                regex = reader.readLine();
+                if(regex.equals("-1"))
+                    break;
+                JSONObject entry = getnewEntryforData(regex);
+
+                entry.put("CARRIER",carrier);
+               /*
+                Call Entry
                 ptln("Enter the regex for call");
                 regex = reader.readLine();
                 if(regex.equals("-1"))
@@ -85,7 +95,7 @@ public class RegexJsonCreator
                     durationClockArray.put(1,durationClockPosMM);
                     durationClockArray.put(2,durationClockPosSS);
                     entry.put("DURATION_CLOCK",durationClockArray);
-                }
+                }*/
 
                 mJsonArray.put(entry);
 
@@ -115,5 +125,50 @@ public class RegexJsonCreator
         }
 
 
+    }
+
+    public JSONObject getnewEntryforData(String regex) throws IOException,JSONException
+    {
+        JSONObject entry = new JSONObject();
+        /*
+                Data
+                Notes
+                type types (3G,2G,-1,GPRS) (will be empty)or(Exception might be thrown assume 2G)
+                data used
+                data used Metric B KB MB GB  (KB,MB,K,empty (assume K))
+                data left
+                data used Metric B KB MB GB  (KB,MB,K,empty (assume K))
+                validity (will be empty)or(exception thrown)
+                balance ? (optional -1)*/
+        entry.put("REGEX",regex);
+        ptln("Enter TypeIndex");
+        type = Integer.parseInt(reader.readLine());
+        entry.put("TYPE_POS",type);
+
+        ptln("Enter usedData Index");
+        usedData =Integer.parseInt(reader.readLine());
+        entry.put("USED_POS",usedData);
+
+        ptln("Enter usedDataMetric");
+        usedDataMetric = Integer.parseInt(reader.readLine());
+        entry.put("USED_MET_POS",usedDataMetric);
+
+        ptln("Enter leftData");
+        leftData = Integer.parseInt(reader.readLine());
+        entry.put("LEFT_POS",leftData);
+
+        ptln("Enter leftDataMetric");
+        leftDataMetric = Integer.parseInt(reader.readLine());
+        entry.put("LEFT_MET_POS",leftDataMetric);
+
+        ptln("Enter validity");
+        validity = Integer.parseInt(reader.readLine());
+        entry.put("VALIDITY",validity);
+
+        ptln("Enter mainbalance");
+        mainbalance  = Integer.parseInt(reader.readLine());
+        entry.put("MAIN_BAL",mainbalance);
+
+        return entry;
     }
 }
