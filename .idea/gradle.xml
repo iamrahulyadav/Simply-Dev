@@ -14,6 +14,14 @@
             <option value="$PROJECT_DIR$/regexcreator" />
           </set>
         </option>
+        <option name="myModules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/iBalance" />
+            <option value="$PROJECT_DIR$/mediatek-android" />
+            <option value="$PROJECT_DIR$/regexcreator" />
+          </set>
+        </option>
       </GradleProjectSettings>
     </option>
   </component>

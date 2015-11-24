@@ -9,6 +9,7 @@ import com.builder.ibalance.BuildConfig;
 import com.builder.ibalance.R;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
+import com.digits.sdk.android.Digits;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
@@ -18,12 +19,19 @@ import com.kahuna.sdk.Kahuna;
 import com.kahuna.sdk.KahunaUserCredentials;
 import com.parse.Parse;
 
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterCore;
 import java.util.HashMap;
 
 import io.fabric.sdk.android.Fabric;
 
 public class MyApplication extends Application
 {
+
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = "dkuXLOEQguuxaRAXxrIbs0eg1";
+    private static final String TWITTER_SECRET = "3ikMAf7ig4faJ9ZNAoBiv5BUHtBJUgI7sY2Zeg6Av7JXg1kI7c";
+
 	public static Context context;
 	final String tag = MyApplication.class.getSimpleName();
 	private static final String PROPERTY_ID = "UA-62225498-2";
@@ -36,7 +44,8 @@ public class MyApplication extends Application
         Crashlytics crashlyticsKit = new Crashlytics.Builder()
                 .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
                 .build();
-		Fabric.with(this, crashlyticsKit);
+		TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+		Fabric.with(this, crashlyticsKit, new TwitterCore(authConfig), new Digits());
                 context = this;
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
