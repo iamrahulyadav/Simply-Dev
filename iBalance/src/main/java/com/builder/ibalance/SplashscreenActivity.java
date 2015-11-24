@@ -357,7 +357,7 @@ public class SplashscreenActivity extends Activity
                     pObj.put("TWO_SLOTS", SimModel.isTwo_slots());
                     pObj.put("DUAL_SIM", !Constants.IS_SINGLE_SIM);
                     pObj.put("CALLLOG_COLUMNS", SimModel.call_log_columns.toString());
-                    pObj.put("SAMPLE_CALLLOGS", getCallLogs());
+                    /*pObj.put("SAMPLE_CALLLOGS", getCallLogs());*/
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                     Location loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                     if(loc!=null)

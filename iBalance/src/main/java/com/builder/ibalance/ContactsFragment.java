@@ -116,7 +116,6 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 
 		hidePDialog();
 		super.onDestroy();
-		MyApplication.getRefWatcher().watch(this);
 	}
 
 	@Override

@@ -1,8 +1,7 @@
 package com.builder.ibalance.util;
 
+import android.app.Application;
 import android.content.Context;
-import android.support.multidex.MultiDex;
-import android.support.multidex.MultiDexApplication;
 import android.telephony.TelephonyManager;
 
 import com.appsflyer.AppsFlyerLib;
@@ -18,23 +17,17 @@ import com.kahuna.sdk.IKahunaUserCredentials;
 import com.kahuna.sdk.Kahuna;
 import com.kahuna.sdk.KahunaUserCredentials;
 import com.parse.Parse;
-import com.squareup.leakcanary.LeakCanary;
-import com.squareup.leakcanary.RefWatcher;
 
 import java.util.HashMap;
 
 import io.fabric.sdk.android.Fabric;
 
-public class MyApplication extends MultiDexApplication
+public class MyApplication extends Application
 {
 	public static Context context;
 	final String tag = MyApplication.class.getSimpleName();
 	private static final String PROPERTY_ID = "UA-62225498-2";
 
-    static RefWatcher refWatcher;
-	public static RefWatcher getRefWatcher() {
-		return  refWatcher;
-	}
 
     @Override
     public void onCreate() {
@@ -45,7 +38,6 @@ public class MyApplication extends MultiDexApplication
                 .build();
 		Fabric.with(this, crashlyticsKit);
                 context = this;
-		refWatcher = LeakCanary.install(this);
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
         //Log.d(tag, "Initializing Parse");
@@ -140,11 +132,11 @@ public class MyApplication extends MultiDexApplication
 			out.write(buffer, 0, read);
 		}
 	}*/
-	@Override
+	/*@Override
 	public void attachBaseContext(Context base) {
 		MultiDex.install(base);
 		super.attachBaseContext(base);
-	}
+	}*/
     public enum TrackerName {
     	  APP_TRACKER, // Tracker used only in this app.
     	  GLOBAL_TRACKER, // Tracker used by all the apps from a company. eg: roll-up tracking.
