@@ -191,7 +191,6 @@ public class CallPatternFragment extends Fragment implements
     public void onDestroy()
     {
         super.onDestroy();
-        MyApplication.getRefWatcher().watch(this);
     }
 
     void clearCharts()

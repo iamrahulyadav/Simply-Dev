@@ -24,6 +24,7 @@ import android.widget.EditText;
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.facebook.appevents.AppEventsLogger;
@@ -41,8 +42,6 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	public static boolean sim1BalanceReminderShown = false,sim2BalanceReminderShown = false;
 	EditText input ;
 	//MoPubInterstitial mInterstitial;
-	Tracker t = ((MyApplication)MyApplication.context).getTracker(
-		    TrackerName.APP_TRACKER);
 
 	//public static int appOpenCount = 0;
 	//public static int adFrequency = -1;
@@ -168,8 +167,44 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		switch (id) {
 
+        Tracker t = ((MyApplication) getApplication()).getTracker(
+                TrackerName.APP_TRACKER);
+		switch (id) {
+            case R.id.share:
+                boolean isWhatsappInstalled = Helper.whatsappInstalledOrNot();
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": https://goo.gl/v3YMrN ");
+                sendIntent.setType("text/plain");
+                if(isWhatsappInstalled)
+                {
+
+                    // Build and send an Event.
+                    t.send(new HitBuilders.EventBuilder()
+                            .setCategory("SHARE")
+                            .setAction("WhatsApp")
+                            .setLabel("")
+                            .build());
+
+                    FlurryAgent.logEvent("WhatsApp_Share");
+                    //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"WhatsApp_Share","");
+                    sendIntent.setPackage("com.whatsapp");
+                    startActivity(sendIntent);
+                }
+                else
+                {
+                    // Build and send an Event.
+                    t.send(new HitBuilders.EventBuilder()
+                            .setCategory("SHARE")
+                            .setAction("OTHER_SHARE")
+                            .setLabel("")
+                            .build());
+                    //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"OTHER_SHARE","");
+                    FlurryAgent.logEvent("Other_Share");
+                    startActivity(sendIntent);
+                }
+                break;
 		case R.id.set_bal:
 			//Log.d(tag, "Set Bal");
 			return setbal();
@@ -244,6 +279,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
                 mSharedPreferences.edit().putFloat("MINIMUM_BALANCE",  setBal).commit();
                 EventBus.getDefault().post(new MinimumBalanceMessage(setBal));
                 alert.dismiss();
+
             }
         });
 		cancel.setOnClickListener(new View.OnClickListener()

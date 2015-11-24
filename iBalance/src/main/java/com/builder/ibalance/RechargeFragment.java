@@ -649,20 +649,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     }
 
 
-    private boolean whatsappInstalledOrNot()
-    {
-        PackageManager pm = getActivity().getPackageManager();
-        boolean app_installed = false;
-        try
-        {
-            pm.getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES);
-            app_installed = true;
-        } catch (PackageManager.NameNotFoundException e)
-        {
-            app_installed = false;
-        }
-        return app_installed;
-    }
+
 
     @Override
     public void onPause()
@@ -697,7 +684,6 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     {
         super.onDestroy();
 
-        MyApplication.getRefWatcher().watch(this);
     }
 
 

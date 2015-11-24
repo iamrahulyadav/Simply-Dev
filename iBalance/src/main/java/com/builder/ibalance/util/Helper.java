@@ -218,4 +218,18 @@ public  class Helper {
 
 
     }
+    public static boolean whatsappInstalledOrNot()
+    {
+        PackageManager pm = MyApplication.context.getPackageManager();
+        boolean app_installed = false;
+        try
+        {
+            pm.getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES);
+            app_installed = true;
+        } catch (PackageManager.NameNotFoundException e)
+        {
+            app_installed = false;
+        }
+        return app_installed;
+    }
 }

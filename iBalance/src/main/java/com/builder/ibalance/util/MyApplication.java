@@ -1,8 +1,7 @@
 package com.builder.ibalance.util;
 
+import android.app.Application;
 import android.content.Context;
-import android.support.multidex.MultiDex;
-import android.support.multidex.MultiDexApplication;
 import android.telephony.TelephonyManager;
 
 import com.appsflyer.AppsFlyerLib;
@@ -10,6 +9,7 @@ import com.builder.ibalance.BuildConfig;
 import com.builder.ibalance.R;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
+import com.digits.sdk.android.Digits;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
@@ -18,23 +18,24 @@ import com.kahuna.sdk.IKahunaUserCredentials;
 import com.kahuna.sdk.Kahuna;
 import com.kahuna.sdk.KahunaUserCredentials;
 import com.parse.Parse;
-import com.squareup.leakcanary.LeakCanary;
-import com.squareup.leakcanary.RefWatcher;
 
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterCore;
 import java.util.HashMap;
 
 import io.fabric.sdk.android.Fabric;
 
-public class MyApplication extends MultiDexApplication
+public class MyApplication extends Application
 {
+
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = "dkuXLOEQguuxaRAXxrIbs0eg1";
+    private static final String TWITTER_SECRET = "3ikMAf7ig4faJ9ZNAoBiv5BUHtBJUgI7sY2Zeg6Av7JXg1kI7c";
+
 	public static Context context;
 	final String tag = MyApplication.class.getSimpleName();
 	private static final String PROPERTY_ID = "UA-62225498-2";
 
-    static RefWatcher refWatcher;
-	public static RefWatcher getRefWatcher() {
-		return  refWatcher;
-	}
 
     @Override
     public void onCreate() {
@@ -43,9 +44,9 @@ public class MyApplication extends MultiDexApplication
         Crashlytics crashlyticsKit = new Crashlytics.Builder()
                 .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
                 .build();
-		Fabric.with(this, crashlyticsKit);
+		TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+		Fabric.with(this, crashlyticsKit, new TwitterCore(authConfig), new Digits());
                 context = this;
-		refWatcher = LeakCanary.install(this);
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
         //Log.d(tag, "Initializing Parse");
@@ -140,11 +141,11 @@ public class MyApplication extends MultiDexApplication
 			out.write(buffer, 0, read);
 		}
 	}*/
-	@Override
+	/*@Override
 	public void attachBaseContext(Context base) {
 		MultiDex.install(base);
 		super.attachBaseContext(base);
-	}
+	}*/
     public enum TrackerName {
     	  APP_TRACKER, // Tracker used only in this app.
     	  GLOBAL_TRACKER, // Tracker used by all the apps from a company. eg: roll-up tracking.

@@ -267,9 +267,12 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 
     public void onEvent(MinimumBalanceMessage m)
     {
-        updateLimitLine(m.minimum_bal);
-        mLineChart.notifyDataSetChanged();
-        mLineChart.invalidate();
+		if(mLineChart!=null)
+		{
+			updateLimitLine(m.minimum_bal);
+			mLineChart.notifyDataSetChanged();
+			mLineChart.invalidate();
+		}
     }
     void intializeScreen(int sim_slot)
 	{
@@ -599,7 +602,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 	public void onDestroy()
 	{
 		super.onDestroy();
-		MyApplication.getRefWatcher().watch(this);
 	}
 
 	void updateLimitLine(float minimum_bal) {
