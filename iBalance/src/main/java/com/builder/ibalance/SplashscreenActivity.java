@@ -292,6 +292,8 @@ public class SplashscreenActivity extends Activity
 
             super.onPostExecute(sim_list);
             PARSER_VERSION =  getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION",1);
+            SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+            boolean isVerfied  = mSharedPreferences.getBoolean("USER_VERIFIED",false);
             ParseConfig.getInBackground(new ConfigCallback()
             {
                 @Override
@@ -316,12 +318,17 @@ public class SplashscreenActivity extends Activity
                     //Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
                 }
             });
-            if (sim_list == null)
+            //chnage it to == for Sim
+            if (sim_list != null)
             {
                 startActivity(new Intent(SplashscreenActivity.this, NoSimActivity.class));
                 finish();
-            } else
-            {
+            }else if(!isVerfied){
+                startActivity(new Intent(SplashscreenActivity.this, DigitLoginActivity.class));
+                finish();
+                }
+                else
+                {
                 DataInitializer mDataInitializer = new DataInitializer();
                 mDataInitializer.execute();
                 dual_sim_bar.setVisibility(View.GONE);
@@ -334,7 +341,7 @@ public class SplashscreenActivity extends Activity
                    //V10Log.d(TAG + " Sim Info =", "Null");
                 }
                //V10Log.d(TAG, "Debug info :" + SimModel.debugInfo);
-                SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+               // SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
                 boolean first_app_launch = mSharedPreferences.getBoolean("FIRST_APP_LAUNCH", true);
                 if (first_app_launch)
                 {

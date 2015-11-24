@@ -182,7 +182,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                                        int pos, long id)
             {
                 currentCarrier = (String) parent.getItemAtPosition(pos);
-                if(carrierSpinner.getTag() != pos)
+                if(((int)carrierSpinner.getTag()) != pos)
                 {
                     loadPlans(currentCarrier, currentCircle);
                 }
@@ -215,7 +215,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             {
 
                 currentCircle = (String) parent.getItemAtPosition(pos);
-                if(circleSpinner.getTag() != pos)
+                if(((int)circleSpinner.getTag()) != pos)
                 {
                     loadPlans(currentCarrier, currentCircle);
                 }
