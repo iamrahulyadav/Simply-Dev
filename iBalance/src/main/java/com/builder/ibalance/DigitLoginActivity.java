@@ -2,30 +2,58 @@ package com.builder.ibalance;
 
 import android.app.Activity;
 
+import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
-import io.fabric.sdk.android.Fabric;
-import com.twitter.sdk.android.core.TwitterCore;
-import com.twitter.sdk.android.core.TwitterAuthConfig;
-import com.digits.sdk.android.Digits;
 
-public class DigitLoginActivity extends Activity {
+import com.builder.ibalance.util.MyApplication;
+import com.digits.sdk.android.AuthCallback;
+import com.digits.sdk.android.Digits;
+import com.digits.sdk.android.DigitsAuthButton;
+import com.digits.sdk.android.DigitsException;
+import com.digits.sdk.android.DigitsSession;
+
+public class DigitLoginActivity extends MyApplication{
+    private AuthCallback authCallback,mauthCallback;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        //super.onCreate(savedInstanceState);
-        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_splashscreen);
-        super.onCreate(savedInstanceState);
+    public void onCreate() {
+             super.onCreate();
+        authCallback = new AuthCallback() {
+            @Override
+            public void success(DigitsSession session, String phoneNumber) {
+                // Do something with the session
+                SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+                mSharedPreferences.edit().putBoolean("USER_VERIFIED",true).commit();
+                boolean IsVerified = mSharedPreferences.getBoolean("USER_VERIFIED",false);
+                Intent intent  = new Intent(getApplicationContext(),SplashscreenActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
 
-        setContentView(R.layout.activity_digit_login);
-        TwitterAuthConfig authConfig =  new TwitterAuthConfig("consumerKey", "consumerSecret");
-        Fabric.with(this, new TwitterCore(authConfig), new Digits());
+            }
+
+            @Override
+            public void failure(DigitsException exception) {
+                // Do something on failure
+            }
+        };
+     }
+
+    public AuthCallback getAuthCallback(){
+        return authCallback;
     }
 
 
+
+
+
 }
+
+
+

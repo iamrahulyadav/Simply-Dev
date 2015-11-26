@@ -9,6 +9,7 @@
     <com.digits.sdk.android.DigitsAuthButton
         android:id="@+id/auth_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
 
 </RelativeLayout>
