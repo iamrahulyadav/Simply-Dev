@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -187,6 +188,9 @@ public class SplashscreenActivity extends Activity implements View.OnClickListen
         //new SimChecker().execute();
         isVerified = mSharedPreferences.getBoolean("USER_VERIFIED",false);
         numberOfSkips = mSharedPreferences.getInt("SKIP_COUNTER", 1);
+        if(getIntent().getExtras()!=null && !TextUtils.isEmpty(getIntent().getExtras().getString("isSkipped"))){
+            isSkipped = false;
+        }
         findViewById(R.id.sim_check_progress).setVisibility(View.VISIBLE);
         findViewById(R.id.sim_check_progress).setVisibility(View.INVISIBLE);
         if(isVerified || numberOfSkips>3){
@@ -260,7 +264,7 @@ public class SplashscreenActivity extends Activity implements View.OnClickListen
 
         }else if(R.id.btnSkipLogin ==v.getId()){
             SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-            numberOfSkips = mSharedPreferences.getInt("SKIP_COUNTER" ,1);
+            numberOfSkips = mSharedPreferences.getInt("SKIP_COUNTER" ,0);
             numberOfSkips = numberOfSkips+1;
             mSharedPreferences.edit().putInt("SKIP_COUNTER",numberOfSkips).commit();
             isSkipped = true;

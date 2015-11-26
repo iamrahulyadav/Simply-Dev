@@ -27,6 +27,7 @@ import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.digits.sdk.android.Digits;
 import com.facebook.appevents.AppEventsLogger;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -152,14 +153,28 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
+
 		getMenuInflater().inflate(R.menu.main, menu);
 		
 		return true;
 	}
 
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+		if(mSharedPreferences.getBoolean("USER_VERIFIED",false))
+        {
+            //menu.findItem().setTitle("Login");
+            menu.removeItem(R.id.log);
+        }
 
 
-	
+		return true;
+	}
+
+
+
+
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -169,7 +184,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		int id = item.getItemId();
 
         Tracker t = ((MyApplication) getApplication()).getTracker(
-                TrackerName.APP_TRACKER);
+				TrackerName.APP_TRACKER);
 		switch (id) {
             case R.id.share:
                 boolean isWhatsappInstalled = Helper.whatsappInstalledOrNot();
@@ -219,6 +234,9 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 			//Log.d(tag, "contact_us selected");
 			startActivity(new Intent(this, ContactUs.class));
 			break;
+			case R.id.log:
+				//Log.d(tag, "contact_us selected");
+				verifyUser();				break;
 		case R.id.rate:
 			t.send(new HitBuilders.EventBuilder().setCategory("RATE")
 					.setAction("Rate").setLabel("").build());
@@ -237,6 +255,14 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
+	private void verifyUser() {
+		SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+					Digits.authenticate(((DigitLoginActivity) getApplication()).getAuthCallback(), R.style.CustomDigitsTheme);
+            finish();
+
+	}
+
 	private Boolean setbal() {
 	
 		
