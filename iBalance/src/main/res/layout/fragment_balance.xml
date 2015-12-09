@@ -106,6 +106,7 @@
                 android:orientation="vertical"
                 android:weightSum="10"
                 >
+
                 <include layout="@layout/recent_call_list"/>
             </LinearLayout>
 

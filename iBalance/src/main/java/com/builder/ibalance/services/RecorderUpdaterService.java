@@ -14,6 +14,7 @@ import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
@@ -45,6 +46,7 @@ import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.builder.ibalance.util.RegexUpdater;
+import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -64,6 +66,7 @@ public class RecorderUpdaterService extends AccessibilityService
     static String TAG = "RecorderService", second = null;
     boolean hasEditText = false;
     boolean isRegistered = false;
+    long startTime,endTime;
     float previousBalance = (float) -20.0;
     CallLogObserver mCallLogObserver;
     StringBuilder sb = new StringBuilder();
@@ -125,6 +128,8 @@ public class RecorderUpdaterService extends AccessibilityService
                 if (dismissNode != null)
                     dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 dismissNode = null;
+                endTime = System.nanoTime();
+                Log.d(TAG,"Time = "+((endTime-startTime)/1000000)+"ms");
                 startActivity(popup_intent);
                 NormalCall entry = new NormalCall(_id,
                         new Date().getTime(),
@@ -230,6 +235,7 @@ public class RecorderUpdaterService extends AccessibilityService
     }
 
 boolean cancelButtonFound = false;
+
     public String getTextFromNode(AccessibilityNodeInfo accessibilityNodeInfo)
     {
         StringBuilder sb = new StringBuilder();
@@ -270,7 +276,8 @@ boolean cancelButtonFound = false;
                //V10Log.d("TEST", "Button " + ac.getText());
                 if(ac.getText()!=null )
                 {
-                    if(ac.getText().toString().toUpperCase().replace(" ","").equals("CANCEL"))
+                    String cancelButtonText  = ac.getText().toString().toUpperCase().replace(" ","");
+                    if(cancelButtonText.equals("CANCEL")||cancelButtonText.equals("DISMISS")||cancelButtonText.equals("OK")||cancelButtonText.equals("OKAY"))
                     {
                         cancelButtonFound = true;
                     }
@@ -280,15 +287,16 @@ boolean cancelButtonFound = false;
             }
 
         }
-        return sb.toString().replace("\r\n", " ").replace("\n", " ");
+        return sb.toString();
     }
 
     public void onAccessibilityEvent(AccessibilityEvent event)
     {
+        startTime = System.nanoTime();
         mCallDetailsModel = null;
         cancelButtonFound = false;
         text = getTextFromNode(event.getSource());// getEventText(event);
-        text = text.replace("\r\n", "").replace("\n", "");
+        text = text.replace("\r", "_").replace("\n", "_").replace("\u0011"," ").toUpperCase();
        //V10Log.d(TAG, "Dismissed AccessibilityNodeInfo");
         // text += getEventText(event);
         // = sb.toString();
@@ -348,6 +356,7 @@ boolean cancelButtonFound = false;
 
                             break;
                         case NORMAL_DATA:
+                        {
                             type = "NORMAL_DATA";
                             NormalData details1 = (NormalData) parser.getDetails();
                             if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
@@ -358,42 +367,28 @@ boolean cancelButtonFound = false;
                                 } else
                                 {
                                     if (dismissNode != null)
-                                        dismissNode
-                                                .performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                                        dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                                 }
                                 FlurryAgent.logEvent("POPUP_SHOWN_NDATA");
 
-                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SHOWN_NDATA","");
-                                t.send(new HitBuilders.EventBuilder()
-                                        .setCategory("POPUP")
-                                        .setAction("NDATA_SHOWN").setLabel("")
-                                        .build());
+                                //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SHOWN_NDATA","");
+                                t.send(new HitBuilders.EventBuilder().setCategory("POPUP").setAction("NDATA_SHOWN").setLabel("").build());
                                 ////V10Log.d(TAG + " test", "did a back");
-                                popup_intent = new Intent(getApplicationContext(),
-                                        UssdPopup.class);
+                                popup_intent = new Intent(getApplicationContext(), UssdPopup.class);
                                 popup_intent.putExtra("TYPE", 3);
-                                popup_intent.putExtra("BALANCE",
-                                        details1.bal.toString());
-                                popup_intent.putExtra("DATA_CONSUMED", String
-                                        .format("%.3f", details1.data_consumed));
-                                popup_intent.putExtra("DATA_COST",
-                                        String.format("%.3f", details1.cost));
+                                popup_intent.putExtra("BALANCE", details1.bal.toString());
+                                popup_intent.putExtra("DATA_CONSUMED", String.format("%.3f", details1.data_consumed));
+                                popup_intent.putExtra("DATA_COST", String.format("%.3f", details1.cost));
                                 popup_intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                                 startActivity(popup_intent);
                             } else
                             {
                                 FlurryAgent.logEvent("NDATA_POPUP_NOT_SHOWN");
-                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"NDATA_POPUP_NOT_SHOWN", "");
-                                t.send(new HitBuilders.EventBuilder()
-                                        .setCategory("POPUP")
-                                        .setAction("NDATA_NOT_SHOWN").setLabel("")
-                                        .build());
+                                //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"NDATA_POPUP_NOT_SHOWN", "");
+                                t.send(new HitBuilders.EventBuilder().setCategory("POPUP").setAction("NDATA_NOT_SHOWN").setLabel("").build());
                             }
                             NormalDataHelper mNormalDataHelper = new NormalDataHelper();
 
@@ -403,9 +398,10 @@ boolean cancelButtonFound = false;
                             //Hard coded but have to solve it later
                             editor.putFloat("CURRENT_BALANCE_0", (float) details1.bal);
                             editor.commit();
-
+                        }
                             break;
                         case DATA_PACK:
+                        {
                             type = "DATA_PACK";
                             DataPack details2 = (DataPack) parser.getDetails();
                             if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
@@ -416,56 +412,42 @@ boolean cancelButtonFound = false;
                                 } else
                                 {
                                     if (dismissNode != null)
-                                        dismissNode
-                                                .performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                                        dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                                 }
                                 FlurryAgent.logEvent("POPUP_SHOWN_PDATA");
-                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SHOWN_PDATA","");
-                                t.send(new HitBuilders.EventBuilder()
-                                        .setCategory("POPUP")
-                                        .setAction("PDATA_SHOWN").setLabel("")
-                                        .build());
+                                //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SHOWN_PDATA","");
+                                t.send(new HitBuilders.EventBuilder().setCategory("POPUP").setAction("PDATA_SHOWN").setLabel("").build());
                                 ////V10Log.d(TAG + " test", "did a back");
 
-                                popup_intent = new Intent(getApplicationContext(),
-                                        UssdPopup.class);
+                                popup_intent = new Intent(getApplicationContext(), UssdPopup.class);
                                 popup_intent.putExtra("TYPE", 6);
-                                popup_intent.putExtra("BALANCE",
-                                        details2.bal.toString());
-                                popup_intent.putExtra("DATA_CONSUMED", String
-                                        .format("%.2f", details2.data_consumed));
-                                popup_intent.putExtra("DATA_LEFT",
-                                        details2.data_left + "");
-                                popup_intent
-                                        .putExtra("VALIDITY", details2.validity);
+                                popup_intent.putExtra("BALANCE", details2.bal.toString());
+                                popup_intent.putExtra("DATA_CONSUMED", String.format("%.2f", details2.data_consumed));
+                                popup_intent.putExtra("DATA_LEFT", details2.data_left + "");
+                                popup_intent.putExtra("VALIDITY", details2.validity);
                                 popup_intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                                 startActivity(popup_intent);
 
                             } else
                             {
                                 FlurryAgent.logEvent("PDATA_POPUP_NOT_SHOWN");
-                               //V10AppsFlyerLib.sendTrackingWithEvent( MyApplication.context,"PDATA_POPUP_NOT_SHOWN", "");
-                                t.send(new HitBuilders.EventBuilder()
-                                        .setCategory("POPUP")
-                                        .setAction("PDATA_NOT_SHOWN").setLabel("")
-                                        .build());
+                                //V10AppsFlyerLib.sendTrackingWithEvent( MyApplication.context,"PDATA_POPUP_NOT_SHOWN", "");
+                                t.send(new HitBuilders.EventBuilder().setCategory("POPUP").setAction("PDATA_NOT_SHOWN").setLabel("").build());
                             }
                             DataPackHelper mDataPackHelper = new DataPackHelper();
 
                             mDataPackHelper.addEntry(details2);
                             ////V10Log.d(tag + "Current Bal", details2.bal + " ");
                             editor = sharedPreferences.edit();
-                            editor.putFloat("CURRENT_DATA",
-                                    (float) details2.data_left);
+                            editor.putFloat("CURRENT_DATA", (float) details2.data_left);
                             editor.commit();
+                        }
                             break;
                         case NORMAL_SMS:
+                        {
                             type = "NORMAL_SMS";
                             NormalSMS detail3 = (NormalSMS) parser.getDetails();
                             if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
@@ -476,29 +458,20 @@ boolean cancelButtonFound = false;
                                 } else
                                 {
                                     if (dismissNode != null)
-                                        dismissNode
-                                                .performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                                        dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                                 }
                                 ////V10Log.d(TAG + " test", "did a back");
                                 FlurryAgent.logEvent("POPUP_SMS_SHOWN");
 
-                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SMS_SHOWN","");
-                                t.send(new HitBuilders.EventBuilder()
-                                        .setCategory("POPUP")
-                                        .setAction("SMS_SHOWN").setLabel("").build());
-                                popup_intent = new Intent(getApplicationContext(),
-                                        UssdPopup.class);
+                                //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "POPUP_SMS_SHOWN","");
+                                t.send(new HitBuilders.EventBuilder().setCategory("POPUP").setAction("SMS_SHOWN").setLabel("").build());
+                                popup_intent = new Intent(getApplicationContext(), UssdPopup.class);
                                 popup_intent.putExtra("TYPE", 2);
-                                popup_intent.putExtra("BALANCE",
-                                        detail3.bal.toString());
-                                popup_intent.putExtra("SMS_COST",
-                                        String.format("%.2f", detail3.cost));
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                                popup_intent
-                                        .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                popup_intent.putExtra("BALANCE", detail3.bal.toString());
+                                popup_intent.putExtra("SMS_COST", String.format("%.2f", detail3.cost));
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                                popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                                 startActivity(popup_intent);
                                 updateWidget((detail3).bal.toString());
                             } else
@@ -506,16 +479,12 @@ boolean cancelButtonFound = false;
 
                                 FlurryAgent.logEvent("POPUP_SMS_NOT_SHOWN");
 
-                               //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"POPUP_SMS_NOT_SHOWN", "");
-                                t.send(new HitBuilders.EventBuilder()
-                                        .setCategory("POPUP")
-                                        .setAction("SMS_NOT_SHOWN").setLabel("")
-                                        .build());
+                                //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"POPUP_SMS_NOT_SHOWN", "");
+                                t.send(new HitBuilders.EventBuilder().setCategory("POPUP").setAction("SMS_NOT_SHOWN").setLabel("").build());
                             }
                             NormalSMSHelper mNormalSMSHelper = new NormalSMSHelper();
 
-                            previousBalance = sharedPreferences.getFloat(
-                                    "CURRENT_BALANCE_0", (float) -20.0);
+                            previousBalance = sharedPreferences.getFloat("CURRENT_BALANCE_0", (float) -20.0);
                             ////V10Log.d(tag, "previousBalance " + previousBalance);
                             // if the entry is duplicate
                             if (Float.compare(previousBalance, detail3.bal) == 0)
@@ -532,23 +501,14 @@ boolean cancelButtonFound = false;
                                     ////V10Log.d(tag, "Recharge = "+ (details.bal -
                                     // previousBalance + details.callCost));
                                     ParseObject pObj = new ParseObject("RECHARGES");
-                                    pObj.put("DEVICE_ID", sharedPreferences
-                                            .getString("DEVICE_ID", "123456"));
+                                    pObj.put("DEVICE_ID", sharedPreferences.getString("DEVICE_ID", "123456"));
                                     pObj.put("Total", text);
-                                    pObj.put("NUMBER", sharedPreferences.getString(
-                                            "NUMBER", "0000"));
-                                    pObj.put("CARRIER", sharedPreferences
-                                            .getString("CARRIER", "Unknown"));
-                                    pObj.put("CIRCLE", sharedPreferences.getString(
-                                            "CIRCLE", "Unknown"));
-                                    pObj.put("Recharge", (detail3.bal
-                                            - previousBalance + detail3.cost));
+                                    pObj.put("NUMBER", sharedPreferences.getString("NUMBER", "0000"));
+                                    pObj.put("CARRIER", sharedPreferences.getString("CARRIER", "Unknown"));
+                                    pObj.put("CIRCLE", sharedPreferences.getString("CIRCLE", "Unknown"));
+                                    pObj.put("Recharge", (detail3.bal - previousBalance + detail3.cost));
                                     pObj.saveEventually();
-                                    mRechargeHelper
-                                            .addRechargeEntry(new RechargeEntry(
-                                                    detail3.date,
-                                                    (detail3.bal - previousBalance + detail3.cost),
-                                                    detail3.bal + detail3.cost));
+                                    mRechargeHelper.addRechargeEntry(new RechargeEntry(detail3.date, (detail3.bal - previousBalance + detail3.cost), detail3.bal + detail3.cost));
                                 }
                             }
                             mNormalSMSHelper.addEntry(detail3);
@@ -556,7 +516,7 @@ boolean cancelButtonFound = false;
                             editor = sharedPreferences.edit();
                             editor.putFloat("CURRENT_BALANCE_0", (float) detail3.bal);
                             editor.commit();
-
+                        }
                             break;
 
                         default:
@@ -621,11 +581,8 @@ boolean cancelButtonFound = false;
             }
         } catch (Exception e)
         {
-           //V10e.printStackTrace();
-            ParseObject pObj = new ParseObject("ERROR_LOGS");
-            pObj.put("PLACE", "Accesibility_Service");
-            pObj.put("Object", e.getMessage());
-            pObj.saveEventually();
+            e.printStackTrace();
+            Crashlytics.logException(e);
         }
 
         hasEditText = false;

@@ -21,7 +21,7 @@ public class RegexJsonCreator
      BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     String regex;
     JSONArray allJson = null;
-    File call_json = new File("G:/SimplyV2/TextMining/json/DATA_PATTERNS.json");
+    File call_json = new File("G:/SimplyV2/TextMining/json/CALL_PATTERNS.json");
     String carrier = "AIRTEL";
     int costPos = -1, durationSecPos = -1,mainBalPos = -1,durationClockPosHH = -1,durationClockPosMM = -1,durationClockPosSS = -1;
     int usedData = -1, leftData = -1,type = -1,usedDataMetric = -1,leftDataMetric = -1,validity = -1,mainbalance = -1;
@@ -43,6 +43,7 @@ public class RegexJsonCreator
             String str = new String(data, "UTF-8");
             JSONArray mJsonArray = null;
                 mJsonArray = new JSONArray(str);
+            int id = 0,version=1;
             do
             {
                 //regex
@@ -52,13 +53,21 @@ public class RegexJsonCreator
                 //d HH
                 //d MM
                 //d SS
-                ptln("Enter the regex for call -1 to Stop OR 0 to Commit");
+                ptln("Enter the regex for call -1 to Stop OR 0 to Change Carrier");
                 regex = reader.readLine();
                 if(regex.equals("-1"))
                     break;
+                else if(regex.equals("0"))
+                {
+                    ptln("Enter Carrier");
+                    carrier = reader.readLine();
+                    continue;
+                }
                 JSONObject entry = getnewEntryforData(regex);
 
-                entry.put("CARRIER",carrier);
+                //entry.put("CARRIER",carrier);
+                entry.put("id",id++);
+                entry.put("version",version);
                /*
                 Call Entry
                 ptln("Enter the regex for call");
@@ -127,6 +136,13 @@ public class RegexJsonCreator
 
     }
 
+    private JSONObject getnewEntryforCall(String regex) throws JSONException
+    {
+        JSONObject entry = new JSONObject();
+        entry.put("REGEX",regex);
+        return entry;
+    }
+
     public JSONObject getnewEntryforData(String regex) throws IOException,JSONException
     {
         JSONObject entry = new JSONObject();
@@ -141,7 +157,7 @@ public class RegexJsonCreator
                 validity (will be empty)or(exception thrown)
                 balance ? (optional -1)*/
         entry.put("REGEX",regex);
-        ptln("Enter TypeIndex");
+        /*ptln("Enter TypeIndex");
         type = Integer.parseInt(reader.readLine());
         entry.put("TYPE_POS",type);
 
@@ -167,7 +183,7 @@ public class RegexJsonCreator
 
         ptln("Enter mainbalance");
         mainbalance  = Integer.parseInt(reader.readLine());
-        entry.put("MAIN_BAL",mainbalance);
+        entry.put("MAIN_BAL",mainbalance);*/
 
         return entry;
     }

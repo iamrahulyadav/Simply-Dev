@@ -52,14 +52,12 @@ android {
 
 dependencies {
 
-    compile files('libs/AF-Android-SDK-v2.3.1.17.jar')
-    compile files('libs/FlurryAnalytics-5.3.0.jar')
-    compile files('libs/Kahuna.jar')
+
+    compile fileTree(dir: 'libs', include: '*.jar')
     compile('com.crashlytics.sdk.android:crashlytics:2.5.2@aar') {
         transitive = true;
     }
     compile project(':mediatek-android')
-    compile files('libs/mediatek-compatibility.jar')
 
     compile 'com.github.ksoichiro:android-observablescrollview:1.6.0'
     compile 'com.github.nirhart:parallaxscroll:1.0'

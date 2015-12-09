@@ -64,7 +64,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.builder.ibalance.MainActivity" />
         </activity>
-
         <receiver
             android:name="com.appsflyer.MultipleInstallBroadcastReceiver"
             android:exported="true" >
@@ -80,6 +79,13 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/balance_widget" />
+        </receiver>
+        <receiver android:name=".Listeners.SimplyListener"
+                  android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL"/>
+                <action android:name="android.intent.action.DATE_CHANGED"/>
+            </intent-filter>
         </receiver>
 
         <service

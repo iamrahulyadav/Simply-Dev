@@ -11,7 +11,7 @@ import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.database.models.DateDurationModel;
-import com.builder.ibalance.util.Constants;
+import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.MyApplication;
 
@@ -259,7 +259,7 @@ public class CallLogsHelper
                             slot_id = getSlotIdforSub(subid);
                         }
 
-                    } else if (SimModel.dual_type == Constants.TYPE_ASUS)
+                    } else if (SimModel.dual_type == DualSimConstants.TYPE_ASUS)
                     {
                         String sim_index = cursor.getString(cursor.getColumnIndex(column_name));
                         slot_id = getSlotIdforAsus(sim_index);

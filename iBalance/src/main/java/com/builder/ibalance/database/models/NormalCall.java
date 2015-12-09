@@ -13,7 +13,7 @@ public class NormalCall extends DatabaseEntryBase
 	public String message;
     public long id;
     public NormalCall(){}
- 
+ //id,slot and last number will be added from the content observer
     public NormalCall(Long time, Float callCost,Float bal,int callDuration,String message) {
         super();
         this.date = time;

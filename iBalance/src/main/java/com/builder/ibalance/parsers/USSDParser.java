@@ -1,6 +1,7 @@
 package com.builder.ibalance.parsers;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
@@ -10,15 +11,19 @@ import com.builder.ibalance.database.models.DatabaseEntryBase;
 import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.database.models.NormalData;
 import com.builder.ibalance.database.models.NormalSMS;
+import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.ConstantsAndStatics.USSDMessageType;
 import com.builder.ibalance.util.Loki;
 import com.builder.ibalance.util.MyApplication;
+import com.google.code.regexp.Matcher;
+import com.google.code.regexp.Pattern;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.crypto.NoSuchPaddingException;
 
@@ -49,29 +54,380 @@ public class USSDParser {
     }
 	public boolean parseMessage(String message)
 	{
-		if(parseForNormalCall(message))
-		{
-			return true;
-		}
-		else
-		if(parseForNormalData(message))
-		{
-			return true;
-		}
-		else 
-		if(parseForDataPack(message))
-		{
-			return true;
-		}
-		else 
-		if (parseForNomalSMS(message)) {
-			return true;
-		}
-			
-		
-		return false;//Invalid
+        Log.d(TAG,"Recent event = "+ConstantsAndStatics.RECENT_EVENT);
+        try
+        {
+            switch (ConstantsAndStatics.RECENT_EVENT)
+            {
+                case Intent.ACTION_NEW_OUTGOING_CALL:
+                    ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
+                    if(normalCall(message))
+                    {
+                        Log.d(TAG,"Was A Normal Call");
+                        return true;
+                    }
+                    if(packCall(message))
+                    {
+                        Log.d(TAG,"Was A Normal Call");
+                        return true;
+                    }
+                case Intent.ACTION_DATE_CHANGED:
+                    ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
+                    if(packData(message))
+                    {
+                        Log.d(TAG,"Was A Pack Data");
+                        return true;
+                    }
+                    if(normalData(message))
+                    {
+                        Log.d(TAG,"Was A Normal Data");
+                        return true;
+                    }
+                case "UNKNOWN":
+                    if(tryAllTypes(message))
+                    {
+                        Log.d(TAG,"Got from new Version");
+                        return true;
+                    }
+                    Log.d(TAG,"Trying old school methods");
+                    return tryOldSchoolMethod(message);
+            }
+        }
+        catch (JSONException e)
+            {
+                e.printStackTrace();
+                return tryOldSchoolMethod(message);
+            }
+		return false;
 	}
-	
+    private boolean tryAllTypes(String message)
+    {
+        Log.d(TAG,"Trying all Types");
+        try
+        {
+            if(normalCall(message))
+                return true;
+            if(normalSMS(message))
+                return true;
+            if(packSMS(message))
+                return true;
+            if(packCall(message))
+                return true;
+            if(packData(message))
+                return true;
+            if(normalData(message))
+                return true;
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+
+    }
+
+
+    private boolean normalCall(String message) throws JSONException
+    {
+        Log.d(TAG,"Trying Normal Call");
+        Matcher result = findDetails(mLoki.getNormalCallRegex(),message);
+        if(result!=null)
+        {
+            Log.d(TAG,"Matched!");
+            float mainBal =  Float.parseFloat( result.group("MBAL"));
+            //ptln("Cost = " + mMatcher.group("COST"));
+            // ptln("Balance = " +);
+            int duration = -1;
+            float cost = -1.0f;
+            try
+            {
+                cost = Float.parseFloat( result.group("COST"));
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                cost = -1.0f;
+            }
+            try
+            {
+                duration = Integer.parseInt(result.group("DURS"));
+                //ptln("Duration Secs = " + duration);
+            }catch (IndexOutOfBoundsException e0)
+            {
+                try{
+                    String clock = result.group("DURC");
+                    String sub[] = clock.split(":");
+                    //Log.d(TAG + "call sec 0 ", sub[0]);
+                    //Log.d(TAG + "call sec 1 ", sub[1]);
+                    //Log.d(TAG + "call sec 2 ", sub[2]);
+                    duration = Integer.parseInt(sub[0]) * 60 * 60;
+                    duration += Integer.parseInt(sub[1]) * 60;
+                    duration += Integer.parseInt(sub[2]);
+                    //ptln("Duration Clock = " + duration);
+                }
+                catch (IndexOutOfBoundsException e1)
+                {
+                    try
+                    {
+                        duration = Integer.parseInt(result.group("DURMIN") ) * 60;
+                        duration+= Integer.parseInt(result.group("DURSEC"));
+                        //ptln("Duration Min:Secs = " + duration);
+                    }
+                    catch (IllegalArgumentException e2)
+                    {
+                        duration = -1;
+                        //ptln("No Duration Found A-Hole Telecos");
+                    }
+                }
+            }
+            this.type = USSDMessageType.NORMAL_CALL;
+            details = new  NormalCall((new Date()).getTime(),cost,mainBal,duration,message);
+            Log.d(TAG,"details = "+details.toString());
+            return true;
+        }
+        Log.d(TAG,"Normal Call Didn't Match");
+        return false;
+    }
+    private boolean packData(String message) throws JSONException
+    {
+        Log.d(TAG,"Trying Pack Data");
+        Matcher result = findDetails(mLoki.getPackDataRegex(),message);
+        if(result!=null)
+        {
+          /*type(String/Unknown)- TYPE [types (3G,2G,-1,GPRS) (will be empty)or(Exception might be thrown assume 2G) ]
+            data used(Mb/-1.0f)	- DUSED
+            MB-KB split(Mb/-1.0f)  - DMBUSED , DKBUSED
+            data used Metric- DUSEDM[B KB MB GB  (KB,MB,K,empty (assume K))]
+            data left		- DLEFT
+            GB-MB-KB split - DGBLEFT, DMBLEFT, DKBLEFT
+            data used Metric- DLEFTM [B KB MB GB  (KB,MB,K,empty (assume K))]
+            validity 		- VAL [(will be empty)or(exception thrown)] , might be incompelete like 31/07/ or 31/07/20
+            balance 		- MBAL ? (optional -1)]*/
+            String type,usedMetric,leftMetric,validity;
+            float dataUsed,dataLeft,mainBal;
+            try{
+               type = result.group("TYPE");
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                type = "Unknown";
+            }
+            try{
+                usedMetric =  result.group("DUSEDM");
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                usedMetric = "KB";
+            }
+            try
+            {
+                dataUsed = Float.parseFloat(result.group("DUSED"));
+                switch (usedMetric)
+                {
+                    case "B":
+                        dataUsed = dataUsed/1000000f;
+                        break;
+                    case "K":
+                    case "KB":
+                        dataUsed = dataUsed/1000f;
+                        break;
+                    case "MB":
+                        break;
+                    case "GB":
+                        dataUsed = dataUsed*1000;
+                        break;
+                }
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                //Can be a MB Kb Split
+                boolean found = false;
+                float mb,kb;
+                try
+                {
+                    mb = Float.parseFloat(result.group("DMBUSED"));
+                    found = true;
+                }
+                catch (IndexOutOfBoundsException e1)
+                {
+                    mb = 0.0f;
+                }
+                try
+                {
+                    kb = Float.parseFloat(result.group("DKBUSED"));
+                    found = true;
+                }
+                catch (IndexOutOfBoundsException e1)
+                {
+                    kb = 0.0f;
+                }
+                if(found)
+                {
+                    dataUsed = mb+(kb*1000f);
+                }
+                else
+                {
+                    dataUsed = -1.0f;
+                }
+            }
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Data Left
+            try{
+                leftMetric =  result.group("DLEFTM");
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                leftMetric = "KB";
+            }
+            try
+            {
+                dataLeft = Float.parseFloat(result.group("DLEFT"));
+                switch (leftMetric)
+                {
+                    case "B":
+                        dataLeft = dataLeft/1000000f;
+                        break;
+                    case "K":
+                    case "KB":
+                        dataLeft = dataLeft/1000f;
+                        break;
+                    case "MB":
+                        break;
+                    case "GB":
+                        dataLeft = dataLeft*1000;
+                        break;
+                }
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                //Can be a MB Kb Split
+                boolean found = false;
+                float mb,kb;
+                try
+                {
+                    mb = Float.parseFloat(result.group("DMBLEFT"));
+                    found = true;
+                }
+                catch (IndexOutOfBoundsException e1)
+                {
+                    mb = 0.0f;
+                }
+                try
+                {
+                    kb = Float.parseFloat(result.group("DKBLEFT"));
+                    found = true;
+                }
+                catch (IndexOutOfBoundsException e1)
+                {
+                    kb = 0.0f;
+                }
+                if(found)
+                {
+                    dataLeft = mb+(kb*1000f);
+                }
+                else
+                {
+                    dataLeft = -1.0f;
+                }
+            }
+            try{
+                validity = result.group("VAL");
+                //Have to convert it to machine understandable
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                validity = "N/A";
+            }
+            try{
+
+                mainBal = Float.parseFloat(result.group("MBAL"));
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+               mainBal = -1.0f;
+            }
+            this.type = USSDMessageType.DATA_PACK;
+            //Long time, Float data_consumed,Float data_left,Float bal,String validity, String message
+            details = new DataPack((new Date()).getTime(),dataUsed,dataLeft,mainBal,validity,message);
+            Log.d(TAG,"Pack details : "+details);
+            return  true;
+        }
+
+
+        return false;
+    }
+
+    private Matcher findDetails(JSONArray regexArray, String message) throws JSONException
+    {
+        int length = regexArray.length();
+        Log.d(TAG,"Trying with "+length+"Regexes");
+        Pattern mPattern;
+        Matcher mMatcher;
+        String regex ;
+        for(int i=0;i<length;i++)
+        {
+            regex = regexArray.getJSONObject(i).getString("REGEX");
+            Log.d(TAG,"Trying with : "+regex);
+            mPattern = Pattern.compile(regex);
+            mMatcher = mPattern.matcher(message);
+            if(mMatcher.find())
+            {
+                Log.d(TAG,"Found a Match");
+                return  mMatcher;
+
+            }
+        }
+        Log.d(TAG,"No Match Found");
+        return null;
+    }
+
+    private boolean packSMS(String message)
+    {
+        Log.d(TAG,"Trying Pack SMS");
+        return false;
+    }
+
+    private boolean normalSMS(String message)
+    {
+        Log.d(TAG,"Trying Normal SMS");
+        return false;
+    }
+    private boolean normalData(String message)
+    {
+        Log.d(TAG,"Trying Normal Data");
+        return false;
+    }
+    private boolean packCall(String message)
+    {
+        Log.d(TAG,"Trying Pack Call");
+        return false;
+    }
+
+
+    boolean tryOldSchoolMethod(String message)
+    {
+        Log.d(TAG,"Trying Old School Method");
+        if(parseForNormalCall(message))
+        {
+            return true;
+        }
+        else
+        if(parseForNormalData(message))
+        {
+            return true;
+        }
+        else
+        if(parseForDataPack(message))
+        {
+            return true;
+        }
+        else
+        if (parseForNomalSMS(message)) {
+            return true;
+        }
+
+
+        return false;//Invalid
+    }
+
 
 	private boolean parseForNomalSMS(String message) {
 		Float balance=(float) 0.0, cost = (float) 0.0;

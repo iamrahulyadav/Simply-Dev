@@ -21,6 +21,9 @@ public class Choice
             ptln("1 --- Duplicate Check");
             ptln("2 --- Create JSON");
             ptln("3 --- Clean Files");
+            ptln("4 --- Experiments");
+            ptln("5 --- Tests");
+            ptln("6 --- Create Encrypted Regex");
             readChoice();
         }
         switch (choice)
@@ -33,6 +36,21 @@ public class Choice
                 break;
             case 3:
                 new FileCleaner();
+                break;
+            case 4:
+                new Experiment();
+                break;
+            case 5:
+                try
+                {
+                    new Tests();
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                break;
+            case 6:
+                new Encdec();
                 break;
             default:
                 ptln("Wrong Input");

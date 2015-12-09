@@ -11,7 +11,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
 import com.builder.ibalance.database.helpers.IMSIHelper;
-import com.builder.ibalance.util.Constants;
+import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.Helper.SharedPreferenceHelper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.ReflectionHelper;
@@ -58,89 +58,89 @@ public class DualSim
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) //API 22,Yay Dual Sim Support
                 {
                    //V12Log.d(tag, "getSimListForLolipop");
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_LOLIPOP) + "\n");
-                    SimModel.dual_type = Constants.TYPE_LOLIPOP;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_LOLIPOP) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_LOLIPOP;
                     getSimListForLolipop(sim_details_known);
 
                 } else if (hasSubscriptionManager())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_SUBSCRIPTION) + "\n");
-                    SimModel.dual_type = Constants.TYPE_SUBSCRIPTION;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_SUBSCRIPTION) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_SUBSCRIPTION;
                     getSimListForSubscriptionManager(sim_details_known);
                     //java.util.List<android.telephony.SubInfoRecord> android.telephony.SubscriptionManager.getSubInfoUsingSlotId(int)
                 } else if (com.mediatek.compatibility.gemini.GeminiSupport.isGeminiFeatureEnabled())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_MEDIATEK) + "\n");
-                    SimModel.dual_type = Constants.TYPE_MEDIATEK;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_MEDIATEK) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_MEDIATEK;
                     getSimListforMediaTek(sim_details_known);
 
                 } else if (isTypeGemini())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_GEMINI) + "\n");
-                    SimModel.dual_type = Constants.TYPE_GEMINI;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_GEMINI) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_GEMINI;
                     getSimListForGemini(sim_details_known);
 
                 } else if (isTypeDuosTwo())
                 {
 
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_DUOS_TWO) + "\n");
-                    SimModel.dual_type = Constants.TYPE_DUOS_TWO;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_DUOS_TWO) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_DUOS_TWO;
                     getSimListForDuosTwo(sim_details_known);
 
                 } else if (isTypeDuosDs())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_DUOS_DS) + "\n");
-                    SimModel.dual_type = Constants.TYPE_DUOS_DS;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_DUOS_DS) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_DUOS_DS;
                     getSimListForDuosDs(sim_details_known);
 
                 } else if (isTypeDuosOne())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_DUOS_ONE) + "\n");
-                    SimModel.dual_type = Constants.TYPE_DUOS_ONE;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_DUOS_ONE) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_DUOS_ONE;
                     getSimListForDuosoOne(sim_details_known);
 
                 } else if (isTypeNexus())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_NEXUS) + "\n");
-                    SimModel.dual_type = Constants.TYPE_NEXUS;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_NEXUS) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_NEXUS;
                     getSimListForNexus(sim_details_known);
 
                 } else if (isTypeKarbonn())
                 {
 
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_KARBONN) + "\n");
-                    SimModel.dual_type = Constants.TYPE_KARBONN;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_KARBONN) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_KARBONN;
                     getSimListForKarbonn(sim_details_known);
 
                 } else if (isTypeXiaomi())
                 {
 
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_XIAOMI) + "\n");
-                    SimModel.dual_type = Constants.TYPE_XIAOMI;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_XIAOMI) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_XIAOMI;
                     getSimListForXiaomi(sim_details_known);
 
                 } else if (isTypeAsus())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_ASUS) + "\n");
-                    SimModel.dual_type = Constants.TYPE_ASUS;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_ASUS) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_ASUS;
                     getSimListForAsus(sim_details_known);
 
                 } else if (isTypeMoto())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_MOTO) + "\n");
-                    SimModel.dual_type = Constants.TYPE_MOTO;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_MOTO) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_MOTO;
                     getSimListForMoto(sim_details_known);
 
                 } else if (isTypeSamsungRIL())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_SAMSUNG_RIL) + "\n");
-                    SimModel.dual_type = Constants.TYPE_SAMSUNG_RIL;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_SAMSUNG_RIL) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_SAMSUNG_RIL;
                     getSimListForSamsungRIL(sim_details_known);
 
                 } else if (isTypeMicromaxBolt())
                 {
-                    debugInfo.append("GOT " + SimModel.getDualTypeName(Constants.TYPE_MICROMAX_BOLT) + "\n");
-                    SimModel.dual_type = Constants.TYPE_MICROMAX_BOLT;
+                    debugInfo.append("GOT " + SimModel.getDualTypeName(DualSimConstants.TYPE_MICROMAX_BOLT) + "\n");
+                    SimModel.dual_type = DualSimConstants.TYPE_MICROMAX_BOLT;
                     getSimListForMicromaxBolt(sim_details_known);
                 }
             }
@@ -154,11 +154,11 @@ public class DualSim
                 needMethodsToDebug = true;
             }
 
-        if(sim_list.isEmpty() || SimModel.dual_type == Constants.TYPE_UNKNOWN)
+        if(sim_list.isEmpty() || SimModel.dual_type == DualSimConstants.TYPE_UNKNOWN)
             {
                 //Consider this as Single Sim
                 debugInfo.append(" SIMLIST WAS EMPTY\n");
-                SimModel.dual_type = Constants.TYPE_SINGLE_SIM;
+                SimModel.dual_type = DualSimConstants.TYPE_SINGLE_SIM;
                 debugInfo.append("FALLING BACK TO SINGLE_SIM\n");
                 getSimListForSingleSim(sim_details_known);
                 needMethodsToDebug = true;
@@ -214,7 +214,7 @@ public class DualSim
                     }
                 }
             }
-            if(SimModel.dual_type == Constants.TYPE_SINGLE_SIM)
+            if(SimModel.dual_type == DualSimConstants.TYPE_SINGLE_SIM)
                 return sim_list;
             if(sim_list!=null)
             {
@@ -235,58 +235,58 @@ public class DualSim
             switch (type)
             {
 
-                case Constants.TYPE_UNKNOWN:
+                case DualSimConstants.TYPE_UNKNOWN:
                     getSimList(0);
                     break;
-                case Constants.TYPE_LOLIPOP:
+                case DualSimConstants.TYPE_LOLIPOP:
                     getSimListForLolipop(sim_details_known);
                     break;
-                case Constants.TYPE_MEDIATEK:
+                case DualSimConstants.TYPE_MEDIATEK:
                     getSimListforMediaTek(sim_details_known);
                     break;
-                case Constants.TYPE_GEMINI:
+                case DualSimConstants.TYPE_GEMINI:
                     getSimListForGemini(sim_details_known);
                     break;
-                case Constants.TYPE_MOTO:
+                case DualSimConstants.TYPE_MOTO:
                     getSimListForMoto(sim_details_known);
                     break;
-                case Constants.TYPE_LG:
+                case DualSimConstants.TYPE_LG:
                     //TODO : LG Dual Sim Implementation
                     break;
-                case Constants.TYPE_ASUS:
+                case DualSimConstants.TYPE_ASUS:
                     getSimListForAsus(sim_details_known);
                     break;
-                case Constants.TYPE_XIAOMI:
+                case DualSimConstants.TYPE_XIAOMI:
                     getSimListForXiaomi(sim_details_known);
                     break;
-                case Constants.TYPE_KARBONN:
+                case DualSimConstants.TYPE_KARBONN:
                     getSimListForKarbonn(sim_details_known);
                     break;
-                case Constants.TYPE_NEXUS:
+                case DualSimConstants.TYPE_NEXUS:
                     getSimListForNexus(sim_details_known);
                     break;
-                case Constants.TYPE_DUOS_ONE:
+                case DualSimConstants.TYPE_DUOS_ONE:
                     getSimListForDuosoOne(sim_details_known);
                     break;
-                case Constants.TYPE_DUOS_TWO:
+                case DualSimConstants.TYPE_DUOS_TWO:
                     getSimListForDuosTwo(sim_details_known);
                     break;
-                case Constants.TYPE_DUOS_DS:
+                case DualSimConstants.TYPE_DUOS_DS:
                     getSimListForDuosDs(sim_details_known);
                     break;
-                case Constants.TYPE_SAMSUNG_RIL:
+                case DualSimConstants.TYPE_SAMSUNG_RIL:
                     getSimListForSamsungRIL(sim_details_known);
                     break;
-                case Constants.TYPE_SUBSCRIPTION:
+                case DualSimConstants.TYPE_SUBSCRIPTION:
                     getSimListForSubscriptionManager(sim_details_known);
                     break;
-                case Constants.TYPE_MICROMAX_BOLT:
+                case DualSimConstants.TYPE_MICROMAX_BOLT:
                     getSimListForMicromaxBolt(sim_details_known);
                     break;
-                case Constants.TYPE_OTHERS:
+                case DualSimConstants.TYPE_OTHERS:
                     //TODO ????? TYPE _OTHERS
                     break;
-                case Constants.TYPE_SINGLE_SIM:
+                case DualSimConstants.TYPE_SINGLE_SIM:
                     getSimListForSingleSim(sim_details_known);
                     break;
                 default:
@@ -408,14 +408,14 @@ public class DualSim
             }
         }
         if (serial0 == null || serial1 == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //BBoth sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
     }
 
@@ -571,14 +571,14 @@ public class DualSim
         }
 
         if (serial0 == null || serial1 == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //BBoth sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
 
     }
@@ -618,7 +618,7 @@ public class DualSim
         Object sim[] = new Object[3]; //just to be safe
         //        SimModel.two_slots = true;
         SimModel.uses_subscription = true;
-        Constants.IS_SINGLE_SIM = false;
+        DualSimConstants.IS_SINGLE_SIM = false;
         Class subInfoRecord = null;
         try
         {
@@ -678,7 +678,7 @@ public class DualSim
         if (subInfoList.size() < 2)
         {
 
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         }
         try
         {
@@ -689,16 +689,16 @@ public class DualSim
             imei1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getDeviceId", parameter);
             if (imei0 != null && imei1 != null && !imei0.equals(imei1))
             {
-                Constants.HAS_TWO_SLOTS = true;
+                DualSimConstants.HAS_TWO_SLOTS = true;
                 SimModel.two_slots = true;
             } else
             {
-                Constants.HAS_TWO_SLOTS = false;
+                DualSimConstants.HAS_TWO_SLOTS = false;
                 SimModel.two_slots = false;
             }
         } catch (Exception e)
         {
-            Constants.HAS_TWO_SLOTS = false;
+            DualSimConstants.HAS_TWO_SLOTS = false;
             SimModel.two_slots = false;
         }
         for (int i = 0; i < subInfoList.size(); i++)
@@ -766,7 +766,7 @@ public class DualSim
 
         if (sim_list.isEmpty())
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
             sim_list.clear();
            //V12Log.d(tag, "Network Not Available");
         }
@@ -837,14 +837,14 @@ public class DualSim
             }
         }
         if (serial[0] == null || serial[1] == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial[0] == null && serial[1] == null) //BBoth sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
     }
 
@@ -944,14 +944,14 @@ public class DualSim
             }
         }
         if (serial0 == null || serial1 == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //BBoth sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
 
     }
@@ -1071,14 +1071,14 @@ public class DualSim
         }
 
         if (serial0 == null || serial1 == null) //if any one is null it means only one sim is inserted
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //Both sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
 
     }
@@ -1196,14 +1196,14 @@ public class DualSim
         }
 
         if (serial0 == null || serial1 == null) //if any one is null it means only one sim is inserted
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //BBoth sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
 
 
@@ -1320,14 +1320,14 @@ public class DualSim
         }
 
         if (serial0 == null || serial1 == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //BBoth sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
     }
 
@@ -1446,14 +1446,14 @@ public class DualSim
             }
         }
         if (serial0 == null || serial1 == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //Both sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
 
     }
@@ -1597,14 +1597,14 @@ public class DualSim
         }
 
         if (serial0 == null || serial1 == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //BBoth sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
     }
 
@@ -1703,14 +1703,14 @@ public class DualSim
             }
         }
         if (serial0 == null || serial1 == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //Both sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
 
     }
@@ -1809,14 +1809,14 @@ public class DualSim
             }
         }
         if (serial0 == null || serial1 == null)
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
         else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
         }
         if (serial0 == null && serial1 == null) //Both sim serials are null Sims might not be inserted
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
         }
 
     }
@@ -1829,7 +1829,7 @@ public class DualSim
         if (mTelephonyManager == null)
             mTelephonyManager = (TelephonyManager) MyApplication.context.getSystemService(Context.TELEPHONY_SERVICE);
         serial0 = mTelephonyManager.getSimSerialNumber();
-        Constants.HAS_TWO_SLOTS = false;
+        DualSimConstants.HAS_TWO_SLOTS = false;
         SimModel.two_slots = false;
         if(sim_details_known)
         {
@@ -1862,9 +1862,9 @@ public class DualSim
                     .build();
             sim_list.add(mSimModel);
         }
-        Constants.HAS_TWO_SLOTS = false;
+        DualSimConstants.HAS_TWO_SLOTS = false;
         SimModel.two_slots = false;
-        Constants.IS_SINGLE_SIM = true;
+        DualSimConstants.IS_SINGLE_SIM = true;
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
@@ -1932,18 +1932,18 @@ public class DualSim
             imei1 = (String) ReflectionHelper.getObject(mTelephonyManager, null, "getDeviceId", parameter);
             if(imei0!=null && imei1!=null && !imei0.equals(imei1))
             {
-                Constants.HAS_TWO_SLOTS = true;
+                DualSimConstants.HAS_TWO_SLOTS = true;
                 SimModel.two_slots = true;
             }
             else
             {
-                Constants.HAS_TWO_SLOTS = false;
+                DualSimConstants.HAS_TWO_SLOTS = false;
                 SimModel.two_slots = false;
             }
         }
         catch (Exception e)
         {
-            Constants.HAS_TWO_SLOTS = false;
+            DualSimConstants.HAS_TWO_SLOTS = false;
             SimModel.two_slots = false;
         }
         if (mSubscriptionManager.getActiveSubscriptionInfoCount() < 2)
@@ -1955,7 +1955,7 @@ public class DualSim
                 sim0 = mSubscriptionManager.getActiveSubscriptionInfoForSimSlotIndex(1);
                 slot = 1;
             }
-            Constants.IS_SINGLE_SIM = true; //Only one Sim so no problem
+            DualSimConstants.IS_SINGLE_SIM = true; //Only one Sim so no problem
             SimModel.two_slots = false;
             String imsi = sim0.getMcc() + "" + sim0.getMnc();
             if(imsi == null || imsi.length()<4)
@@ -1980,7 +1980,7 @@ public class DualSim
             sim_list.add(mSimModel);
         } else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
             sim0 = mSubscriptionManager.getActiveSubscriptionInfoForSimSlotIndex(0);
             sim1 = mSubscriptionManager.getActiveSubscriptionInfoForSimSlotIndex(1);
             if (sim0 != null && sim1 != null)
@@ -2065,7 +2065,7 @@ public class DualSim
 
             } else
             {
-                SimModel.dual_type = Constants.TYPE_UNKNOWN;
+                SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
                 sim_list.clear();
               //V12Log.d(tag, "Network Not Available");
             }
@@ -2165,16 +2165,16 @@ public class DualSim
         if (serial0 == null || serial1 == null)
         {
             //Dual Sim only one sim present on slot 0
-            Constants.IS_SINGLE_SIM = true;
+            DualSimConstants.IS_SINGLE_SIM = true;
 
         } else
         {
-            Constants.IS_SINGLE_SIM = false;
+            DualSimConstants.IS_SINGLE_SIM = false;
 
         }
         if (serial0 == null && serial1 == null)
         {
-            SimModel.dual_type = Constants.TYPE_UNKNOWN;
+            SimModel.dual_type = DualSimConstants.TYPE_UNKNOWN;
             //Both sims have some problem
           //V12Log.d(tag, "Error in getting the Sims");
             sim_list.clear();
