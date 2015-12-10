@@ -17,7 +17,7 @@ public class CallDetailsModel implements Parcelable
     private String number = "xxxxxxxxxxx";
     private String carrier_circle = "Unkown/Unkown";
     private String image_uri = null;
-
+    private String message="";
     public long getId()
     {
         return id;
@@ -35,7 +35,6 @@ public class CallDetailsModel implements Parcelable
         return message;
     }
 
-    private String message="";
 
     public CallDetailsModel(float call_cost, float current_balance, float call_rate, int duration,String message)
     {
@@ -44,6 +43,25 @@ public class CallDetailsModel implements Parcelable
         this.call_rate = call_rate;
         this.duration = duration;
         this.message = message;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "CallDetailsModel{" +
+                "call_cost=" + call_cost +
+                ", current_balance=" + current_balance +
+                ", call_rate=" + call_rate +
+                ", total_spent=" + total_spent +
+                ", duration=" + duration +
+                ", sim_slot=" + sim_slot +
+                ", name='" + name + '\'' +
+                ", number='" + number + '\'' +
+                ", carrier_circle='" + carrier_circle + '\'' +
+                ", image_uri='" + image_uri + '\'' +
+                ", message='" + message + '\'' +
+                ", id=" + id +
+                '}';
     }
 
     public void setTotal_spent(float total_spent)
@@ -107,6 +125,7 @@ public class CallDetailsModel implements Parcelable
         number = in.readString();
         carrier_circle = in.readString();
         image_uri = in.readString();
+        message = in.readString();
     }
 
     public static final Creator<CallDetailsModel> CREATOR = new Creator<CallDetailsModel>()
@@ -202,5 +221,6 @@ public class CallDetailsModel implements Parcelable
         dest.writeString(number);
         dest.writeString(carrier_circle);
         dest.writeString(image_uri);
+        dest.writeString(message);
     }
 }

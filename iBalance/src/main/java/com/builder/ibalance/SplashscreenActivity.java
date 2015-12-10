@@ -26,8 +26,8 @@ import android.widget.TextView;
 import com.builder.ibalance.core.DualSim;
 import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
-import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.ConstantsAndStatics;
+import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
@@ -36,9 +36,6 @@ import com.builder.ibalance.util.RegexUpdater;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;
@@ -291,31 +288,7 @@ public class SplashscreenActivity extends Activity
         {
 
             super.onPostExecute(sim_list);
-            PARSER_VERSION =  getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION",1);
-            ParseConfig.getInBackground(new ConfigCallback()
-            {
-                @Override
-                public void done(ParseConfig config, ParseException e)
-                {
-                    if (e == null)
-                    {
-                        //Log.d(tag, "Yay! Config was fetched from the server.");
-                    } else
-                    {
-                       //V12Log.e(TAG, "Failed to fetch. Using Cached Config.");
-                        config = ParseConfig.getCurrentConfig();
-                    }
-                    if ((config != null))
-                    {
-                        NEW_PARSER_VERSION = config.getInt("PARSER_VERSION");
-                        if (NEW_PARSER_VERSION > PARSER_VERSION)
-                        {
-                            new RegexUpdater().update(NEW_PARSER_VERSION);
-                        }
-                    }
-                    //Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
-                }
-            });
+            (new RegexUpdater()).check();
             if (sim_list == null)
             {
                 startActivity(new Intent(SplashscreenActivity.this, NoSimActivity.class));

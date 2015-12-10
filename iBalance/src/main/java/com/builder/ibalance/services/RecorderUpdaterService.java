@@ -50,9 +50,7 @@ import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.parse.ConfigCallback;
 import com.parse.GetCallback;
-import com.parse.ParseConfig;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -78,8 +76,6 @@ public class RecorderUpdaterService extends AccessibilityService
     int sim_slot = 0;
     int duration = 0;
     String text;
-    int PARSER_VERSION = 1;
-    int NEW_PARSER_VERSION = 1;
     private void displayPopUp()
     {
 
@@ -116,6 +112,7 @@ public class RecorderUpdaterService extends AccessibilityService
 
                 mCallDetailsModel.setCarrier_circle(mDetails.carrier + ',' + mDetails.circle);
                 mCallDetailsModel.setTotal_spent(mDetails.total_cost);
+                Log.d(TAG,"Call detail = "+mCallDetailsModel.toString());
                 popup_intent.putExtra("DATA", mCallDetailsModel);
                 popup_intent
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -236,59 +233,6 @@ public class RecorderUpdaterService extends AccessibilityService
 
 boolean cancelButtonFound = false;
 
-    public String getTextFromNode(AccessibilityNodeInfo accessibilityNodeInfo)
-    {
-        StringBuilder sb = new StringBuilder();
-        if (accessibilityNodeInfo == null)
-        {
-            ////V10Log.d("TEST", "accessibilityNodeInfo is null");
-            return "";
-        }
-
-        int j = accessibilityNodeInfo.getChildCount();
-        ////V10Log.d("TEST", "number of children = " + j);
-        for (int i = 0; i < j; i++)
-        {
-
-            AccessibilityNodeInfo ac = accessibilityNodeInfo.getChild(i);
-
-            if (ac == null)
-            {
-                ////V10Log.d(tag+"USSD","ac is null");
-                continue;
-            }
-            if (ac.getChildCount() > 0)
-            {
-                ////V10Log.d(tag+"USSD", "More than one subchild"+
-                // ac.getChildCount());
-                sb.append(getTextFromNode(ac));
-            }
-            ////V10Log.d(tag+"USSD",ac.getClassName()+"");
-            if (ac.getClassName().equals(TextView.class.getName()))
-            {
-
-                sb.append(ac.getText());
-                ////V10Log.d("TEST", "Number:" + i + "   " + sb);
-            } else if (ac.getClassName().equals(EditText.class.getName()))
-                hasEditText = true;
-            else if (ac.getClassName().equals(Button.class.getName()) && !cancelButtonFound)
-            {
-               //V10Log.d("TEST", "Button " + ac.getText());
-                if(ac.getText()!=null )
-                {
-                    String cancelButtonText  = ac.getText().toString().toUpperCase().replace(" ","");
-                    if(cancelButtonText.equals("CANCEL")||cancelButtonText.equals("DISMISS")||cancelButtonText.equals("OK")||cancelButtonText.equals("OKAY"))
-                    {
-                        cancelButtonFound = true;
-                    }
-                }
-                dismissNode = ac;
-               //V10Log.d("TEST", "Performed a Click ");
-            }
-
-        }
-        return sb.toString();
-    }
 
     public void onAccessibilityEvent(AccessibilityEvent event)
     {
@@ -379,6 +323,7 @@ boolean cancelButtonFound = false;
                                 popup_intent.putExtra("BALANCE", details1.bal.toString());
                                 popup_intent.putExtra("DATA_CONSUMED", String.format("%.3f", details1.data_consumed));
                                 popup_intent.putExtra("DATA_COST", String.format("%.3f", details1.cost));
+                                popup_intent.putExtra("MESSAGE", details1.message);
                                 popup_intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
                                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
@@ -425,6 +370,7 @@ boolean cancelButtonFound = false;
                                 popup_intent.putExtra("DATA_CONSUMED", String.format("%.2f", details2.data_consumed));
                                 popup_intent.putExtra("DATA_LEFT", details2.data_left + "");
                                 popup_intent.putExtra("VALIDITY", details2.validity);
+                                popup_intent.putExtra("MESSAGE", details2.message);
                                 popup_intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
                                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
@@ -469,6 +415,7 @@ boolean cancelButtonFound = false;
                                 popup_intent.putExtra("TYPE", 2);
                                 popup_intent.putExtra("BALANCE", detail3.bal.toString());
                                 popup_intent.putExtra("SMS_COST", String.format("%.2f", detail3.cost));
+                                popup_intent.putExtra("MESSAGE", detail3.message);
                                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
                                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -538,32 +485,7 @@ boolean cancelButtonFound = false;
                 {
                     ////V10Log.d(TAG + "Updater", "invalid USSD");
 
-                    final SharedPreferences  mSharedPreferences = getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE);
-                    PARSER_VERSION = mSharedPreferences.getInt("PARSER_VERSION",1);
-                    ParseConfig.getInBackground(new ConfigCallback()
-                    {
-                        @Override
-                        public void done(ParseConfig config, ParseException e)
-                        {
-                            if (e == null)
-                            {
-                                //Log.d(tag, "Yay! Config was fetched from the server.");
-                            } else
-                            {
-                               //V12 Log.e(tag, "Failed to fetch. Using Cached Config.");
-                                config = ParseConfig.getCurrentConfig();
-                            }
-                            if(config!=null)
-                            {
-                                NEW_PARSER_VERSION = config.getInt("PARSER_VERSION");
-                                if (NEW_PARSER_VERSION > PARSER_VERSION)
-                                {
-                                    new RegexUpdater().update(NEW_PARSER_VERSION);
-                                }
-                            }
-                            //Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
-                        }
-                    });
+                    (new RegexUpdater()).check();
                     ParseObject pObj = new ParseObject("Invalid_USSD");
                     pObj.put("DEVICE_ID",
                             sharedPreferences.getString("DEVICE_ID", "123456"));
@@ -588,7 +510,59 @@ boolean cancelButtonFound = false;
         hasEditText = false;
 
     }
+    public String getTextFromNode(AccessibilityNodeInfo accessibilityNodeInfo)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (accessibilityNodeInfo == null)
+        {
+            ////V10Log.d("TEST", "accessibilityNodeInfo is null");
+            return "";
+        }
 
+        int j = accessibilityNodeInfo.getChildCount();
+        ////V10Log.d("TEST", "number of children = " + j);
+        for (int i = 0; i < j; i++)
+        {
+
+            AccessibilityNodeInfo ac = accessibilityNodeInfo.getChild(i);
+
+            if (ac == null)
+            {
+                ////V10Log.d(tag+"USSD","ac is null");
+                continue;
+            }
+            if (ac.getChildCount() > 0)
+            {
+                ////V10Log.d(tag+"USSD", "More than one subchild"+
+                // ac.getChildCount());
+                sb.append(getTextFromNode(ac));
+            }
+            ////V10Log.d(tag+"USSD",ac.getClassName()+"");
+            if (ac.getClassName().equals(TextView.class.getName()))
+            {
+
+                sb.append(ac.getText());
+                ////V10Log.d("TEST", "Number:" + i + "   " + sb);
+            } else if (ac.getClassName().equals(EditText.class.getName()))
+                hasEditText = true;
+            else if (ac.getClassName().equals(Button.class.getName()) && !cancelButtonFound)
+            {
+                //V10Log.d("TEST", "Button " + ac.getText());
+                if(ac.getText()!=null )
+                {
+                    String cancelButtonText  = ac.getText().toString().toUpperCase().replace(" ","");
+                    if(cancelButtonText.equals("CANCEL")||cancelButtonText.equals("DISMISS")||cancelButtonText.equals("OK")||cancelButtonText.equals("OKAY"))
+                    {
+                        cancelButtonFound = true;
+                    }
+                }
+                dismissNode = ac;
+                //V10Log.d("TEST", "Performed a Click ");
+            }
+
+        }
+        return sb.toString();
+    }
     private void updateWidget(String balance)
     {
         ////V10Log.d(tag,"Updating Widget"+ balance);
