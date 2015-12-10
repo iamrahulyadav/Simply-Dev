@@ -464,6 +464,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
 		}
 		else
+
 		{
 			mListView.setVisibility(View.GONE);
 			mLineChart.setVisibility(View.GONE);
@@ -480,6 +481,22 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 					if (!Helper.contactExists("+919739663487"))
 					{
 						//V10Log.d(tag, "Whatsapp contact not found adding contact");
+
+        {
+			ViewGroup container = (ViewGroup) rootView.findViewById(R.id.parallax_container);
+            rootView.findViewById(R.id.recents_list).setVisibility(View.GONE);
+			this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, container, true);
+            contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
+            contactUsButton.setOnClickListener(new OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+
+					if (!Helper.contactExists("+919739663487"))
+                    {
+                       //V10Log.d(tag, "Whatsapp contact not found adding contact");
+
 						Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
 						intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
 						intent.putExtra(ContactsContract.Intents.Insert.EMAIL, "simplyappcontact@gmail.com")

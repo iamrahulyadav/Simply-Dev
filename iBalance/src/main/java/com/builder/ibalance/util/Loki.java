@@ -5,6 +5,12 @@ import android.content.SharedPreferences;
 
 import com.builder.ibalance.R;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
@@ -60,6 +66,92 @@ public class Loki
     private String normal_sms_smsCost = "0x22D86AC6354EA308A2BFC71595738935711790C72B4B52D5F5A9897318E95CFC5962C7E76D4FE8AB9DA1A02CBE4E89672B79C4BFB912FE6E0C0366092B9CE931D140DB7A7948B7B3A0D2FE792B3F5E4657CB2D5AFDAD01690A5DB1C02C36";
     private String normal_sms_smsBal1 = "0x22F66AD9200093208D81F534BA11AB167E218DF8077611F3E698BC430AEA4C99666FD5FF3C50E0BEE9BE8A2CA076A0222B7FD7BFF836F1270042480929D6B62EE156975C3A59E983B296C640256E661F7FC45517CCA8435B4D0C8AF74A4CF4A79BFF80CED34379A2072233EFD2AC9C72736D2A87A02B25058D123E4C260D439883597C2C20362028C21A9E07D9263AE6F049E0738A";
     private String normal_sms_smsBal2 = "0x22F66AD9200093208D81F534BA11AB167E218DF8077611F3E698BC430AEA4C99666FD5FF3C50E0BEE9BE8A2CA076A0222B7FD7BFF836F1270042480929D6B62EE156975C3A59E983B296C640256E661F7FC44A13C8A70A77450ED78D3D20EAB5DDD1B2F1C30657905D3F2CB1E2BED8394A2968A8A72E463DD511";
+
+    public Loki() throws NoSuchAlgorithmException, NoSuchPaddingException,
+            NoSuchProviderException
+    {
+
+
+        cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
+        String[] key_iv = getKeyIv();
+        this.setKeyHex(key_iv[0]);
+        this.setIVHex(key_iv[1]);
+        //GOOGLE PREFS are the Pasrser Prefs
+        parserPreferences = MyApplication.context.getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE);
+        boolean fisrtTime = parserPreferences.getBoolean("FISRT_TIME",true);
+        boolean newFisrtTime = parserPreferences.getBoolean("NEW_VERSION_FISRT_TIME",true);
+        if(fisrtTime)
+        {
+            SharedPreferences.Editor editor = parserPreferences.edit();
+
+            editor.putString("normal_call_costRegex", normal_call_costRegex);
+            editor.putString("normal_call_remBalanceRegex", normal_call_remBalanceRegex);
+            editor.putString("normal_call_remBalanceRegex2", normal_call_remBalanceRegex2);
+            editor.putString("normal_call_remBalanceRegex3", normal_call_remBalanceRegex3);
+            editor.putString("normal_call_remBalanceRegex4", normal_call_remBalanceRegex4);
+            editor.putString("normal_call_callDurationRegex1", normal_call_callDurationRegex1);
+            editor.putString("normal_call_callDurationRegex2", normal_call_callDurationRegex2);
+            editor.putString("normal_call_callDurationRegex3", normal_call_callDurationRegex3);
+            editor.putString("normal_data_costRegex", normal_data_costRegex);
+            editor.putString("normal_data_dataConsumedRegex", normal_data_dataConsumedRegex);
+            editor.putString("normal_data_remBalanceRegex", normal_data_remBalanceRegex);
+            editor.putString("data_pack_dataUsedRegex",data_pack_dataUsedRegex );
+            editor.putString("data_pack_bsnlDataUsedRegex1", data_pack_bsnlDataUsedRegex1);
+            editor.putString("data_pack_bsnlDataUsedRegex2",data_pack_bsnlDataUsedRegex2 );
+            editor.putString("data_pack_dataLeftRegex", data_pack_dataLeftRegex);
+            editor.putString("data_pack_bsnlDataLeftRegex1", data_pack_bsnlDataLeftRegex1);
+            editor.putString("data_pack_bsnlDataLeftRegex2", data_pack_bsnlDataLeftRegex2);
+            editor.putString("data_pack_remBalanceRegex1",data_pack_remBalanceRegex1 );
+            editor.putString("data_pack_remBalanceRegex2", data_pack_remBalanceRegex2);
+            editor.putString("data_pack_INRremBalanceRegex", data_pack_INRremBalanceRegex);
+            editor.putString("data_pack_validityRegex", data_pack_validityRegex);
+            editor.putString("normal_sms_smsCost",normal_sms_smsCost );
+            editor.putString("normal_sms_smsBal1",normal_sms_smsBal1 );
+            editor.putString("normal_sms_smsBal2", normal_sms_smsBal2);
+            editor.putBoolean("FISRT_TIME",false);
+            editor.commit();
+        }
+        if(newFisrtTime)
+        {
+
+            try
+            {
+            JSONObject assetJson = new JSONObject(loadJSONFromAsset());
+            if(assetJson!=null)
+            {
+                SharedPreferences.Editor editor = parserPreferences.edit();
+
+
+                    editor.putString("NORMAL_CALL", assetJson.getString("NORMAL_CALL"));
+                    editor.putString("PACK_CALL", assetJson.getString("PACK_CALL"));
+                    editor.putString("NORMAL_DATA", assetJson.getString("NORMAL_DATA"));
+                    editor.putString("PACK_DATA", assetJson.getString("PACK_DATA"));
+                    editor.putString("NORMAL_SMS", assetJson.getString("NORMAL_SMS"));
+                    editor.putString("PACK_SMS", assetJson.getString("PACK_SMS"));
+                    editor.putString("VOICE_DATA", assetJson.getString("VOICE_DATA"));
+                editor.putBoolean("NEW_VERSION_FISRT_TIME",false);
+                editor.commit();
+            }
+            } catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+    public JSONArray getNormalCallRegex() throws JSONException
+    {
+        JSONArray mJsonArray = null;
+        //New object is just for fall back, it should not happen
+        mJsonArray = new JSONArray(parserPreferences.getString("NORMAL_CALL",(new JSONObject(loadJSONFromAsset())).getString("NORMAL_CALL")));
+        mJsonArray = decryptJsonArray(mJsonArray);
+        return mJsonArray;
+    }
+    public JSONArray getPackDataRegex() throws JSONException
+    {
+        JSONArray mJsonArray = new JSONArray(parserPreferences.getString("PACK_DATA",(new JSONObject(loadJSONFromAsset())).getString("PACK_DATA")));
+        mJsonArray = decryptJsonArray(mJsonArray);
+        return mJsonArray;
+    }
 
 
     public String getNormal_call_costRegex()
@@ -188,50 +280,6 @@ public class Loki
         return getRegex(parserPreferences.getString("normal_sms_smsBal2",normal_sms_smsBal2));
     }
 
-    public Loki() throws NoSuchAlgorithmException, NoSuchPaddingException,
-            NoSuchProviderException
-    {
-
-
-        cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
-        String[] key_iv = getKeyIv();
-        this.setKeyHex(key_iv[0]);
-        this.setIVHex(key_iv[1]);
-        //GOOGLE PREFS are the Pasrser Prefs
-        parserPreferences = MyApplication.context.getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE);
-        boolean fisrtTime = parserPreferences.getBoolean("FISRT_TIME",true);
-        if(fisrtTime)
-        {
-            SharedPreferences.Editor editor = parserPreferences.edit();
-
-            editor.putString("normal_call_costRegex", normal_call_costRegex);
-            editor.putString("normal_call_remBalanceRegex", normal_call_remBalanceRegex);
-            editor.putString("normal_call_remBalanceRegex2", normal_call_remBalanceRegex2);
-            editor.putString("normal_call_remBalanceRegex3", normal_call_remBalanceRegex3);
-            editor.putString("normal_call_remBalanceRegex4", normal_call_remBalanceRegex4);
-            editor.putString("normal_call_callDurationRegex1", normal_call_callDurationRegex1);
-            editor.putString("normal_call_callDurationRegex2", normal_call_callDurationRegex2);
-            editor.putString("normal_call_callDurationRegex3", normal_call_callDurationRegex3);
-            editor.putString("normal_data_costRegex", normal_data_costRegex);
-            editor.putString("normal_data_dataConsumedRegex", normal_data_dataConsumedRegex);
-            editor.putString("normal_data_remBalanceRegex", normal_data_remBalanceRegex);
-            editor.putString("data_pack_dataUsedRegex",data_pack_dataUsedRegex );
-            editor.putString("data_pack_bsnlDataUsedRegex1", data_pack_bsnlDataUsedRegex1);
-            editor.putString("data_pack_bsnlDataUsedRegex2",data_pack_bsnlDataUsedRegex2 );
-            editor.putString("data_pack_dataLeftRegex", data_pack_dataLeftRegex);
-            editor.putString("data_pack_bsnlDataLeftRegex1", data_pack_bsnlDataLeftRegex1);
-            editor.putString("data_pack_bsnlDataLeftRegex2", data_pack_bsnlDataLeftRegex2);
-            editor.putString("data_pack_remBalanceRegex1",data_pack_remBalanceRegex1 );
-            editor.putString("data_pack_remBalanceRegex2", data_pack_remBalanceRegex2);
-            editor.putString("data_pack_INRremBalanceRegex", data_pack_INRremBalanceRegex);
-            editor.putString("data_pack_validityRegex", data_pack_validityRegex);
-            editor.putString("normal_sms_smsCost",normal_sms_smsCost );
-            editor.putString("normal_sms_smsBal1",normal_sms_smsBal1 );
-            editor.putString("normal_sms_smsBal2", normal_sms_smsBal2);
-            editor.putBoolean("FISRT_TIME",false);
-            editor.commit();
-        }
-    }
 
     private String[] getKeyIv()
     {
@@ -355,4 +403,37 @@ public class Loki
         }
         return deciphered;
     }
+    String loadJSONFromAsset() {
+        String json = null;
+        try {
+            InputStream is = MyApplication.context.getAssets().open("Miner.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+
+        return json;
+    }
+
+    private JSONArray decryptJsonArray(JSONArray regexArray) throws JSONException
+    {
+        JSONArray decryptedRegexArray = new JSONArray();
+        int length = regexArray.length();
+        for (int i = 0; i <length; i++)
+        {
+            JSONObject mRegexObj = regexArray.getJSONObject(i);
+            String regex = mRegexObj.getString("REGEX");
+            regex = getRegex(regex);
+            mRegexObj.put("REGEX",regex);
+            decryptedRegexArray.put(mRegexObj);
+        }
+        return decryptedRegexArray;
+    }
+
+
 }

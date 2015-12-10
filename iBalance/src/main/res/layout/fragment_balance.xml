@@ -117,6 +117,7 @@
                 android:orientation="vertical"
                 android:weightSum="10"
                 >
+
                 <android.support.design.widget.AppBarLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -124,6 +125,7 @@
 
                 <include layout="@layout/balance_deduction_graph"/>
                 </android.support.design.widget.AppBarLayout>
+
                 <include layout="@layout/recent_call_list"/>
                 <include layout="@layout/no_balance_layout"/>
 

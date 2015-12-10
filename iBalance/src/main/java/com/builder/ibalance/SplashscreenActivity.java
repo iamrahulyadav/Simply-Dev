@@ -35,8 +35,8 @@ import android.widget.Toast;
 import com.builder.ibalance.core.DualSim;
 import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
-import com.builder.ibalance.util.Constants;
 import com.builder.ibalance.util.ConstantsAndStatics;
+import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
@@ -47,9 +47,6 @@ import com.digits.sdk.android.Digits;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;
@@ -300,7 +297,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             }
             if (SimModel.isTwo_slots() )
             {
-                Constants.HAS_TWO_SLOTS = true;
+                DualSimConstants.HAS_TWO_SLOTS = true;
                 if (SimModel.call_log_columns.isEmpty())
                 {
                     SimModel.call_log_columns = mDualSimObject.getDualCallLogColumn();
@@ -316,17 +313,17 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                 }
                 if (GlobalData.globalSimList.size() >= 2)
                 {
-                    Constants.IS_SINGLE_SIM = false;
+                    DualSimConstants.IS_SINGLE_SIM = false;
 
                 } else
                 {
-                    Constants.IS_SINGLE_SIM = true;
+                    DualSimConstants.IS_SINGLE_SIM = true;
                 }
 
             } else
             {
-                Constants.HAS_TWO_SLOTS = false;
-                Constants.IS_SINGLE_SIM = true;
+                DualSimConstants.HAS_TWO_SLOTS = false;
+                DualSimConstants.IS_SINGLE_SIM = true;
             }
             //Log.d(TAG,GlobalData.globalSimList.toString());
             mSharedPreferenceHelper.saveDualSimDetails(GlobalData.globalSimList);
@@ -358,6 +355,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
         {
 
             super.onPostExecute(sim_list);
+
             PARSER_VERSION =  getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION",1);
             SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
            // boolean isVerfied  = mSharedPreferences.getBoolean("USER_VERIFIED",false);
@@ -386,6 +384,8 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                 }
             });
             //chnage it to == for Sim
+
+            (new RegexUpdater()).check();
             if (sim_list == null)
             {
                 startActivity(new Intent(SplashscreenActivity.this, NoSimActivity.class));
@@ -431,7 +431,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                     pObj.put("MANUFACTURER", android.os.Build.MANUFACTURER);
                     pObj.put("ANDROID_VERSION", Build.VERSION.SDK_INT);
                     pObj.put("TWO_SLOTS", SimModel.isTwo_slots());
-                    pObj.put("DUAL_SIM", !Constants.IS_SINGLE_SIM);
+                    pObj.put("DUAL_SIM", !DualSimConstants.IS_SINGLE_SIM);
                     pObj.put("CALLLOG_COLUMNS", SimModel.call_log_columns.toString());
                     /*pObj.put("SAMPLE_CALLLOGS", getCallLogs());*/
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

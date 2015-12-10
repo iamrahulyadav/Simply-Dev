@@ -3,7 +3,8 @@ package com.builder.ibalance.util;
 /**
  * Created by Shabaz on 10-Aug-15.
  */
-public class Constants {
+public class DualSimConstants
+{
     public static boolean IS_SINGLE_SIM = false;
     public static boolean HAS_TWO_SLOTS = true;
     public static final int TYPE_UNKNOWN = 0;

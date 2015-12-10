@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -63,6 +64,9 @@ public class UssdPopup extends AppCompatActivity {
 		head3.setTypeface(tf);
 		head4 = (TextView)findViewById(R.id.head4);
 		head4.setTypeface(tf);
+        final TextView originalMessage = (TextView) findViewById(R.id.originalMessage);
+        final ImageButton expand = (ImageButton) findViewById(R.id.expandOriginalMessage);
+
 		/* NORMAL_CALL,//1
 		 NORMAL_SMS,//2
 		 NORMAL_DATA,//3
@@ -86,7 +90,26 @@ public class UssdPopup extends AppCompatActivity {
             TextView contact_carrier_circle = (TextView) contactLayout.findViewById(R.id.ussd_contact_carrier_circle);
             TextView contact_total_spent = (TextView) contactLayout.findViewById(R.id.ussd_contact_total_spent);
             TextView contact_call_cost = (TextView) contactLayout.findViewById(R.id.ussd_contact_call_cost);
-            CallDetailsModel details = mintent.getParcelableExtra("DATA");
+
+            final CallDetailsModel details = mintent.getParcelableExtra("DATA");
+			expand.setOnClickListener(new View.OnClickListener()
+			{
+				@Override
+				public void onClick(View v)
+				{
+					if(originalMessage.getVisibility() == View.GONE)
+					{
+						expand.setImageResource(R.drawable.minus_icon);
+						originalMessage.setText(details.getMessage());
+						originalMessage.setVisibility(View.VISIBLE);
+					}
+					else
+					{
+						expand.setImageResource(R.drawable.plus_icon);
+						originalMessage.setVisibility(View.GONE);
+					}
+				}
+			});
 			head1.setText("Call Cost");
 			field1.setText(rupee_symbol+" "+details.getCall_cost());
 
@@ -141,6 +164,25 @@ public class UssdPopup extends AppCompatActivity {
 			}
 			head4.setText("SMS Rate");
 			field4.setText(sms_rate);
+            final String message = mintent.getStringExtra("MESSAGE");
+            expand.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    if(originalMessage.getVisibility() == View.GONE)
+                    {
+                        expand.setImageResource(R.drawable.minus_icon);
+                        originalMessage.setText(message);
+                        originalMessage.setVisibility(View.VISIBLE);
+                    }
+                    else
+                    {
+                        expand.setImageResource(R.drawable.plus_icon);
+                        originalMessage.setVisibility(View.GONE);
+                    }
+                }
+            });
 			break;
 			//Normal Data
 		case 3:
@@ -166,6 +208,25 @@ public class UssdPopup extends AppCompatActivity {
 			}
 			head4.setText("Data Rate");
 			field4.setText(data_rate);
+            final String message2 = mintent.getStringExtra("MESSAGE");
+            expand.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    if(originalMessage.getVisibility() == View.GONE)
+                    {
+                        expand.setImageResource(R.drawable.minus_icon);
+                        originalMessage.setText(message2);
+                        originalMessage.setVisibility(View.VISIBLE);
+                    }
+                    else
+                    {
+                        expand.setImageResource(R.drawable.plus_icon);
+                        originalMessage.setVisibility(View.GONE);
+                    }
+                }
+            });
 			break;
 			//Data Pack
 		case 6:
@@ -183,6 +244,25 @@ public class UssdPopup extends AppCompatActivity {
 			field3.setText(rupee_symbol+" "+balance);
 			head4.setText("Valid Till");
 			field4.setText(mintent.getStringExtra("VALIDITY"));
+            final String message3 = mintent.getStringExtra("MESSAGE");
+            expand.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    if(originalMessage.getVisibility() == View.GONE)
+                    {
+                        expand.setImageResource(R.drawable.minus_icon);
+                        originalMessage.setText(message3);
+                        originalMessage.setVisibility(View.VISIBLE);
+                    }
+                    else
+                    {
+                        expand.setImageResource(R.drawable.plus_icon);
+                        originalMessage.setVisibility(View.GONE);
+                    }
+                }
+            });
 			break;
 		default:
 			break;
@@ -198,6 +278,7 @@ public class UssdPopup extends AppCompatActivity {
                 @Override
                 public void onClick(View v)
                 {
+
                     Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
                     mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                     mIntent.putExtra("FROM", "POPUP");

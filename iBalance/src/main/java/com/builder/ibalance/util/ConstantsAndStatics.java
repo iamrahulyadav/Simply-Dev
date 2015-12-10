@@ -9,6 +9,7 @@ public  class ConstantsAndStatics {
 			R.string.rupee_symbol);
 	public static Typeface ROBOTO_REGULAR = Typeface.createFromAsset(MyApplication.context.getAssets(), "Roboto-Regular.ttf");
 	public static boolean WAITING_FOR_SERVICE = false;
+	public static String RECENT_EVENT = "UNKNOWN";
 	// name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,imageUuri
 	 public static class MainMap
 	 {
