@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="fill_parent">
-
+    android:layout_height="match_parent">
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:id="@+id/nested_scroll_view">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="match_parent"
         android:background="#efefef"
         android:baselineAligned="false"
         android:orientation="vertical"
@@ -207,8 +212,9 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Popular plans"
-
-            android:textSize="18dp"/>
+            android:id="@+id/plans_head"
+            android:textSize="18dp"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
         <View
             android:layout_width="fill_parent"
@@ -216,22 +222,18 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginTop="5dp"
-            android:background="#efefef"/>
+            android:background="#efefef"
+            android:id="@+id/plans_list"/>
 
-
-        <ListView
+        <android.support.v7.widget.RecyclerView
             android:id="@+id/plans_list_view"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="368dp"
             android:layout_marginBottom="5dp"
             android:divider="@color/list_divider"
             android:dividerHeight="1dp"
-            android:visibility="gone"
             android:listSelector="@drawable/list_row_selector"
-            >
-
-        </ListView>
-
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
         <LinearLayout
             android:id="@+id/plans_loading"
             android:layout_width="match_parent"
@@ -258,11 +260,23 @@
                 android:layout_weight="0.05"/>
         </LinearLayout>
 
-
-
     </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/sim_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:src="@drawable/sim_toggle"
+        android:visibility="gone"
+        />
 
-    <com.melnykov.fab.FloatingActionButton
+    <!--<com.melnykov.fab.FloatingActionButton
         android:id="@+id/sim_switch"
         xmlns:fab="http://schemas.android.com/apk/res-auto"
         android:layout_width="wrap_content"
@@ -275,5 +289,6 @@
         android:src="@drawable/sim_toggle"
         fab:fab_colorNormal="@color/green_btn_bg_color"
         fab:fab_colorPressed="@color/green_btn_bg_pressed_color"
-        fab:fab_colorRipple="@color/grey"/>
+        fab:fab_colorRipple="@color/grey"/>-->
+
 </FrameLayout>

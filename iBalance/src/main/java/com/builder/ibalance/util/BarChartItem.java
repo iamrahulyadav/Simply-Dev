@@ -45,7 +45,7 @@ public class BarChartItem extends ChartItem {
             holder = new ViewHolder();
 
             convertView = LayoutInflater.from(c).inflate(
-                    R.layout.list_item_barchart, null);
+                    R.layout.list_item_barchart,null);
             holder.chart = (BarChart) convertView.findViewById(R.id.chart);
             holder.heading = (TextView) convertView.findViewById(R.id.heading);
             holder.heading.setTypeface(ttf);

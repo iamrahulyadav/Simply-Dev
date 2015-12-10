@@ -1,8 +1,10 @@
 package com.builder.ibalance.util;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.builder.ibalance.CallPatternFragment;
 import com.github.mikephil.charting.data.ChartData;
 
 /**

@@ -15,6 +15,9 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -39,7 +42,7 @@ import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.builder.ibalance.util.RegexUpdater;
-import com.digits.sdk.android.AuthCallback;
+
 import com.digits.sdk.android.Digits;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
@@ -56,7 +59,7 @@ import java.util.List;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class SplashscreenActivity extends Activity implements View.OnClickListener {
+public class SplashscreenActivity extends AppCompatActivity implements View.OnClickListener {
 
     final String TAG = SplashscreenActivity.class.getSimpleName();
     final int SPLASH_TIME_OUT = 1000;
@@ -93,11 +96,13 @@ public class SplashscreenActivity extends Activity implements View.OnClickListen
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+       /* this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);*/
         setContentView(R.layout.activity_splashscreen);
+
+
         dual_sim_bar = (ProgressBar) findViewById(R.id.sim_check_progress);
         String app_open_from = this.getIntent().getStringExtra("FROM");
         try

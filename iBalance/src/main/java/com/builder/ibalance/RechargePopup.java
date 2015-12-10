@@ -1,12 +1,12 @@
 package com.builder.ibalance;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -24,7 +24,7 @@ import com.parse.ParseObject;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class RechargePopup extends Activity implements View.OnClickListener
+public class RechargePopup extends AppCompatActivity implements View.OnClickListener
 {
     Map<String, Integer> carriers = new TreeMap<>();
     Map<String, Integer> circle = new TreeMap<>();
@@ -37,7 +37,8 @@ public class RechargePopup extends Activity implements View.OnClickListener
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+       // requestWindowFeature(Window.FEATURE_NO_TITLE);
+       // getSupportActionBar().hide();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recaharge_popup);
 

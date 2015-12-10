@@ -3,13 +3,21 @@ package com.builder.ibalance;
 import android.app.Fragment;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+
 
 import com.appsflyer.AppsFlyerLib;
-import com.builder.ibalance.adapters.DeductionsAdapter;
+import com.builder.ibalance.adapters.DeductionListRecycleAdapter;
+
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -23,7 +31,7 @@ import com.google.android.gms.analytics.Tracker;
  * Fragment to handle the deductions.
  *
  */
-public class DeductionsFragment extends Fragment {
+public class DeductionsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 	
 	@Override
 	public void onResume() {
@@ -52,8 +60,10 @@ public class DeductionsFragment extends Fragment {
 			super.onPause();
 		}
 
-	private ListView mListView;
-	private DeductionsAdapter mDeductionsAdapter;
+	//private ListView mListView;
+	RecyclerView mListView;
+	//private DeductionsAdapter mDeductionsAdapter;
+	private DeductionListRecycleAdapter mDeductionsAdapter;
 	
 	public DeductionsFragment() {
 		
@@ -63,18 +73,51 @@ public class DeductionsFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_deductions, container, false);
-		mListView = (ListView) view.findViewById(R.id.listview_deductions);
+		super.onActivityCreated(savedInstanceState);
+		((AppCompatActivity)getActivity()).getSupportLoaderManager().initLoader(1,null,this);
+		//mListView = (ListView) view.findViewById(R.id.listview_deductions);
+		mListView = (RecyclerView) view.findViewById(R.id.deduction_list_recycler);
+		LinearLayoutManager linearLayoutManager1 = new LinearLayoutManager(getActivity());
+		mListView.setLayoutManager(linearLayoutManager1);
+		mListView.setHasFixedSize(true);
+		//mListView.addItemDecoration();
 		return view;
+
 	}
 	
-	@Override
+	/*@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		final Cursor cursor = new BalanceHelper().getData();
-		cursor.moveToFirst();
-		mDeductionsAdapter = new DeductionsAdapter(getActivity(), cursor, false);
-		mListView.setAdapter(mDeductionsAdapter);
+		//final Cursor cursor = new BalanceHelper().getData();
+		//cursor.moveToFirst();
+		//mDeductionsAdapter = new DeductionsAdapter(getActivity(), cursor, false);
+		//mListView.setAdapter(mDeductionsAdapter);
 		
+	}*/
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		return new CursorLoader(getActivity().getApplicationContext()){
+			@Override
+			public Cursor loadInBackground() {
+				Cursor cursor = new BalanceHelper().getData();
+				Log.e("Length",""+cursor.getCount());
+				return cursor;
+			}
+		};
+
 	}
 
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+		mDeductionsAdapter = new DeductionListRecycleAdapter(getActivity(), data, false);
+		mListView.setAdapter(mDeductionsAdapter);
+
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+
+	}
 }

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -20,7 +21,7 @@ import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.squareup.picasso.Picasso;
 
-public class UssdPopup extends Activity {
+public class UssdPopup extends AppCompatActivity {
 	TextView field1,field2,field3,field4,head1,head2,head3,head4;
 	Button dismiss,open_app;
 	String from = "CALL"; //what type of popup
@@ -39,9 +40,10 @@ public class UssdPopup extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(savedInstanceState);
 		boolean recharge = false;
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
 		setContentView(R.layout.ussd_popup);
 		Typeface tf = Typeface.createFromAsset(getAssets(), "Roboto-Regular.ttf");
 		Intent mintent = this.getIntent();

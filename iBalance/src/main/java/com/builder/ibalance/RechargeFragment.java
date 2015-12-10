@@ -10,6 +10,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -30,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.builder.ibalance.adapters.PlansAdapter;
+import com.builder.ibalance.adapters.PlansRecyclerAdapter;
 import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.database.MappingHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
@@ -42,7 +46,7 @@ import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.melnykov.fab.FloatingActionButton;
+import android.support.design.widget.FloatingActionButton;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -61,7 +65,8 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     View rootView;
     TextView local_carrier, std_carrier;
     FloatingActionButton sim_switch;
-    ListView plansListView;
+    //ListView plansListView;
+    RecyclerView plansListView;
     Button rechargeNow;
     ImageButton contactsPicker,callSummaryButton;
     String dummyJson = "[{\"price\":225,\"carrier\":\"Airtel\",\"circle\":\"KARNATAKA\",\"validity\":\"30 days\",\"type\":\"Takltime\",\"talktime\":240,\"tags\":[\"FULL TT\"],\"benefits\":\"Talktime: 240 (30 Days Val) | 300 local A-A secs for 5 days\"},{\"price\":251,\"carrier\":\"Airtel\",\"circle\":\"KARNATAKA\",\"validity\":\"30 days\",\"type\":\"Takltime\",\"talktime\":180,\"tags\":[\"Topup\",\"2G\",\"3G\"],\"benefits\":\"1.25 GB + Rs.180 Talktime\"}]";
@@ -79,6 +84,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     {
         rootView = inflater.inflate(R.layout.fragment_recharge, container,
                 false);
+
         sim_slot = BalanceFragment.sim_slot;
         local_carrier = (TextView) rootView.findViewById(R.id.local_same_carrier);
         std_carrier = (TextView) rootView.findViewById(R.id.std_same_carrier);
@@ -129,7 +135,14 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             }
         });
         //Log.d(TAG, "UserCircle = "+ userCircle + " UserCarrier "+userCarrier);
-        plansListView = (ListView) rootView.findViewById(R.id.plans_list_view);
+        plansListView = (RecyclerView) rootView.findViewById(R.id.plans_list_view);
+        LinearLayoutManager linearLayoutManager2 = new LinearLayoutManager(getActivity().getBaseContext());
+        plansListView.setLayoutManager(linearLayoutManager2);
+        plansListView.setNestedScrollingEnabled(true);
+
+       // plansListView.setOnScrollListener(new );
+
+
 
         if (GlobalData.globalSimList.size() >= 2)
         {
@@ -150,7 +163,8 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                         sim_slot = 0;
                     }
                     Toast.makeText(MyApplication.context, "Switched to Sim " + (sim_slot + 1), Toast.LENGTH_LONG).show();
-                    getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
+                   // getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
                     if (DataInitializer.done == true)
                     {
                         loadData(sim_slot);
@@ -317,9 +331,10 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         View plansLoading = rootView.findViewById(R.id.plans_loading);
             if(plans.size()>0)
             {
-                PlansAdapter mPlansAdapter = new PlansAdapter(plans);
+               // PlansAdapter mPlansAdapter = new PlansAdapter(plans);
+                PlansRecyclerAdapter mPlansAdapter = new PlansRecyclerAdapter(plans);
                 plansListView.setAdapter(mPlansAdapter);
-                plansListView.setOnItemClickListener(this);
+                //plansListView.setOnItemClickListener(this);
                 plansLoading.setVisibility(View.GONE);
                 plansListView.setVisibility(View.VISIBLE);
             }
@@ -699,6 +714,34 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
      *                 will be a view provided by the adapter)
      * @param position The position of the view in the adapter.
      * @param id       The row id of the item that was clicked.
+     */
+
+    /*
+    final ScrollView sl = (ScrollView) findViewById(R.id.scroll_view);
+        final RelativeLayout newactionBar = (RelativeLayout) findViewById(R.id.actionbar);
+        newactionBar.setVisibility(View.VISIBLE);
+        newactionBar.setVisibility(View.GONE);
+        sl.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+
+            @Override
+            public void onScrollChanged() {
+
+                int scrollX = sl.getScrollX(); //for horizontalScrollView
+                int scrollY = sl.getScrollY(); //for verticalScrollView
+                if (scrollY > 100) {
+                    newactionBar.bringToFront();
+                    newactionBar.animate().alpha(1.0f);
+                    newactionBar.setVisibility(View.GONE);
+                } else {
+                    newactionBar.animate().alpha(0.0f);
+                    newactionBar.setVisibility(View.GONE);
+
+                }
+
+                //DO SOMETHING WITH THE SCROLL COORDINATES
+
+            }
+        });
      */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)

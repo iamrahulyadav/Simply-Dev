@@ -7,21 +7,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -29,6 +42,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.builder.ibalance.adapters.RecentListAdapter;
+import com.builder.ibalance.adapters.RecentListRecycleAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.CallLogsHelper;
 import com.builder.ibalance.database.models.NormalCall;
@@ -39,6 +53,7 @@ import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.builder.ibalance.util.RecyclerItemClickListener;
 import com.flurry.android.FlurryAgent;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -57,8 +72,10 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.melnykov.fab.FloatingActionButton;
+
 import com.nirhart.parallaxscroll.views.ParallaxListView;
+
+import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -70,7 +87,7 @@ import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
 
-public class BalanceFragment extends Fragment implements OnChartValueSelectedListener, OnClickListener{
+public class BalanceFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnChartValueSelectedListener{
 	final String tag = BalanceFragment.class.getSimpleName();
 	SharedPreferences mSharedPreferences;
 	float currBalance = 0,currData= 0;
@@ -85,14 +102,31 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
     static int sim_slot = 0;
 	public  List<NormalCall> ussdDataList = null;
     Button contactUsButton;
-    ParallaxListView mListView;
+    //ParallaxListView mListView;
+	RecyclerView mListView;
+
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		Typeface tf =  Typeface.createFromAsset(getResources().getAssets(), "Roboto-Regular.ttf");
 		 rootView = inflater.inflate(R.layout.fragment_balance, container,
 				false);
-		//MainActivity.dateSelector.setVisible(false);
+
+		RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerview);
+		LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity().getBaseContext());
+		recyclerView.setLayoutManager(linearLayoutManager);
+		recyclerView.setHasFixedSize(true);
+		recyclerView.setNestedScrollingEnabled(true);
+
+		mListView = (RecyclerView) rootView.findViewById(R.id.recents_list);
+		LinearLayoutManager linearLayoutManager1 = new LinearLayoutManager(getActivity());
+		mListView.setLayoutManager(linearLayoutManager1);
+		mListView.setHasFixedSize(true);
+		getActivity().invalidateOptionsMenu();
+
+		((AppCompatActivity)getActivity()).getSupportLoaderManager().initLoader(1, null, this);
+
+
 		final FloatingActionButton sim_switch = (FloatingActionButton) rootView.findViewById(R.id.sim_switch);
 		mSharedPreferences = getActivity().getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 		predictionTextView = (TextView) rootView.findViewById(R.id.predictionView);
@@ -103,7 +137,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		dataTextView = (TextView) rootView.findViewById(R.id.dataView);
 		dataTextView.setTypeface(tf);
 		balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
-        //mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
+        mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
         if(GlobalData.globalSimList.size()>=2)
         {
             sim_switch.setVisibility(View.VISIBLE);
@@ -119,8 +153,9 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                     }
                     else
                         sim_slot = 0;
-                    Toast.makeText(MyApplication.context,"Switched to Sim "+(sim_slot+1),Toast.LENGTH_SHORT).show();
-                    getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
+                    Toast.makeText(MyApplication.context, "Switched to Sim " + (sim_slot + 1), Toast.LENGTH_SHORT).show();
+                    //getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
+					((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
                     new USSDLoader().execute(sim_slot);
                 }
             });
@@ -150,9 +185,31 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
         }//Catch exception when no sim are detected
         catch (Exception e)
         {}
-        getActivity().getActionBar().setTitle(carrier+"-"+(sim_slot+1));
+        /*getActivity().getActionBar().setTitle(carrier+"-"+(sim_slot+1));*/
+		((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(carrier+"-"+(sim_slot+1));
         new USSDLoader().execute(sim_slot);
 		return rootView;
+	}
+
+	private void callingScreen(String phoneNumber) {
+		Tracker t = ((MyApplication) MyApplication.context).getTracker(
+				TrackerName.APP_TRACKER);
+		t.send(new HitBuilders.EventBuilder()
+				.setCategory("CALL")
+				.setAction("RECENTS")
+				.setLabel("")
+				.build());
+		FlurryAgent.logEvent("CALL");
+		Intent intent = new Intent(Intent.ACTION_DIAL);
+
+
+		Uri data = Uri.parse("tel:" +phoneNumber);
+
+
+		intent.setData(data);
+
+
+		startActivity(intent);
 	}
 
 	private void createReminderDialog(Context context) {
@@ -196,6 +253,32 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 
 	}
 
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+
+		return new CursorLoader(getActivity().getApplicationContext()){
+			@Override
+			public Cursor loadInBackground() {
+				 Cursor cursor = new CallLogsHelper().getAllOutGoingLocalCallLogs();
+				return cursor;
+			}
+		};
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+		RecentListRecycleAdapter mRecentListAdapter = new RecentListRecycleAdapter(getActivity().getBaseContext(), data, false);
+		mListView.setAdapter(mRecentListAdapter);
+
+	}
+
+	@Override
+	public void onLoaderReset(Loader loader) {
+
+	}
+
 	class USSDLoader extends AsyncTask<Integer ,Void,Void>
     {
 
@@ -206,6 +289,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
            //V12Log.d(tag,"Bal Frag onPreExecute");
 
             super.onPreExecute();
+			//((AppCompatActivity)getActivity()).findViewById(R.id.spinner_nav).setVisibility(View.INVISIBLE);
             rootView.findViewById(R.id.rootRL).setVisibility(View.GONE);
             if(GlobalData.globalSimList.size()>=2)
             {
@@ -276,6 +360,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
     }
     void intializeScreen(int sim_slot)
 	{
+		ImageView chartImage = null;
        //V12Log.d(tag,"Bal Frag intializeScreen");
 		if(sim_slot==0)
 		{
@@ -315,29 +400,40 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 
 		if(currBalance>-1.0)
 		{
-			mListView = (ParallaxListView) rootView.findViewById(R.id.recents_list);
+			//mListView = (ParallaxListView) rootView.findViewById(R.id.recents_list);
+			rootView.findViewById(R.id.nobal).setVisibility(View.GONE);
+			mListView = (RecyclerView) rootView.findViewById(R.id.recents_list);
 			mListView.setVisibility(View.VISIBLE);
+			mLineChart.setVisibility(View.VISIBLE);
 			if(mLineChart==null)
 			{
 
-				mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, null, false);
+				/*mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, null, false);
 				final float scale = getResources().getDisplayMetrics().density;
 				mLineChart.setLayoutParams(new AbsListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, (int)(300*scale)));
+				*/
 			}
+
             createGraph();
           /*  mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
             createGraph();*/
             //have to set the header before setting the adapter
-			mListView.removeHeaderView(mLineChart);
-            mListView.addParallaxedHeaderView(mLineChart);
-            RecentListAdapter mRecentListAdapter = null;
+			//mListView.removeHeaderView(mLineChart);
+
+			//chartImage = (ImageView)rootView.findViewById(R.id.collapsing_image);
+			//chartImage.setBackgroundColor(getResources().getColor(R.color.white));
+			/*LinearLayout chartItem = (LinearLayout)rootView.findViewById(R.id.collapsing_image);
+			chartItem.addView(mLineChart);
+*/
+			//RecentListAdapter mRecentListAdapter = null;
+			/*RecentListRecycleAdapter mRecentListAdapter = null;
             if(mRecentListAdapter==null)
             {
                 Cursor recentListCursor = new CallLogsHelper().getAllOutGoingLocalCallLogs();
-                mRecentListAdapter = new RecentListAdapter(getActivity(),recentListCursor , false);
+                mRecentListAdapter = new RecentListRecycleAdapter(getActivity(),recentListCursor , false);
             }
-			mListView.setAdapter(mRecentListAdapter);
-			mListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+			mListView.setAdapter(mRecentListAdapter);*/
+			/*mListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
 			{
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id)
@@ -352,22 +448,55 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 					FlurryAgent.logEvent("CALL");
 					Intent intent = new Intent(Intent.ACTION_DIAL);
 
-					/** Creating a uri object to store the telephone number */
+					*//** Creating a uri object to store the telephone number *//*
 					Uri data = Uri.parse("tel:" + view.getTag(R.id.KEY_NUMBER));
 
-					/** Setting intent data */
+					*//** Setting intent data *//*
 					intent.setData(data);
 
-					/** Starting the caller activity by the implicit intent */
+					*//** Starting the caller activity by the implicit intent *//*
 					startActivity(intent);
 				}
-			});
+			});*/
 		/*((RelativeLayout)rootView.findViewById(R.id.nobal)).setVisibility(View.GONE);
 		mLineChart.setVisibility(View.VISIBLE);*/
 
 
 		}
+		else
+		{
+			mListView.setVisibility(View.GONE);
+			mLineChart.setVisibility(View.GONE);
+			//ViewGroup container = (ViewGroup) rootView.findViewById(R.id.parallax_container);
+			//rootView.findViewById(R.id.recents_list).setVisibility(View.GONE);
+			rootView.findViewById(R.id.nobal).setVisibility(View.VISIBLE);
+			//this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, container, true);
+			contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
+			contactUsButton.setOnClickListener(new OnClickListener()
+			{
+				@Override
+				public void onClick(View v)
+				{
+					if (!Helper.contactExists("+919739663487"))
+					{
+						//V10Log.d(tag, "Whatsapp contact not found adding contact");
+						Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+						intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+						intent.putExtra(ContactsContract.Intents.Insert.EMAIL, "simplyappcontact@gmail.com")
+								.putExtra(ContactsContract.Intents.Insert.NAME, "Simply App")
+								.putExtra(ContactsContract.Intents.Insert.EMAIL_TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK)
+								.putExtra(ContactsContract.Intents.Insert.PHONE,"+919739663487" )
+								.putExtra(ContactsContract.Intents.Insert.PHONE_TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_WORK);
 
+						startActivity(intent);
+					} else
+					{
+						//Sending Device Id doesn't work
+						startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
+					}
+				}
+			});
+		}
 
 
 		if(DataInitializer.ussdDataList.size()>0)
@@ -376,40 +505,8 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 
 			setData();
 
-            //mListView.setParallaxView(rootView.findViewById(R.id.parallax_container));
-
 		}
-		else
-        {
-			ViewGroup container = (ViewGroup) rootView.findViewById(R.id.parallax_container);
-            rootView.findViewById(R.id.recents_list).setVisibility(View.GONE);
-			this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, container, true);
-            contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
-            contactUsButton.setOnClickListener(new OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    if (!Helper.contactExists("+919739663487"))
-                    {
-                       //V10Log.d(tag, "Whatsapp contact not found adding contact");
-						Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
-						intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
-						intent.putExtra(ContactsContract.Intents.Insert.EMAIL, "simplyappcontact@gmail.com")
-                                .putExtra(ContactsContract.Intents.Insert.NAME, "Simply App")
-								.putExtra(ContactsContract.Intents.Insert.EMAIL_TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK)
-								.putExtra(ContactsContract.Intents.Insert.PHONE,"+919739663487" )
-								.putExtra(ContactsContract.Intents.Insert.PHONE_TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_WORK);
 
-                        startActivity(intent);
-                    } else
-                    {
-                        //Sending Device Id doesn't work
-                        startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
-                    }
-				}
-			});
-		}
 		if (currData > 0.0)
 		{
 			dataTextView.setText(currData + "MB");
@@ -453,6 +550,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		FlurryAgent.endTimedEvent("BalanceScreen");
 		super.onPause();
 	}
+
 
 	void setPredictedDays(int sim_slot) {
 		//Log.d("TEST", "setPredictedDays Called");
@@ -662,15 +760,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 
 	
 }
-	@Override
-	public void onClick(View v) {
-		/*if(v.getId() == R.id.detail_button) 
-		{
-			//final Intent intent =;
-			getActivity().startActivity( new Intent(getActivity(), HistoryActivity.class));
-		}*/
-		
-	}
 
 	@Override
 	public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
@@ -681,5 +770,6 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 	public void onNothingSelected() {
 		
 	}
+
 
 }
