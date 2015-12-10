@@ -53,7 +53,7 @@ import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
-import com.builder.ibalance.util.RecyclerItemClickListener;
+
 import com.flurry.android.FlurryAgent;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
