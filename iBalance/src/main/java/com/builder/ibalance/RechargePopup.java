@@ -16,11 +16,13 @@ import android.widget.Toast;
 
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
+import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.parse.ParseObject;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -76,10 +78,20 @@ public class RechargePopup extends Activity implements View.OnClickListener
                 MyApplication.TrackerName.APP_TRACKER);
         ParseObject pObj = new ParseObject("SIMPLY_RECHARGE");
         pObj.put("DEVICE_ID", Helper.getDeviceId());
-        pObj.put("NUMBER", number);
-        pObj.put("CARRIER", carrierExtra);
-        pObj.put("CIRCLE", circleExtra);
-        pObj.put("AMOUNT", amount);
+        try
+        {
+
+            pObj.put("NUMBER", number);
+            pObj.put("CARRIER", carrierExtra);
+            pObj.put("CIRCLE", circleExtra);
+            pObj.put("AMOUNT", amount);
+        }
+        catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
+
+        Map<String, String> params = new HashMap<String, String>();
         switch (v.getId())
         {
 
@@ -102,7 +114,10 @@ public class RechargePopup extends Activity implements View.OnClickListener
                         .setAction("PAYTM")
                         .setLabel(amount+"")
                         .build());
-                FlurryAgent.logEvent("RECHARGE_PAYTM");
+                params.put("TYPE", "PAYTM");
+                params.put("AMOUNT", amount+"");
+
+                FlurryAgent.logEvent("RECHARGE",params);
                 break;
             case R.id.mobikwik_recharge:
                 pObj.put("TYPE","MOBIKWIK");
@@ -111,7 +126,10 @@ public class RechargePopup extends Activity implements View.OnClickListener
                         .setAction("MOBIKWIK")
                         .setLabel(amount+"")
                         .build());
-                FlurryAgent.logEvent("RECHARGE_MOBIKWIK");
+                params.put("TYPE", "MOBIKWIK");
+                params.put("AMOUNT", amount+"");
+
+                FlurryAgent.logEvent("RECHARGE",params);
                 break;
             case R.id.freecharge_recharge:
                 pObj.put("TYPE","FREECHARGE");
@@ -120,7 +138,10 @@ public class RechargePopup extends Activity implements View.OnClickListener
                         .setAction("FREECHARGE")
                         .setLabel(amount+"")
                         .build());
-                FlurryAgent.logEvent("RECHARGE_FREECHARGE");
+                params.put("TYPE", "FREECHARGE");
+                params.put("AMOUNT", amount+"");
+
+                FlurryAgent.logEvent("RECHARGE",params);
                 break;
         }
         pObj.saveEventually();

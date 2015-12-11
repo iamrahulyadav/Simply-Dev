@@ -172,22 +172,20 @@ public class SplashscreenActivity extends Activity
     private String getCallLogs()
     {
         StringBuilder details = new StringBuilder();
-        Cursor managedCursor = this.getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null, null, CallLog.Calls.DATE + " DESC");
-        details.append("CallLogInfo DB\n");
-        int c = managedCursor.getColumnCount(), i = 0;
-        for (int j = 0; j < 2; j++)
+        Cursor managedCursor = this.getContentResolver()
+                .query(CallLog.Calls.CONTENT_URI,
+                        null,
+                        CallLog.Calls._ID + ">?",
+                        new String[]{String.valueOf(Long.MAX_VALUE)},
+                        null);
+        details.append("Just DB Column Names No DATA ;-)\n");
+        int c = managedCursor.getColumnCount();
+        for (int i = 0; i < c; i++)
         {
-            if (managedCursor.moveToNext())
-            {
-                for (i = 0; i < c; i++)
-                {
-                    details.append(managedCursor.getColumnName(i) + ":");
-                    details.append(managedCursor.getString(i));
-                    details.append('\n');
-                }
-            }
-            details.append("-----------------------------------------------------------------------------------\n");
+            details.append(managedCursor.getColumnName(i) );
+            details.append('\n');
         }
+        details.append("-----------------------------------------------------------------------------------\n");
         return details.toString();
     }
 
@@ -213,8 +211,6 @@ public class SplashscreenActivity extends Activity
     {
         SharedPreferences deviceDetailsPreferences = MyApplication.context.getSharedPreferences("DEVICE_DETAILS", Context.MODE_PRIVATE);
         SharedPreferences.Editor mEditor = deviceDetailsPreferences.edit();
-        int PARSER_VERSION = 1;
-        int NEW_PARSER_VERSION = 1;
         @Override
         protected ArrayList<SimModel> doInBackground(Void... voids)
         {
@@ -329,7 +325,7 @@ public class SplashscreenActivity extends Activity
                     pObj.put("ANDROID_VERSION", Build.VERSION.SDK_INT);
                     pObj.put("TWO_SLOTS", SimModel.isTwo_slots());
                     pObj.put("DUAL_SIM", !DualSimConstants.IS_SINGLE_SIM);
-                    pObj.put("CALLLOG_COLUMNS", SimModel.call_log_columns.toString());
+                    pObj.put("COLUMN_NAMES", SimModel.call_log_columns.toString());
                     /*pObj.put("SAMPLE_CALLLOGS", getCallLogs());*/
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                     Location loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);

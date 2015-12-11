@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -111,7 +112,6 @@ public class CallPatternFragment extends Fragment implements
         mProgressBar = (ProgressBar) view.findViewById(R.id.data_loading);
         mListView = (ListView) view.findViewById(R.id.listView1);
         list = new ArrayList<ChartItem>();
-
         setHasOptionsMenu(true);
         return view;
     }
@@ -361,14 +361,17 @@ public class CallPatternFragment extends Fragment implements
         outCount = new ArrayList<Integer>(Collections.nCopies(7, 0));
         inDuration = new ArrayList<Integer>(Collections.nCopies(7, 0));
         outDuration = new ArrayList<Integer>(Collections.nCopies(7, 0));
-        ArrayList<DateDurationModel> avgDateDuarationDetail =
-                dateDurationMapHelper.getCallPatterDetails(startDate, endDate);
-        for (DateDurationModel m : avgDateDuarationDetail)
+        ArrayList<DateDurationModel> avgDateDurationDetail =
+                dateDurationMapHelper.getCallPatternDetails(startDate, endDate);
+        for (DateDurationModel m : avgDateDurationDetail)
         {
             outCount.set(m.day_of_the_week - 1, m.out_count);
             inDuration.set(m.day_of_the_week - 1, m.in_duration);
             outDuration.set(m.day_of_the_week - 1, m.out_duration);
         }
+        Log.d(TAG,"OutCount "+outCount.toString());
+        Log.d(TAG,"inDuration "+inDuration.toString());
+        Log.d(TAG,"outDuration "+outDuration.toString());
     }
 
     int getWeeksBetween(Date a, Date b)
@@ -407,18 +410,14 @@ public class CallPatternFragment extends Fragment implements
 
     private BarData setDay_OutCountData()
     {
-        //Log.d(TAG, "SetDAta Fragment");
-        //reverseMap = new TreeMap<Date, ArrayList<Integer>>(
-        //		Collections.reverseOrder());
-        //reverseMap.putAll(dateDurationMap);
         ArrayList<String> xVals = new ArrayList<String>();
         ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
         int todayIndex = c.get(Calendar.DAY_OF_WEEK);
         todayIndex -= 1;
-        //Log.d(TAG+ "WeekData outC","todayIndex = "+todayIndex);
-        //Log.d(TAG+ "WeekData outC", "Out COUNT "+ outCount.toString());
+        Log.d(TAG+ "WeekData outC","todayIndex = "+todayIndex);
+        Log.d(TAG+ "WeekData outC", "Out COUNT "+ outCount.toString());
         int j = 0;
         for (int i = todayIndex + 1; i < outCount.size(); i++)
         {
@@ -431,7 +430,6 @@ public class CallPatternFragment extends Fragment implements
             xVals.add(weekDays.get(i));
             yVals1.add(new BarEntry(outCount.get(i), j));
             j++;
-            ;
         }
 
         BarDataSet set1 = new BarDataSet(yVals1, "Weekly OutGoing Count(avg)");
@@ -439,10 +437,7 @@ public class CallPatternFragment extends Fragment implements
         ArrayList<BarDataSet> dataSets = new ArrayList<BarDataSet>();
         dataSets.add(set1);
         BarData data = new BarData(xVals, dataSets);
-        // data.setValueFormatter(new MyValueFormatter());
         data.setValueTextSize(10f);
-        // day_outCount_chart.setData(data);
-        //Log.d(TAG, "Setting OKAy");
         return data;
 
     }

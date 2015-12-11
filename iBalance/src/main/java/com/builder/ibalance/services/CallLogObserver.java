@@ -14,6 +14,7 @@ import com.builder.ibalance.messages.OutgoingCallMessage;
 import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.MyApplication;
+import com.crashlytics.android.Crashlytics;
 
 import java.util.ArrayList;
 
@@ -63,96 +64,109 @@ public class CallLogObserver extends ContentObserver
                 null,
                 CallLog.Calls._ID + ">?",
                 new String[]{String.valueOf(previous_id)}, CallLog.Calls._ID + " ASC");
-        if(cursor!=null)
+        try
         {
-            int id_idx = cursor.getColumnIndex(CallLog.Calls._ID);
-            int type_index = cursor.getColumnIndex(CallLog.Calls.TYPE);
-            int number_index = cursor.getColumnIndex(CallLog.Calls.NUMBER);
-            int duration_index = cursor.getColumnIndex(CallLog.Calls.DURATION);
-            //V10Log.d(tag,"No.of Rows = "+cursor.getCount());
-            while (cursor.moveToNext())
+            if (cursor != null)
             {
-                int slot_id = 0;
-                int call_type = cursor.getInt(type_index);
-                if (call_type == CallLog.Calls.OUTGOING_TYPE)
+                int id_idx = cursor.getColumnIndex(CallLog.Calls._ID);
+                int type_index = cursor.getColumnIndex(CallLog.Calls.TYPE);
+                int number_index = cursor.getColumnIndex(CallLog.Calls.NUMBER);
+                int duration_index = cursor.getColumnIndex(CallLog.Calls.DURATION);
+                //V10Log.d(tag,"No.of Rows = "+cursor.getCount());
+                while (cursor.moveToNext())
                 {
-
-                    int duration = cursor.getInt(duration_index);
-                    if (duration > 0)
+                    int slot_id = 0;
+                    int call_type = cursor.getInt(type_index);
+                    if (call_type == CallLog.Calls.OUTGOING_TYPE)
                     {
 
-                        int len = cursor.getColumnCount();
-                        for (int i = 0; i < len; i++)
+                        int duration = cursor.getInt(duration_index);
+                        if (duration > 0)
                         {
-                            //V10Log.d(tag,"Col = "+cursor.getColumnName(i));
-                        }
-                        ArrayList<String> column_names = SimModel.call_log_columns;
-                        if (SimModel.isTwo_slots())
-                        {
-                            for (String column_name : column_names)
-                            {
-                                if (cursor.getColumnIndex(column_name) != -1)
-                                {
-                                    if (GlobalData.globalSimList.get(0).subid != -1)
-                                    {
-                                        if (column_name.toLowerCase().equals("iccid") || column_name.toLowerCase().equals("icc_id"))
-                                        {
-                                            String iccId = cursor.getString(cursor.getColumnIndex(column_name));
-                                            slot_id = getSlotIdforLG(iccId);
-                                        } else
-                                        {
-                                            String subid = cursor.getString(cursor.getColumnIndex(column_name));
-                                            slot_id = getSlotIdforSub(subid);
-                                        }
 
-                                    } else if (SimModel.dual_type == DualSimConstants.TYPE_ASUS)
+                            int len = cursor.getColumnCount();
+                            for (int i = 0; i < len; i++)
+                            {
+                                //V10Log.d(tag,"Col = "+cursor.getColumnName(i));
+                            }
+                            ArrayList<String> column_names = SimModel.call_log_columns;
+                            if (SimModel.isTwo_slots())
+                            {
+                                for (String column_name : column_names)
+                                {
+                                    if (cursor.getColumnIndex(column_name) != -1)
                                     {
-                                        String sim_index = cursor.getString(cursor.getColumnIndex(column_name));
-                                        slot_id = getSlotIdforAsus(sim_index);
-                                    }
-                                    //ZTE
-                                    else if (column_name.toLowerCase().equals("mode_id") || column_name.toLowerCase().equals("modeid"))
-                                    {
-                                        String simid = cursor.getString(cursor.getColumnIndex(column_name));
-                                        try
+                                        boolean found = false;
+                                        if (GlobalData.globalSimList.get(0).subid != -1)
                                         {
-                                            slot_id = Integer.parseInt(simid) - 1;
-                                        } catch (Exception e)
+                                            if (column_name.toLowerCase().equals("iccid") || column_name.toLowerCase().equals("icc_id"))
+                                            {
+                                                String iccId = cursor.getString(cursor.getColumnIndex(column_name));
+                                                if (iccId != null || iccId.equals(""))
+                                                {
+                                                    slot_id = getSlotIdforLG(iccId);
+                                                    found = true;
+                                                }
+                                            }
+                                            if (!found)
+                                            {
+                                                String subid = cursor.getString(cursor.getColumnIndex(column_name));
+                                                slot_id = getSlotIdforSub(subid);
+                                            }
+
+                                        } else if (SimModel.dual_type == DualSimConstants.TYPE_ASUS)
                                         {
-                                            slot_id = 0;
+                                            String sim_index = cursor.getString(cursor.getColumnIndex(column_name));
+                                            slot_id = getSlotIdforAsus(sim_index);
                                         }
-                                    } else
-                                    {
-                                        String temp = cursor.getString(cursor.getColumnIndex(column_name));
-                                        if (temp != null)
+                                        //ZTE
+                                        else if (column_name.toLowerCase().equals("mode_id") || column_name.toLowerCase().equals("modeid"))
                                         {
+                                            String simid = cursor.getString(cursor.getColumnIndex(column_name));
                                             try
                                             {
-                                                slot_id = Integer.parseInt(temp);
+                                                slot_id = Integer.parseInt(simid) - 1;
                                             } catch (Exception e)
                                             {
                                                 slot_id = 0;
                                             }
+                                        } else
+                                        {
+                                            String temp = cursor.getString(cursor.getColumnIndex(column_name));
+                                            if (temp != null)
+                                            {
+                                                try
+                                                {
+                                                    slot_id = Integer.parseInt(temp);
+                                                } catch (Exception e)
+                                                {
+                                                    slot_id = 0;
+                                                }
+                                            }
                                         }
-                                    }
 
+                                    }
                                 }
                             }
+                            //V10Log.d(tag, "slot_id = " + slot_id);
+                            String number = cursor.getString(number_index);
+                            Message msg = accessibiltyServiceHandler.obtainMessage();
+                            msg.arg1 = slot_id;
+                            msg.what = 1729;
+                            long call_id = cursor.getLong(id_idx);
+                            msg.obj = new OutgoingCallMessage(number, duration, call_id);
+                            accessibiltyServiceHandler.sendMessage(msg);
                         }
-                        //V10Log.d(tag, "slot_id = " + slot_id);
-                        String number = cursor.getString(number_index);
-                        Message msg = accessibiltyServiceHandler.obtainMessage();
-                        msg.arg1 = slot_id;
-                        msg.what = 1729;
-                        long call_id = cursor.getLong(id_idx);
-                        msg.obj = new OutgoingCallMessage(number, duration, call_id);
-                        accessibiltyServiceHandler.sendMessage(msg);
                     }
+                    previous_id = cursor.getLong(id_idx);
                 }
-                previous_id = cursor.getLong(id_idx);
+                cursor.close();
+                mSharedPreferences.edit().putLong("PREV_ID", previous_id).commit();
             }
-            cursor.close();
-            mSharedPreferences.edit().putLong("PREV_ID", previous_id).commit();
+        }
+        catch (NullPointerException e)
+        {
+            Crashlytics.logException(e);
         }
 
     }

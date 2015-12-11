@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,7 +24,6 @@ import android.widget.EditText;
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
-import com.builder.ibalance.parsers.USSDParser;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -212,14 +210,14 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		case R.id.privacy:
 			//Log.d(tag, "Prefrences selected");
 
-			USSDParser mParser = new USSDParser();
+			/*USSDParser mParser = new USSDParser();
 			mParser.parseMessage("CALLCOST:RS.0.00 DURATION:00:00:00 BAL:RS.14.05 DIAL 578786, PAYIEN NAYE, PURANE HELLOTUNE PAR 40% KA DISCOUNT NULL");
 			Log.d(tag,mParser.getType()+"");
-			Log.d(tag,mParser.getDetails().toString());
-			/*String url = "http://ibalanceapp.com/privacy-policy/";
+			Log.d(tag,mParser.getDetails().toString());*/
+			String url = "http://ibalanceapp.com/privacy-policy/";
 			Intent i = new Intent(Intent.ACTION_VIEW);
 			i.setData(Uri.parse(url));
-			startActivity(i);*/
+			startActivity(i);
 			break;
 		case R.id.contact_us:
 			//Log.d(tag, "contact_us selected");

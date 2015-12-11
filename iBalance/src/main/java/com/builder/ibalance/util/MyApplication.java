@@ -45,8 +45,8 @@ public class MyApplication extends Application
                 .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
                 .build();
 		TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
-		Fabric.with(this, crashlyticsKit, new TwitterCore(authConfig), new Digits());
-                context = this;
+		Fabric.with(this, crashlyticsKit, new TwitterCore(authConfig), new Digits(), new Crashlytics());
+        context = this;
         TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
         //Log.d(tag, "Initializing Parse");
@@ -64,9 +64,9 @@ public class MyApplication extends Application
         String deviceId =mtelTelephonyManager.getDeviceId(); 
         //String number =mtelTelephonyManager.getLine1Number() ;
 
+        Crashlytics.getInstance().core.setUserIdentifier(deviceId);
         Kahuna.getInstance().onAppCreate(this, "3e512234b35542f4b42f7cc05f4c047a", null);
         IKahunaUserCredentials newCreds = Kahuna.getInstance().createUserCredentials();
-		Crashlytics.getInstance().core.setUserIdentifier(deviceId);
         newCreds.add(KahunaUserCredentials.USERNAME_KEY, deviceId);
         try
         {

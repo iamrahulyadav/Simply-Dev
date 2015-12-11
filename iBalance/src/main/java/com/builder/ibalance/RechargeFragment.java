@@ -3,7 +3,6 @@ package com.builder.ibalance;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -130,7 +129,10 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         });
         //Log.d(TAG, "UserCircle = "+ userCircle + " UserCarrier "+userCarrier);
         plansListView = (ListView) rootView.findViewById(R.id.plans_list_view);
-
+        if(GlobalData.globalSimList == null)
+        {
+            GlobalData.globalSimList =  new Helper.SharedPreferenceHelper().getDualSimDetails();
+        }
         if (GlobalData.globalSimList.size() >= 2)
         {
             sim_switch.setVisibility(View.VISIBLE);

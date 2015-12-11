@@ -2107,7 +2107,7 @@ public class DualSim
         subIdParameters[0] = MyApplication.context;
         subIdParameters[1] = 0;
         serial0 = mediaTekTelephonyManager.getSimSerialNumber(0);
-        imei0 = mediaTekTelephonyManager.getSimSerialNumber(0);
+        imei0 = mediaTekTelephonyManager.getDeviceId(0);
         if (serial0 != null && !serial0.equals(""))
         {
             imsi0 = mediaTekTelephonyManager.getNetworkOperator(0);
@@ -2134,7 +2134,7 @@ public class DualSim
             sim_list.add(mSimModel);
         }
         imei1 = mediaTekTelephonyManager.getDeviceId(1);
-        if (imei1 == null || imei0.equals(imei1))
+        if (imei1 == null || imei0==null || imei0.equals(imei1))
         {
             SimModel.two_slots = false;
         } else
@@ -2186,7 +2186,7 @@ public class DualSim
 
     public ArrayList getCarrierCirclefromIMSI(String IMSI)
     {
-        if (IMSI == null) //IF MCC+MNC doesn't exist
+        if (IMSI == null || IMSI.equals("")) //IF MCC+MNC doesn't exist
         {
             return getCarrierCircleManually();
             //Launch a Activity to let user select startActivity for Result

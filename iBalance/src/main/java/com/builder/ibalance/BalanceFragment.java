@@ -104,6 +104,10 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		dataTextView.setTypeface(tf);
 		balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
         //mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
+		if(GlobalData.globalSimList == null)
+		{
+			GlobalData.globalSimList =  new Helper.SharedPreferenceHelper().getDualSimDetails();
+		}
         if(GlobalData.globalSimList.size()>=2)
         {
             sim_switch.setVisibility(View.VISIBLE);
@@ -236,7 +240,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
                     rootView.findViewById(R.id.sim_switch).setVisibility(View.VISIBLE);
                 }
                 rootView.findViewById(R.id.ussd_progress).setVisibility(View.GONE);
-                intializeScreen(sim_slot);
+                initializeScreen(sim_slot);
             }
             else
             {
@@ -274,9 +278,9 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 			mLineChart.invalidate();
 		}
     }
-    void intializeScreen(int sim_slot)
+    void initializeScreen(int sim_slot)
 	{
-       //V12Log.d(tag,"Bal Frag intializeScreen");
+       //V12Log.d(tag,"Bal Frag initializeScreen");
 		if(sim_slot==0)
 		{
            //V12Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
@@ -429,7 +433,7 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 	@Override
 	public void onResume() {
 		//Log.d(tag,"ONResume");
-		//intializeScreen();
+		//initializeScreen();
 		Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(
 			    TrackerName.APP_TRACKER);
 
@@ -589,9 +593,12 @@ public class BalanceFragment extends Fragment implements OnChartValueSelectedLis
 		if(mSharedPreferences==null)
 			mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA",Context.MODE_PRIVATE);
 		 updateLimitLine(mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0));
-		 mLineChart.getAxisRight().setEnabled(false);
-		 // set data
-		 mLineChart.setData(data);
+        if(mLineChart!=null)
+        {
+            mLineChart.getAxisRight().setEnabled(false);
+            // set data
+            mLineChart.setData(data);
+        }
 		
 
 	}

@@ -18,11 +18,18 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
+import com.flurry.android.FlurryAgent;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServiceEnableActivity extends Activity implements OnClickListener{
 
@@ -59,6 +66,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
         gifImageView.setOnClickListener(this);
 		final TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
+
 		ParseQuery<ParseObject> query = ParseQuery.getQuery("SERVICE_STATUS");
 		query.whereEqualTo("DEVICE_ID", mtelTelephonyManager.getDeviceId());
 		// Retrieve the object by Device id
@@ -70,6 +78,17 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
                 simply_service_status.put("SERVICE_STATUS", "OFF");
                 simply_service_status.increment("SERVICE_TOGGLE_COUNT");
                 simply_service_status.saveEventually();
+                Tracker t = ((MyApplication) ServiceEnableActivity.this.getApplication()).getTracker(
+                        MyApplication.TrackerName.APP_TRACKER);
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("SERVICE_STATUS")
+                        .setAction("OFF")
+                        .setLabel(Helper.getDeviceId())
+                        .build());
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("STATUS", "OFF");
+                params.put("DEVICE_ID", Helper.getDeviceId());
+                FlurryAgent.logEvent("SERVICE",params);
 		    }
             else
             {

@@ -1,10 +1,13 @@
 package com.builder.ibalance;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -15,10 +18,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.services.CallDetailsModel;
 import com.builder.ibalance.util.CircleTransform;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
+import com.flurry.android.FlurryAgent;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.squareup.picasso.Picasso;
 
 public class UssdPopup extends Activity {
@@ -42,6 +49,7 @@ public class UssdPopup extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		boolean recharge = false;
+		boolean share = false;
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ussd_popup);
 		Typeface tf = Typeface.createFromAsset(getAssets(), "Roboto-Regular.ttf");
@@ -112,8 +120,14 @@ public class UssdPopup extends Activity {
 			field1.setText(rupee_symbol+" "+details.getCall_cost());
 
 			head2.setText("Current Balance");
-            float minimum_bal = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE).getFloat("MINIMUM_BALANCE",10.0f);
-
+            SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+			float minimum_bal = mSharedPreferences.getFloat("MINIMUM_BALANCE",10.0f);
+			int popUpCount = mSharedPreferences.getInt("POP_UP_COUNT",1);
+			mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
+			if(popUpCount%10==0)
+			{
+				share = true;
+			}
 			if(details.getCurrent_balance() <= minimum_bal)
 			{
 				field2.setTextColor(Color.parseColor("#ff0000"));
@@ -288,48 +302,122 @@ public class UssdPopup extends Activity {
             });
 
 		}
+        else if(share)
+        {
+            Button rateButton = (Button) findViewById(R.id.ussd_dismiss);
+            rateButton.setText("Rate App");
+            Button shareButton = (Button) findViewById(R.id.ussd_open_app);
+
+            shareButton.setText("Share App");
+            rateButton.setOnClickListener(new View.OnClickListener()
+            {
+
+                @Override
+                public void onClick(View v)
+                {
+
+                    Tracker t = ((MyApplication) getApplication()).getTracker(
+                            MyApplication.TrackerName.APP_TRACKER);
+                    t.send(new HitBuilders.EventBuilder().setCategory("RATE")
+                            .setAction("Rate").setLabel("").build());
+                    FlurryAgent.logEvent("Rate");
+                    AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
+                            "Rate", "");
+                    Uri uri = Uri.parse("market://details?id=" + UssdPopup.this.getPackageName());
+                    //Log.d(tag,"URI = "+ uri);
+                    Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                    try {
+                        startActivity(goToMarket);
+                    } catch (ActivityNotFoundException e) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + UssdPopup.this.getPackageName())));
+                    }
+
+                }
+            });
+            shareButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    boolean isWhatsappInstalled = Helper.whatsappInstalledOrNot();
+                    Tracker t = ((MyApplication) getApplication()).getTracker(
+                            MyApplication.TrackerName.APP_TRACKER);
+                    Intent sendIntent = new Intent();
+                    sendIntent.setAction(Intent.ACTION_SEND);
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": https://goo.gl/v3YMrN ");
+                    sendIntent.setType("text/plain");
+                    if(isWhatsappInstalled)
+                    {
+
+                        // Build and send an Event.
+                        t.send(new HitBuilders.EventBuilder()
+                                .setCategory("SHARE")
+                                .setAction("WhatsApp")
+                                .setLabel("POPUP")
+                                .build());
+
+                        FlurryAgent.logEvent("WhatsApp_Share");
+                        //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"WhatsApp_Share","");
+                        sendIntent.setPackage("com.whatsapp");
+                        startActivity(sendIntent);
+                    }
+                    else
+                    {
+                        // Build and send an Event.
+                        t.send(new HitBuilders.EventBuilder()
+                                .setCategory("SHARE")
+                                .setAction("OTHER_SHARE")
+                                .setLabel("POPUP")
+                                .build());
+                        //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"OTHER_SHARE","");
+                        FlurryAgent.logEvent("Other_Share");
+                        startActivity(sendIntent);
+                    }
+                }
+            });
+        }
 		else
 		{
 			dismiss = (Button) findViewById(R.id.ussd_dismiss);
-			ImageView infoButton = (ImageView) findViewById(R.id.info_button);
-			open_app = (Button) findViewById(R.id.ussd_open_app);
-			infoButton.setOnClickListener(new View.OnClickListener()
-			{
+            ImageView infoButton = (ImageView) findViewById(R.id.info_button);
+            open_app = (Button) findViewById(R.id.ussd_open_app);
+            infoButton.setOnClickListener(new View.OnClickListener()
+            {
 
-				@Override
-				public void onClick(View v)
-				{
+                @Override
+                public void onClick(View v)
+                {
 
-					Toast.makeText(getApplicationContext(), "This is a Custom message,With call rate info.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "This is a Custom message,With call rate info.", Toast.LENGTH_LONG).show();
 
-				}
-			});
-			dismiss.setOnClickListener(new View.OnClickListener()
-			{
+                }
+            });
+            dismiss.setOnClickListener(new View.OnClickListener()
+            {
 
-				@Override
-				public void onClick(View v)
-				{
-					Helper.logUserEngageMent(from + "_DISMISS");
-					finish();
+                @Override
+                public void onClick(View v)
+                {
+                    Helper.logUserEngageMent(from + "_DISMISS");
+                    finish();
 
-				}
-			});
-			open_app.setOnClickListener(new View.OnClickListener()
-			{
+                }
+            });
+            open_app.setOnClickListener(new View.OnClickListener()
+            {
 
-				@Override
-				public void onClick(View v)
-				{
-					Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
-					mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-					mIntent.putExtra("FROM", "POPUP");
-					Helper.logUserEngageMent(from + "_OPEN");
-					startActivity(mIntent);
-					finish();
+                @Override
+                public void onClick(View v)
+                {
+                    Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
+                    mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    mIntent.putExtra("FROM", "POPUP");
+                    Helper.logUserEngageMent(from + "_OPEN");
+                    startActivity(mIntent);
+                    finish();
 
-				}
-			});
+                }
+            });
 		}
 	}
 	private String getTimeFormatted(int totalSecs) {
