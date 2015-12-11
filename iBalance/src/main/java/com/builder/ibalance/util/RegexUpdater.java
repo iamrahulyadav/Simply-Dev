@@ -53,7 +53,7 @@ public class RegexUpdater
         });
     }
 
-     void update(final int NEW_PARSER_VERSION)
+     public void update(final int NEW_PARSER_VERSION)
     {
         Log.d(tag,"Started Updating the Regexes!!!!");
 

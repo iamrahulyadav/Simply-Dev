@@ -47,6 +47,9 @@ import com.digits.sdk.android.Digits;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.parse.ParseObject;import com.parse.ConfigCallback;
+import com.parse.ParseConfig;
+import com.parse.ParseException;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;
@@ -355,7 +358,6 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
         {
 
             super.onPostExecute(sim_list);
-
             PARSER_VERSION =  getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION",1);
             SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
            // boolean isVerfied  = mSharedPreferences.getBoolean("USER_VERIFIED",false);
@@ -384,7 +386,6 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                 }
             });
             //chnage it to == for Sim
-
             (new RegexUpdater()).check();
             if (sim_list == null)
             {
