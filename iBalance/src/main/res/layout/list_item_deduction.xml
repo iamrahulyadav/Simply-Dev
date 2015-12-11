@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/list_row_selector"
     android:padding="8dp"
+    android:layout_marginBottom="2dp"
     android:id="@+id/contact_list" >
  
     <!-- contact_picture   -->

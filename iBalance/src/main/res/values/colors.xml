@@ -21,5 +21,7 @@
 	<color name="focused">#00F000</color>
     <color name="primary_material_dark">#1ad3a2</color>
     <color name="primary_dark_material_dark">#129377</color>
+    <color name="accent">#FF4081</color>
+
 
 </resources>

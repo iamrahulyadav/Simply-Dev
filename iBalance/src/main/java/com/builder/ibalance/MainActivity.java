@@ -1,16 +1,17 @@
 package com.builder.ibalance;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -27,18 +28,21 @@ import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.digits.sdk.android.Digits;
 import com.facebook.appevents.AppEventsLogger;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.Kahuna;
+import android.support.v7.app.ActionBar;
 
 import de.greenrobot.event.EventBus;
 
-public class MainActivity extends Activity implements ActionBar.TabListener {
+public class MainActivity extends AppCompatActivity {
 	final String tag = MainActivity.class.getSimpleName();
 	SharedPreferences mSharedPreferences;
+	protected RecyclerView mRecyclerView;
 	public static boolean sim1BalanceReminderShown = false,sim2BalanceReminderShown = false;
 	EditText input ;
 	//MoPubInterstitial mInterstitial;
@@ -51,38 +55,44 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	ViewPager mViewPager;
 	int PARSER_VERSION = 1;
 	int NEW_PARSER_VERSION = 1;
+	public ActionBar ab;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
 
-		// Set up the action bar.
-		final ActionBar actionBar = getActionBar();
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);/*
-		actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-		actionBar.setCustomView(R.layout.custom_actionbar_title); */
+		final TabLayout tabLayout =(TabLayout)findViewById(R.id.tablayout);
+
+		ab = getSupportActionBar();
+		ab.setLogo(R.drawable.ic_launcher);
+
+
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the activity.
 		mainActivityAdapter = new MainActivityAdapter(getFragmentManager());
-		
+
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mainActivityAdapter);
 		mViewPager.setOffscreenPageLimit(1);
 
+
+
 		// When swiping between different sections, select the corresponding
 		// tab. We can also use ActionBar.Tab#select() to do this if we have
 		// a reference to the Tab.
-		mViewPager
+	/*	mViewPager
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 					@Override
 					public void onPageSelected(int position) {
 						actionBar.setSelectedNavigationItem(position);
 
 					}
-				});
+				});*/
 
 		// For each of the sections in the app, add a tab to the action bar.
 		for (int i = 0; i < mainActivityAdapter.getCount(); i++) {
@@ -90,12 +100,14 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 			// the adapter. Also specify this Activity object, which implements
 			// the TabListener interface, as the callback (listener) for when
 			// this tab is selected.s
-			
-	        
-			actionBar.addTab(actionBar.newTab()
+
+	        tabLayout.addTab(tabLayout.newTab().setText(mainActivityAdapter.getPageTitle(i)));
+			tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+			/*actionBar.addTab(actionBar.newTab()
 					.setText(mainActivityAdapter.getPageTitle(i))
-					.setTabListener(this));
+					.setTabListener(this));*/
 		}
+		tabLayout.setupWithViewPager(mViewPager);
 		//If Recharge was called
 		if(this.getIntent().getBooleanExtra("RECHARGE",false))
 		{
@@ -151,14 +163,34 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
+
 		getMenuInflater().inflate(R.menu.main, menu);
-		
+		//Show n Hide Date menu itme
+
+		View view = (View)findViewById(R.id.spinner_nav);
+		view.getVisibility();
+		if((view.getVisibility() == view.VISIBLE))
+			view.setVisibility(View.GONE);
+		return true;
+
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+		if(mSharedPreferences.getBoolean("USER_VERIFIED",false))
+        {
+            //menu.findItem().setTitle("Login");
+            menu.removeItem(R.id.log);
+        }
+
+
 		return true;
 	}
 
 
 
-	
+
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -168,7 +200,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		int id = item.getItemId();
 
         Tracker t = ((MyApplication) getApplication()).getTracker(
-                TrackerName.APP_TRACKER);
+				TrackerName.APP_TRACKER);
 		switch (id) {
             case R.id.share:
                 boolean isWhatsappInstalled = Helper.whatsappInstalledOrNot();
@@ -223,6 +255,9 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 			//Log.d(tag, "contact_us selected");
 			startActivity(new Intent(this, ContactUs.class));
 			break;
+			case R.id.log:
+				//Log.d(tag, "contact_us selected");
+				verifyUser();				break;
 		case R.id.rate:
 			t.send(new HitBuilders.EventBuilder().setCategory("RATE")
 					.setAction("Rate").setLabel("").build());
@@ -241,6 +276,14 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
+	private void verifyUser() {
+		SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+					Digits.authenticate(((DigitLoginActivity) getApplication()).getAuthCallback(), R.style.CustomDigitsTheme);
+            finish();
+
+	}
+
 	private Boolean setbal() {
 	
 		
@@ -299,7 +342,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		return true;
 
 	}
-	@Override
+	/*@Override
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
 		// When the given tab is selected, switch to the corresponding page in
@@ -317,7 +360,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 			FragmentTransaction fragmentTransaction) {
 	}
 
-
+*/
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();

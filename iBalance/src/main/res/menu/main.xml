@@ -1,6 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.ibalance.MainActivity" >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.example.ibalance.MainActivity">
     <item
         android:id="@+id/share"
         android:orderInCategory="100"
@@ -20,7 +21,7 @@
     <item 
        
     android:id="@+id/menu_spinner"
-    android:showAsAction="never"
+    app:showAsAction="never"
     android:visible="false"
     android:actionViewClass="android.widget.Spinner"
     android:title="Date" />
@@ -32,6 +33,10 @@
         android:id="@+id/contact_us"
         android:orderInCategory="100"
         android:title="Contact-Us"/>
+    <item
+        android:id="@+id/log"
+        android:orderInCategory="100"
+        android:title="Login"/>
     
 
 </menu>

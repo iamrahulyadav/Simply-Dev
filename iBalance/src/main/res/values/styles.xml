@@ -6,30 +6,47 @@
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
 
     -->
-    <style name="AppBaseTheme" parent="@android:style/Theme.Holo.Light">
-        <!--
+   <!--&lt;!&ndash; <style name="AppBaseTheme" parent="@android:style/Theme.Holo.Light">&ndash;&gt;
+        &lt;!&ndash;
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
             backward-compatibility can go here.
 
-        -->
+        &ndash;&gt;
+    </style>-->
+    <style name="AppBaseTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/primary_material_dark</item>
+        <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
+        <item name="colorAccent">@color/primary_material_dark</item>
+
+
+    </style>
+    <style name="CustomDigitsTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:textColorPrimary">@android:color/black</item>
+        <item name="android:textColorSecondary">@android:color/darker_gray</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:textColorLink">@android:color/darker_gray</item>
+        <item name="dgts__accentColor">#1AD3A2</item>
+
+
     </style>
 
     <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
+   <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here.-->
         
         <!-- <item name="android:textViewStyle">@style/RobotoTextViewStyle</item> -->
-        <item name="android:actionBarStyle">@style/ActionBarColor</item>
-     <!-- <item name="android:actionBarTabBarStyle">@style/MyActionBar</item> -->
+       <!-- <item name="android:actionBarStyle">@style/ActionBarColor</item>
+     &lt;!&ndash; <item name="android:actionBarTabBarStyle">@style/MyActionBar</item> &ndash;&gt;
    	<item name="android:actionBarTabStyle">@style/MyActionBar</item>
      <item name="android:actionBarTabTextStyle">@style/TabText</item> 
-     
-    </style>
+-->
+   </style>
 <!-- 	<style name="RobotoTextViewStyle" parent="android:Widget.TextView">
     <item name="android:fontFamily">sans-serif</item>
 </style> -->
-    <style name="ActionBarColor" parent="@android:style/Widget.Holo.Light.ActionBar">
+    <!--<style name="ActionBarColor" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">#1AD3A2</item>
          <item name="android:titleTextStyle">@style/BarTextColor</item>
        		
@@ -49,14 +66,17 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">12sp</item>
     </style>
-
-    <style name="FullscreenTheme" parent="android:Theme.NoTitleBar">
+-->
+    <style name="FullscreenTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowBackground">@null</item>
-        <item name="metaButtonBarStyle">@style/ButtonBar</item>
+       <!-- <item name="metaButtonBarStyle">@style/ButtonBar</item>
         <item name="metaButtonBarButtonStyle">@style/ButtonBarButton</item>
-    </style>
-<style name="PopupTheme" parent="@android:style/Theme.Dialog">
+-->    </style>
+<style name="PopupTheme" parent="Theme.AppCompat.Dialog">
+    <item name="windowNoTitle">true</item>
+    <item name="windowActionBar">false</item>
+
     </style>
     <style name="ButtonBar">
         <item name="android:paddingLeft">2dp</item>
@@ -67,7 +87,7 @@
     </style>
 
     <style name="ButtonBarButton" />
-   <style name="ussd_popup_button" parent="android:Widget.Button">
+   <style name="ussd_popup_button" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">31dp</item>
         <item name="android:background">@drawable/button_background</item>
@@ -82,5 +102,9 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_margin">10dp</item>
         <item name="android:background">@color/white</item>
+    </style>
+
+    <style name="MyTabLayoutTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textStyle">bold</item>
     </style>
 </resources>

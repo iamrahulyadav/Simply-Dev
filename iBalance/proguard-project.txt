@@ -20,6 +20,7 @@
 #}
 # This is a configuration file for ProGuard.
 # http://proguard.sourceforge.net/index.html#manual/usage.html
+
 -dontusemixedcaseclassnames
 -dontskipnonpubliclibraryclasses
 -verbose
@@ -34,7 +35,7 @@
 # "proguard-android-optimize.txt" file instead of this one from your
 # project.properties file.
 
--dontwarn com.google.android.gms.**
+	
 -keepattributes LineNumberTable
 -keepattributes *Annotation*
 -keep public class * implements com.bumptech.glide.module.GlideModule

@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,7 +16,7 @@ import com.builder.ibalance.util.MyApplication;
 import com.flurry.android.FlurryAgent;
 import com.kahuna.sdk.Kahuna;
 
-public class ContactUs extends Activity implements OnClickListener
+public class ContactUs extends AppCompatActivity implements OnClickListener
 {
     final static String tag = ContactUs.class.getSimpleName();
     View conNumber, conMail, debuginfo;

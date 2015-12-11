@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <android.support.v7.widget.RecyclerView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:id="@+id/recyclerview"
+        android:layout_height="wrap_content"
 
-
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <LinearLayout
         android:id="@+id/rootRL"
@@ -11,6 +19,7 @@
         android:layout_height="fill_parent"
         android:layout_gravity="center"
         android:orientation="vertical">
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,6 +55,7 @@
                     android:textColor="@android:color/background_dark"/>
             </LinearLayout>
 
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
@@ -73,6 +83,7 @@
             </LinearLayout>
         </LinearLayout>
 
+
         <RelativeLayout
             android:id="@+id/textLoader"
             android:layout_width="fill_parent"
@@ -99,7 +110,7 @@
                 android:layout_marginLeft="14dp"
                 android:layout_toRightOf="@+id/predictionView"/>
         </RelativeLayout>
-            <LinearLayout
+            <android.support.design.widget.CoordinatorLayout
                 android:layout_width="match_parent"
                 android:layout_height="fill_parent"
                 android:id="@+id/parallax_container"
@@ -107,12 +118,34 @@
                 android:weightSum="10"
                 >
 
+                <android.support.design.widget.AppBarLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background = "#F8F8F8">
+
+                <include layout="@layout/balance_deduction_graph"/>
+                </android.support.design.widget.AppBarLayout>
+
                 <include layout="@layout/recent_call_list"/>
-            </LinearLayout>
+                <include layout="@layout/no_balance_layout"/>
+
+            </android.support.design.widget.CoordinatorLayout>
 
     </LinearLayout>
 
-    <com.melnykov.fab.FloatingActionButton
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/sim_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:src="@drawable/sim_toggle"
+        android:visibility="gone"
+
+        />
+    <!--<com.melnykov.fab.FloatingActionButton
         xmlns:fab="http://schemas.android.com/apk/res-auto"
         android:id="@+id/sim_switch"
         android:layout_width="wrap_content"
@@ -127,12 +160,13 @@
         fab:fab_colorNormal="@color/green_btn_bg_color"
         fab:fab_colorPressed="@color/green_btn_bg_pressed_color"
         fab:fab_colorRipple="@color/grey"/>
-
+-->
     <ProgressBar
         android:id="@+id/ussd_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:indeterminate="false"/>
+        android:indeterminate="false"
+        />
 </RelativeLayout>

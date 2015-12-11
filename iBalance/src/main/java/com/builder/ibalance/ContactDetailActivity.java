@@ -1,10 +1,11 @@
 package com.builder.ibalance;
 
-import android.app.ActionBar;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -30,7 +31,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class ContactDetailActivity extends Activity implements OnChartValueSelectedListener {
+public class ContactDetailActivity extends AppCompatActivity implements OnChartValueSelectedListener {
 	@Override
 	public boolean onNavigateUp()
     {
@@ -52,7 +53,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
 		setContentView(R.layout.activity_contact_detail);
 		Intent it = this.getIntent();
 		c = it.getParcelableExtra("DETAILS");
-		ActionBar mActionBar = getActionBar();
+		//ActionBar mActionBar = getActionBar();
 		if(c!=null)
 		{
 
@@ -60,7 +61,7 @@ public class ContactDetailActivity extends Activity implements OnChartValueSelec
             //key = number values = name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,image_uri
 			number = (TextView)findViewById(R.id.contact_detail_number);
 			name  = (TextView)findViewById(R.id.contact_detail_name);
-			mActionBar.setTitle(c.name);
+			//mActionBar.setTitle(c.name);
 			total_duration  = (TextView)findViewById(R.id.contact_detail_duration);
 			outgoing = (TextView)findViewById(R.id.contact_detail_outgoing_calls);
 			cost = (TextView)findViewById(R.id.contact_detail_cost);

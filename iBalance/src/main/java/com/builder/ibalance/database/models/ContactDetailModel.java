@@ -34,6 +34,10 @@ public class ContactDetailModel implements Parcelable
         this.miss_count = miss_count;
     }
 
+    public String getNumber() {
+        return number;
+    }
+
     public ContactDetailModel(String number, String name, String carrier, String circle)
     {
         this.number = number;

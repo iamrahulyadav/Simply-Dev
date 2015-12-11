@@ -8,8 +8,12 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -19,6 +23,7 @@ import android.widget.ProgressBar;
 
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.CustomContactsAdapter;
+import com.builder.ibalance.adapters.CustomContactsRecyclerAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
 import com.builder.ibalance.database.helpers.IbalanceContract;
@@ -43,7 +48,9 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 	private View view;
 	private ProgressDialog pDialog;
 	private ListView listView;
-	private CustomContactsAdapter adapter;
+	private RecyclerView recyclerView;
+	//private CustomContactsAdapter adapter;
+	private CustomContactsRecyclerAdapter adapter;
 	List<ContactDetailModel> contactsList;
 
 	// ContactsFragment ctx;
@@ -51,10 +58,10 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		view = inflater.inflate(R.layout.fragment_custom_contacts, container,
-				false);
-		//Log.d(TAG, "Contact Fragment In");
-		listView = (ListView) view.findViewById(R.id.list);
+		View v =  inflater.inflate(R.layout.fragment_list_view, container, false);
+		recyclerView = (RecyclerView)v.findViewById(R.id.recyclerview);
+		recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+		recyclerView.setHasFixedSize(true);
 
 		// ctx = this;
 		// MainActivity.dateSelector.setVisible(false);
@@ -71,9 +78,9 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 
 		// notifying list adapter about data changes
 		// so that it renders the list view with updated data
-		listView.setOnItemClickListener(this);
+		//listView.setOnItemClickListener(this);
 
-		return view;
+		return v;
 
 	}
 
@@ -82,7 +89,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 		
 			
 			new ContactsLoader().execute(0);
-		
+
 
 	}
 
@@ -132,7 +139,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 		// Log the timed event when the user starts reading the article
 		// setting the third param to true creates a timed event
 		FlurryAgent.logEvent("ContactScreen", true);
-		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Contact Screen","");
+		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Contact Screen", "");
 		// End the timed event, when the user navigates away from article
 
 		super.onResume();
@@ -157,6 +164,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 		// Toast.LENGTH_SHORT).show();
 
 	}
+
 
 	public class ContactsLoader extends
 			AsyncTask<Integer, Integer, List<ContactDetailModel>>  {
@@ -245,13 +253,19 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 			Log.d(TAG, "Contact Async Task Finished");
 			//Log.d(TAG, "Done Initializing data");
 			if(adapter==null)
-			adapter = new CustomContactsAdapter(contactsList1);
-			listView.setAdapter(adapter);
-			ProgressBar mProgressBar = (ProgressBar) view
+			{
+			//adapter = new CustomContactsAdapter(contactsList1);
+				//adapter=(new CustomContactsRecyclerAdapter(contactsList1));
+				adapter = (new CustomContactsRecyclerAdapter(getActivity().getApplicationContext(),contactsList1));
+			}
+			recyclerView.setAdapter(adapter);
+			//listView.setAdapter(adapter);
+			/*ProgressBar mProgressBar = (ProgressBar) view
 					.findViewById(R.id.contact_data_Loading);
-			mProgressBar.setVisibility(View.GONE);
-			listView.setVisibility(View.VISIBLE);
-			adapter.notifyDataSetChanged();
+			mProgressBar.setVisibility(View.GONE);*/
+			//listView.setVisibility(View.VISIBLE);
+			recyclerView.getAdapter().notifyDataSetChanged();
+			//adapter.notifyDataSetChanged();
 		}
 
 

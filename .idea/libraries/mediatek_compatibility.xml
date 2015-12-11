@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="mediatek-compatibility">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/iBalance/libs/mediatek-compatibility.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

@@ -6,7 +6,10 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -80,6 +82,7 @@ public class CallPatternFragment extends Fragment implements
     ListView mListView;
     ProgressBar mProgressBar;
     long startDate = 0l;
+    private RecyclerView recyclerView;
     long endDate = 0l;
     int filter = mSharedPreferences.getInt("FILTER", 0);
     public static <K, V extends Comparable<V>> Map<K, V> sortByValues(
@@ -110,8 +113,12 @@ public class CallPatternFragment extends Fragment implements
                 false);
         //Log.d("SPINNER", "onCreateView ");
         mProgressBar = (ProgressBar) view.findViewById(R.id.data_loading);
-        mListView = (ListView) view.findViewById(R.id.listView1);
+        //mListView = (ListView) view.findViewById(R.id.listView1);
+        recyclerView = (RecyclerView)view.findViewById(R.id.recyclerview);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setHasFixedSize(true);
         list = new ArrayList<ChartItem>();
+
         setHasOptionsMenu(true);
         return view;
     }
@@ -146,7 +153,8 @@ public class CallPatternFragment extends Fragment implements
             startDate = 0l;
 
             mProgressBar.setVisibility(View.VISIBLE);
-            mListView.setVisibility(View.GONE);
+            //mListView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
             new FilteredDataInitializer(startDate, endDate).execute();
         } else if (filter == 1)
         {
@@ -157,7 +165,8 @@ public class CallPatternFragment extends Fragment implements
             ;
             startDate = c.getTimeInMillis();
             mProgressBar.setVisibility(View.VISIBLE);
-            mListView.setVisibility(View.GONE);
+            //mListView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
             new FilteredDataInitializer(startDate, endDate).execute();
             //Log.d(TAG,"else WEEKS  "+ FilteredDataInitializer.filteredDateDurationMap.size());
         } else if (filter == 0)
@@ -168,7 +177,8 @@ public class CallPatternFragment extends Fragment implements
             startDate = c.getTimeInMillis();
 
             mProgressBar.setVisibility(View.VISIBLE);
-            mListView.setVisibility(View.GONE);
+            //mListView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
             new FilteredDataInitializer(startDate, endDate).execute();
             //Log.d(TAG,"else WEEKS  "+ FilteredDataInitializer.filteredDateDurationMap.size());
         }
@@ -243,15 +253,20 @@ public class CallPatternFragment extends Fragment implements
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
     {
        //V10Log.d(TAG, "onCreateOptionsMenu");
+        final ActionBar ab =((AppCompatActivity)getActivity()).getSupportActionBar();
         super.onCreateOptionsMenu(menu, inflater);
-        dateSelector = menu.findItem(R.id.menu_spinner);
-        dateSelector.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        dateSelector.setVisible(true);
-        View view = dateSelector.getActionView();
-        if (view instanceof Spinner)
+        //dateSelector = menu.findItem(R.id.menu_spinner);
+        //dateSelector = ((AppCompatActivity)getActivity()).findViewById(R.id.spinner_nav);
+        //dateSelector.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        //dateSelector.setVisible(true);
+       // View view = dateSelector.getActionView(
+       View view = ((AppCompatActivity)getActivity()).findViewById(R.id.spinner_nav);
+        view.setVisibility(View.VISIBLE);
+        //if (view instanceof Spinner)
+       // MenuItem view =menu.findItem(R.id.menu_spinner);
         {
             spinner = (Spinner) view;
-            spinner.setAdapter(ArrayAdapter.createFromResource(this.getActivity(),
+            spinner.setAdapter(android.widget.ArrayAdapter.createFromResource(this.getActivity(),
                     R.array.analytics_period,
                     R.layout.date_spinner_item));
             spinner.setSelection(filter, false);
@@ -279,10 +294,13 @@ public class CallPatternFragment extends Fragment implements
 
         }
         mProgressBar.setVisibility(View.GONE);
-        mListView.setVisibility(View.VISIBLE);
+        //mListView.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.VISIBLE);
 
-        ChartDataAdapter cda = new ChartDataAdapter(getActivity(), list);
-        mListView.setAdapter(cda);
+        //ChartDataAdapter cda = new ChartDataAdapter(getActivity(), list);
+        ChartDataAdapter cda = new ChartDataAdapter(getActivity(),list);
+        //mListView.setAdapter(cda);
+        recyclerView.setAdapter(cda);
         //Log.d(TAG, "Finished Loading Charts");
 
     }
@@ -299,7 +317,8 @@ public class CallPatternFragment extends Fragment implements
             return;
         }
        //V10Log.d(TAG, "Changing Charts");
-        mListView.setVisibility(View.GONE);
+        //mListView.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
         Calendar c = Calendar.getInstance(TimeZone.getDefault());
         endDate = c.getTimeInMillis();
@@ -319,7 +338,8 @@ public class CallPatternFragment extends Fragment implements
                 ;
                 startDate = c.getTimeInMillis(); //exact 1 week
                 mProgressBar.setVisibility(View.VISIBLE);
-                mListView.setVisibility(View.GONE);
+                //mListView.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.GONE);
                 new FilteredDataInitializer(startDate, endDate).execute();
                 break;
             case 1:
@@ -335,12 +355,14 @@ public class CallPatternFragment extends Fragment implements
                 ;
                 startDate = c.getTimeInMillis(); //exact 1 week
                 mProgressBar.setVisibility(View.VISIBLE);
-                mListView.setVisibility(View.GONE);
+                //mListView.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.GONE);
                 new FilteredDataInitializer(startDate, endDate).execute();
                 break;
             case 2:
                 mProgressBar.setVisibility(View.VISIBLE);
-                mListView.setVisibility(View.GONE);
+                //mListView.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.GONE);
                 startDate = 0l;
                 new FilteredDataInitializer(startDate, endDate).execute();
                 break;
@@ -361,17 +383,14 @@ public class CallPatternFragment extends Fragment implements
         outCount = new ArrayList<Integer>(Collections.nCopies(7, 0));
         inDuration = new ArrayList<Integer>(Collections.nCopies(7, 0));
         outDuration = new ArrayList<Integer>(Collections.nCopies(7, 0));
-        ArrayList<DateDurationModel> avgDateDurationDetail =
-                dateDurationMapHelper.getCallPatternDetails(startDate, endDate);
-        for (DateDurationModel m : avgDateDurationDetail)
+        ArrayList<DateDurationModel> avgDateDuarationDetail =
+                dateDurationMapHelper.getCallPatterDetails(startDate, endDate);
+        for (DateDurationModel m : avgDateDuarationDetail)
         {
             outCount.set(m.day_of_the_week - 1, m.out_count);
             inDuration.set(m.day_of_the_week - 1, m.in_duration);
             outDuration.set(m.day_of_the_week - 1, m.out_duration);
         }
-        Log.d(TAG,"OutCount "+outCount.toString());
-        Log.d(TAG,"inDuration "+inDuration.toString());
-        Log.d(TAG,"outDuration "+outDuration.toString());
     }
 
     int getWeeksBetween(Date a, Date b)
@@ -410,14 +429,18 @@ public class CallPatternFragment extends Fragment implements
 
     private BarData setDay_OutCountData()
     {
+        //Log.d(TAG, "SetDAta Fragment");
+        //reverseMap = new TreeMap<Date, ArrayList<Integer>>(
+        //		Collections.reverseOrder());
+        //reverseMap.putAll(dateDurationMap);
         ArrayList<String> xVals = new ArrayList<String>();
         ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
         int todayIndex = c.get(Calendar.DAY_OF_WEEK);
         todayIndex -= 1;
-        Log.d(TAG+ "WeekData outC","todayIndex = "+todayIndex);
-        Log.d(TAG+ "WeekData outC", "Out COUNT "+ outCount.toString());
+        //Log.d(TAG+ "WeekData outC","todayIndex = "+todayIndex);
+        //Log.d(TAG+ "WeekData outC", "Out COUNT "+ outCount.toString());
         int j = 0;
         for (int i = todayIndex + 1; i < outCount.size(); i++)
         {
@@ -430,6 +453,7 @@ public class CallPatternFragment extends Fragment implements
             xVals.add(weekDays.get(i));
             yVals1.add(new BarEntry(outCount.get(i), j));
             j++;
+            ;
         }
 
         BarDataSet set1 = new BarDataSet(yVals1, "Weekly OutGoing Count(avg)");
@@ -437,7 +461,10 @@ public class CallPatternFragment extends Fragment implements
         ArrayList<BarDataSet> dataSets = new ArrayList<BarDataSet>();
         dataSets.add(set1);
         BarData data = new BarData(xVals, dataSets);
+        // data.setValueFormatter(new MyValueFormatter());
         data.setValueTextSize(10f);
+        // day_outCount_chart.setData(data);
+        //Log.d(TAG, "Setting OKAy");
         return data;
 
     }
@@ -843,7 +870,52 @@ public class CallPatternFragment extends Fragment implements
     /**
      * adapter that supports 3 different item types
      */
-    private class ChartDataAdapter extends ArrayAdapter<ChartItem>
+    public class ChartDataAdapter extends ArrayAdapter<ChartItem,ChartDataAdapter.ViewHolder>
+    {
+        private Context mContext;
+        private List<ChartItem> mChartItems;
+        int i=0;
+        public ChartDataAdapter(Context context, List<ChartItem> objects)
+        {
+            super(objects);
+            //super(context, 0, objects);
+            this.mContext = context;
+            this.mChartItems = objects;
+        }
+
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            //return null;
+            View v= null;
+            v = mChartItems.get(i).getView(viewType, v, mContext);
+            i++;
+              return new ViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+
+        }
+
+        @Override
+        public int getItemViewType(int position)
+        {
+            return getItem(position).getItemType();
+        }
+
+        @Override
+        public int getItemCount(){
+            return mChartItems.size();
+        }
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            ViewHolder(View convertView) {
+                super(convertView);
+
+            }
+        }
+    }
+/*    private class ChartDataAdapter extends ArrayAdapter<ChartItem>
     {
         public ChartDataAdapter(Context context, List<ChartItem> objects)
         {
@@ -869,7 +941,87 @@ public class CallPatternFragment extends Fragment implements
         {
             return 3; // we have 3 different item-types
         }
+    }*/
+    public abstract class ArrayAdapter<T, VH extends RecyclerView.ViewHolder>
+
+            extends RecyclerView.Adapter<VH> {
+        private List<T> mObjects;
+        public ArrayAdapter(final List<T> objects) {
+            mObjects = objects;
+        }
+    public ArrayAdapter() {
+
     }
 
+    public ArrayAdapter(Context context, int i, List<ChartItem> objects) {
+    }
 
+    public void add(final T object) {
+
+          mObjects.add(object);
+
+          notifyItemInserted(getItemCount() - 1);
+
+        }
+
+        public void clear() {
+
+            final int size = getItemCount();
+
+            mObjects.clear();
+
+            notifyItemRangeRemoved(0, size);
+
+        }
+
+    abstract void onBindViewHolder(ChartDataAdapter.ViewHolder holder, int position);
+
+    @Override
+
+        public int getItemCount() {
+
+            return mObjects.size();
+
+        }
+        public T getItem(final int position) {
+
+            return mObjects.get(position);
+
+        }
+public long getItemId(final int position) {
+
+            return position;
+
+        }
+        public int getPosition(final T item) {
+
+            return mObjects.indexOf(item);
+
+        }
+        public void insert(final T object, int index) {
+
+            mObjects.add(index, object);
+
+            notifyItemInserted(index);
+}
+        public void remove(T object) {
+
+            final int position = getPosition(object);
+
+            mObjects.remove(object);
+
+            notifyItemRemoved(position);
+
+        }
+
+
+        public void sort(Comparator<? super T> comparator) {
+
+            Collections.sort(mObjects, comparator);
+
+            notifyItemRangeChanged(0, getItemCount());
+
+        }
+
+    }
 }
