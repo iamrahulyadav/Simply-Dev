@@ -384,7 +384,7 @@ public class CallPatternFragment extends Fragment implements
         inDuration = new ArrayList<Integer>(Collections.nCopies(7, 0));
         outDuration = new ArrayList<Integer>(Collections.nCopies(7, 0));
         ArrayList<DateDurationModel> avgDateDuarationDetail =
-                dateDurationMapHelper.getCallPatterDetails(startDate, endDate);
+                dateDurationMapHelper.getCallPatternDetails(startDate, endDate);
         for (DateDurationModel m : avgDateDuarationDetail)
         {
             outCount.set(m.day_of_the_week - 1, m.out_count);
@@ -822,9 +822,9 @@ public class CallPatternFragment extends Fragment implements
 		/*
 		 * ////Log.d("CallLog", "Fling detected"); // Swipe left (next) if
 		 * (e1.getX() > e2.getX()) { ////Log.d("CallLog", "Fling left");
-		 * 
+		 *
 		 * mViewFlipper.showNext(); }
-		 * 
+		 *
 		 * // Swipe right (previous) if (e1.getX() < e2.getX()) {
 		 * ////Log.d("CallLog", "Fling right"); //
 		 * viewFlipper.setOutAnimation(ctx, // android.R.anim.slide_out_right);

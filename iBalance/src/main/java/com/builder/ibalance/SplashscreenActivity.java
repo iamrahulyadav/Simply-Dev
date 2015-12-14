@@ -2,7 +2,6 @@ package com.builder.ibalance;
 
 
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,20 +14,14 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,14 +35,10 @@ import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.builder.ibalance.util.RegexUpdater;
-
 import com.digits.sdk.android.Digits;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.parse.ParseObject;import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;
@@ -354,33 +343,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
         {
 
             super.onPostExecute(sim_list);
-            PARSER_VERSION =  getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION",1);
             SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-           // boolean isVerfied  = mSharedPreferences.getBoolean("USER_VERIFIED",false);
-            ParseConfig.getInBackground(new ConfigCallback()
-            {
-                @Override
-                public void done(ParseConfig config, ParseException e)
-                {
-                    if (e == null)
-                    {
-                        //Log.d(tag, "Yay! Config was fetched from the server.");
-                    } else
-                    {
-                       //V12Log.e(TAG, "Failed to fetch. Using Cached Config.");
-                        config = ParseConfig.getCurrentConfig();
-                    }
-                    if ((config != null))
-                    {
-                        NEW_PARSER_VERSION = config.getInt("PARSER_VERSION");
-                        if (NEW_PARSER_VERSION > PARSER_VERSION)
-                        {
-                            new RegexUpdater().update(NEW_PARSER_VERSION);
-                        }
-                    }
-                    //Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
-                }
-            });
             //chnage it to == for Sim
             (new RegexUpdater()).check();
             if (sim_list == null)

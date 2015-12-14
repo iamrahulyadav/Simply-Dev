@@ -3,13 +3,13 @@ package com.builder.ibalance;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,13 +26,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.builder.ibalance.adapters.PlansAdapter;
 import com.builder.ibalance.adapters.PlansRecyclerAdapter;
 import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.database.MappingHelper;
@@ -46,19 +44,20 @@ import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import android.support.design.widget.FloatingActionButton;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
 
 public class RechargeFragment extends Fragment implements OnClickListener,AdapterView.OnItemClickListener
 {
+    HashMap<String,List<ParseObject>> cachedPlans = new HashMap<>();
     public final int PICK_CONTACT = 2015;
     private static final int CONTACT_PICKER_RESULT = 1001;
     final String TAG = RechargeFragment.class.getSimpleName();
@@ -69,7 +68,6 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     RecyclerView plansListView;
     Button rechargeNow;
     ImageButton contactsPicker,callSummaryButton;
-    String dummyJson = "[{\"price\":225,\"carrier\":\"Airtel\",\"circle\":\"KARNATAKA\",\"validity\":\"30 days\",\"type\":\"Takltime\",\"talktime\":240,\"tags\":[\"FULL TT\"],\"benefits\":\"Talktime: 240 (30 Days Val) | 300 local A-A secs for 5 days\"},{\"price\":251,\"carrier\":\"Airtel\",\"circle\":\"KARNATAKA\",\"validity\":\"30 days\",\"type\":\"Takltime\",\"talktime\":180,\"tags\":[\"Topup\",\"2G\",\"3G\"],\"benefits\":\"1.25 GB + Rs.180 Talktime\"}]";
     int sim_slot = 0;
     String rechargePhoneNumber = "";
     EditText numberField,amountField;
@@ -142,7 +140,10 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
 
        // plansListView.setOnScrollListener(new );
 
-
+        if(GlobalData.globalSimList == null)
+        {
+            GlobalData.globalSimList =  new Helper.SharedPreferenceHelper().getDualSimDetails();
+        }
 
         if (GlobalData.globalSimList.size() >= 2)
         {
@@ -298,36 +299,47 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             spinnerPosition = circleAdapter.getPosition(currentCircle);
             circleSpinner.setTag(spinnerPosition);
             circleSpinner.setSelection(spinnerPosition);
-            loadPlans(currentCarrier,currentCircle);
+            //loadPlans(currentCarrier,currentCircle);
         }
     }
 
-    void loadPlans(String currentCarrier, String currentCircle)
+    void loadPlans(final String currentCarrier, final String currentCircle)
     {
        //V12Log.d(TAG,"Querying Parse with carrier = "+currentCarrier);
        //V12Log.d(TAG,"Querying Parse with Circle = "+currentCircle);
-        Helper.toastHelper(currentCarrier + " " + currentCircle);
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("PLANS");
-        query.whereEqualTo("carrier", currentCarrier);
-        query.whereEqualTo("circle", currentCircle);
-        query.findInBackground(new FindCallback<ParseObject>()
+        List<ParseObject> plansList = cachedPlans.get(currentCarrier+currentCircle);
+        if(plansList!=null)
         {
-            public void done(List<ParseObject> plansList, ParseException e)
+            populatePlans(plansList);
+        }
+        else
+        {
+
+            ParseQuery<ParseObject> query = ParseQuery.getQuery("PLANS");
+            query.whereEqualTo("carrier", currentCarrier);
+            query.whereEqualTo("circle", currentCircle);
+            query.findInBackground(new FindCallback<ParseObject>()
             {
-                if (e == null)
+                public void done(List<ParseObject> plansList, ParseException e)
                 {
-                   //V12Log.d(TAG, "Plans Retrieved " + plansList.size() + " plans");
-                   //V12Log.d(TAG, "Plans Retrieved " + plansList.toString());
-                    populatePlans(plansList);
-                } else
-                {
-                   //V12Log.d(TAG, "PLANS Error: " + e.getMessage());
+                    if (e == null)
+                    {
+                        //V12Log.d(TAG, "Plans Retrieved " + plansList.size() + " plans");
+                        //V12Log.d(TAG, "Plans Retrieved " + plansList.toString());
+                        cachedPlans.put(currentCarrier+currentCircle,plansList);
+                        populatePlans(plansList);
+                    } else
+                    {
+                        //V12Log.d(TAG, "PLANS Error: " + e.getMessage());
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     void populatePlans(List<ParseObject> plans)
     {
+        if(this.isVisible())
+            Helper.toastHelper(currentCarrier + " " + currentCircle);
         View plansLoading = rootView.findViewById(R.id.plans_loading);
             if(plans.size()>0)
             {
