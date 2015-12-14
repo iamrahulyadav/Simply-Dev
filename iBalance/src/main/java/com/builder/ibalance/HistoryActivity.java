@@ -13,6 +13,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -47,14 +51,38 @@ public class HistoryActivity extends AppCompatActivity  {
 		TabLayout tabLayout =(TabLayout)findViewById(R.id.tablayout);
 
 
-		toolbar.setLogo(R.drawable.ic_launcher);
+		//toolbar.setLogo(R.drawable.ic_launcher);
 		toolbar.setContentInsetsAbsolute(0, 0);
 
 		final ActionBar ab = getSupportActionBar();
-		ab.setDisplayHomeAsUpEnabled(true);
-		ab.setHomeButtonEnabled(true);
+		ab.setCustomView(R.layout.actionbar_custom_view_home);
+		ab.setDisplayShowTitleEnabled(false);
+		ab.setDisplayShowCustomEnabled(true);
+		ab.setDisplayUseLogoEnabled(false);
+		ab.setDisplayShowHomeEnabled(false);
+		//ImageView view = (ImageView)findViewById(R.id.imageIcon);
+		//ImageView view1 = (ImageView)findViewById(R.id.homeAsUpIndicator);
+		//view.setPadding(7, 0, 7, 0);
+
+		LinearLayout cutomTooolbar = (LinearLayout)findViewById(R.id.cutomToolbar);
+		cutomTooolbar.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		/*TextView view1 = (TextView)findViewById(R.id.textView1);
+		view1.setPadding(0, 0, 0, 0);
+
+		view1.setText("Transactions");
+*/((TextView) findViewById(R.id.textView1)).setText("Transactions");
+
+		//ab.setDisplayHomeAsUpEnabled(true);
+		//ab.setHomeButtonEnabled(true);
 		//ab.setDisplayShowCustomEnabled(true);
-		ab.setTitle("Transactions");
+		//ab.setHomeAsUpIndicator(R.drawable.ic_launcher);
+		//ab.setTitle("Transactions");
+		//ab.setLogo(R.drawable.ic_launcher);
 		//toolbar.setTitle("Transactions");
 		//ab.setC
 
