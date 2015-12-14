@@ -233,6 +233,7 @@ public class ContactDetailActivity extends AppCompatActivity implements OnChartV
 					.setAction("CONTACT_DETAIL")
 					.setLabel("")
 					.build());
+			//dummy comment
 //Todo call icon in contactdetail action bar is huge
 	FlurryAgent.logEvent("CALL");
 			Intent intent = new Intent(Intent.ACTION_DIAL);
