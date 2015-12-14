@@ -313,6 +313,7 @@
         android:layout_height="1dp"
         android:layout_weight="1"
         android:layout_margin="10dp"
+        android:layout_marginTop="5dp"
         android:background="@android:color/darker_gray" />
 <RelativeLayout
     android:layout_width="match_parent"
@@ -322,9 +323,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Original Message"
         android:id="@+id/textView"
+        android:layout_marginLeft="2dp"
         android:textColor="@color/dark_grey"
         android:layout_gravity="center_horizontal"
         android:layout_weight="1"/>
@@ -359,6 +360,7 @@
         android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:layout_weight="1"
+        android:layout_marginTop="5dp"
         android:layout_margin="10dp"
         android:background="@android:color/darker_gray" />
 
@@ -408,7 +410,7 @@
                 style="@style/ussd_popup_button"
                 android:layout_width="wrap_content"
                 android:gravity="center"
-                android:text="Open App" />
+                android:text="See More" />
         </LinearLayout>
     </LinearLayout>
 

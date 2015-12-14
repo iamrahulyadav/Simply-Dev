@@ -14,6 +14,7 @@ import com.builder.ibalance.database.models.DateDurationModel;
 import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.MyApplication;
+import com.crashlytics.android.Crashlytics;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -66,7 +67,6 @@ public class CallLogsHelper
                 IbalanceContract.CallLogEntry.TABLE_NAME,
                 projection.toArray(new String[projection.size()]),
                 IbalanceContract.CallLogEntry.COLUMN_NAME_DATE + ">=? AND " +
-                        "" +
                         IbalanceContract.CallLogEntry.COLUMN_NAME_DATE + "<=?",
                 new String[]{String.valueOf(startDate), String.valueOf(endDate)},
                 null,
@@ -241,6 +241,7 @@ public class CallLogsHelper
     public int getSlot(Cursor cursor)
     {
         int slot_id = 0;
+        boolean found = false;
         if (SimModel.isTwo_slots())
         {
             for (String column_name : SimModel.call_log_columns)
@@ -249,11 +250,21 @@ public class CallLogsHelper
                 {
                     if (GlobalData.globalSimList.get(0).subid != -1)
                     {
+                        found = false;
                         if (column_name.toLowerCase().equals("iccid") || column_name.toLowerCase().equals("icc_id"))
                         {
                             String iccId = cursor.getString(cursor.getColumnIndex(column_name));
-                            slot_id = getSlotIdforLG(iccId);
-                        } else
+                            if(iccId==null || iccId.equals(""))
+                            {
+                                found = false;
+                            }
+                            else
+                            {
+                                slot_id = getSlotIdforLG(iccId);
+                                found = true;
+                            }
+                        }
+                        if(!found)
                         {
                             long subid = cursor.getLong(cursor.getColumnIndex(column_name));
                             slot_id = getSlotIdforSub(subid);
@@ -355,11 +366,23 @@ public class CallLogsHelper
         {
             projection.add(t);
         }
-        Cursor managedCursor = MyApplication.context.getContentResolver().query(
-                CallLog.Calls.CONTENT_URI,
-                 projection.toArray(new String[projection.size()]) ,
-                CallLog.Calls._ID + ">?",
-                new String[] { String.valueOf(id)}, CallLog.Calls._ID + " ASC");
+        Cursor managedCursor = null;
+        try
+        {
+            managedCursor = MyApplication.context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection.toArray(new String[projection.size()]), CallLog.Calls._ID + ">?", new String[]{String.valueOf(id)}, CallLog.Calls._ID + " ASC");
+        }
+        catch (IllegalArgumentException e)
+        {
+            Crashlytics.setString("COLUMNS",SimModel.call_log_columns.toString());
+            Crashlytics.logException(e);
+            projection = new ArrayList<>();
+            projection.add(CallLog.Calls._ID);
+            projection.add(CallLog.Calls.DATE);
+            projection.add(CallLog.Calls.NUMBER);
+            projection.add(CallLog.Calls.TYPE);
+            projection.add(CallLog.Calls.DURATION);
+            managedCursor = MyApplication.context.getContentResolver().query(CallLog.Calls.CONTENT_URI, projection.toArray(new String[projection.size()]), CallLog.Calls._ID + ">?", new String[]{String.valueOf(id)}, CallLog.Calls._ID + " ASC");
+        }
         return managedCursor;
     }
 

@@ -47,59 +47,20 @@ public class HistoryActivity extends AppCompatActivity  {
 		Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		//toolbar.setLogo(R.drawable.ic_launcher);
 		TabLayout tabLayout =(TabLayout)findViewById(R.id.tablayout);
-
-
-		//toolbar.setLogo(R.drawable.ic_launcher);
 		toolbar.setContentInsetsAbsolute(0, 0);
 
 		final ActionBar ab = getSupportActionBar();
-		ab.setCustomView(R.layout.actionbar_custom_view_home);
-		ab.setDisplayShowTitleEnabled(false);
-		ab.setDisplayShowCustomEnabled(true);
-		ab.setDisplayUseLogoEnabled(false);
-		ab.setDisplayShowHomeEnabled(false);
-		//ImageView view = (ImageView)findViewById(R.id.imageIcon);
-		//ImageView view1 = (ImageView)findViewById(R.id.homeAsUpIndicator);
-		//view.setPadding(7, 0, 7, 0);
 
-		LinearLayout cutomTooolbar = (LinearLayout)findViewById(R.id.cutomToolbar);
-		cutomTooolbar.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				finish();
-			}
-		});
-		/*TextView view1 = (TextView)findViewById(R.id.textView1);
-		view1.setPadding(0, 0, 0, 0);
-
-		view1.setText("Transactions");
-*/((TextView) findViewById(R.id.textView1)).setText("Transactions");
-
-		//ab.setDisplayHomeAsUpEnabled(true);
-		//ab.setHomeButtonEnabled(true);
-		//ab.setDisplayShowCustomEnabled(true);
-		//ab.setHomeAsUpIndicator(R.drawable.ic_launcher);
-		//ab.setTitle("Transactions");
-		//ab.setLogo(R.drawable.ic_launcher);
-		//toolbar.setTitle("Transactions");
-		//ab.setC
+		ab.setDisplayHomeAsUpEnabled(true);
+		ab.setHomeButtonEnabled(true);
+		ab.setTitle("Transactions");
 
 
 
 		mAdapter = new RechargeDeductionsPagerAdapter(getFragmentManager());
 		
-		//final ActionBar actionBar = getActionBar();
-		//actionBar.setHomeButtonEnabled(true);
-		//actionBar.setTitle("Transactions");
-		// Specify that we will be displaying tabs in the action bar.
-        //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);/*
-		//actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-		//actionBar.setDisplayShowHomeEnabled(true);
-		//actionBar.setHomeButtonEnabled(true);
-		//actionBar.setCustomView(R.layout.custom_history_title);*/
-        
+
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mAdapter);
 		mViewPager.setOffscreenPageLimit(1);

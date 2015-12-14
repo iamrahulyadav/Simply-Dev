@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,20 +18,27 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
+import com.flurry.android.FlurryAgent;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
-public class ServiceEnableActivity extends AppCompatActivity implements OnClickListener{
+import java.util.HashMap;
+import java.util.Map;
 
-    //final static String tag = ServiceEnableActivity.class.getSimpleName();
+public class ServiceEnableActivity extends Activity implements OnClickListener{
+
+    final static String tag = ServiceEnableActivity.class.getSimpleName();
     static int num_of_toggle = 0;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//requestWindowFeature(Window.FEATURE_NO_TITLE);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_service_enable);
 		
 		Button nextButton = (Button) findViewById(R.id.splash_next_button);
@@ -60,6 +66,7 @@ public class ServiceEnableActivity extends AppCompatActivity implements OnClickL
         gifImageView.setOnClickListener(this);
 		final TelephonyManager mtelTelephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
+
 		ParseQuery<ParseObject> query = ParseQuery.getQuery("SERVICE_STATUS");
 		query.whereEqualTo("DEVICE_ID", mtelTelephonyManager.getDeviceId());
 		// Retrieve the object by Device id
@@ -71,6 +78,17 @@ public class ServiceEnableActivity extends AppCompatActivity implements OnClickL
                 simply_service_status.put("SERVICE_STATUS", "OFF");
                 simply_service_status.increment("SERVICE_TOGGLE_COUNT");
                 simply_service_status.saveEventually();
+                Tracker t = ((MyApplication) ServiceEnableActivity.this.getApplication()).getTracker(
+                        MyApplication.TrackerName.APP_TRACKER);
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("SERVICE_STATUS")
+                        .setAction("OFF")
+                        .setLabel(Helper.getDeviceId())
+                        .build());
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("STATUS", "OFF");
+                params.put("DEVICE_ID", Helper.getDeviceId());
+                FlurryAgent.logEvent("SERVICE",params);
 		    }
             else
             {

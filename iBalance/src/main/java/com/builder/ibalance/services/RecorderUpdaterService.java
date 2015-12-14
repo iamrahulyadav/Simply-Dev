@@ -43,6 +43,7 @@ import com.builder.ibalance.database.models.RechargeEntry;
 import com.builder.ibalance.messages.OutgoingCallMessage;
 import com.builder.ibalance.parsers.USSDParser;
 import com.builder.ibalance.util.ConstantsAndStatics;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.builder.ibalance.util.RegexUpdater;
@@ -56,7 +57,9 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class RecorderUpdaterService extends AccessibilityService
 {
@@ -487,17 +490,16 @@ boolean cancelButtonFound = false;
 
                     (new RegexUpdater()).check();
                     ParseObject pObj = new ParseObject("Invalid_USSD");
-                    pObj.put("DEVICE_ID",
-                            sharedPreferences.getString("DEVICE_ID", "123456"));
+                    pObj.put("DEVICE_ID",Helper.getDeviceId());
                     if(text==null)
                         text="";
                     pObj.put("Total", text);
                     pObj.put("NUMBER",
                             sharedPreferences.getString("NUMBER", "0000"));
                     pObj.put("CARRIER",
-                            sharedPreferences.getString("CARRIER", "Unknown"));
+                            sharedPreferences.getString("CARRIER_0", "Unknown"));
                     pObj.put("CIRCLE",
-                            sharedPreferences.getString("CIRCLE", "Unknown"));
+                            sharedPreferences.getString("CIRCLE_0", "Unknown"));
                     pObj.saveEventually();
                 }
             }
@@ -679,6 +681,18 @@ boolean cancelButtonFound = false;
         // mBalanceHelper.addDemoentries();
         if (ConstantsAndStatics.WAITING_FOR_SERVICE)
         {
+            Tracker t = ((MyApplication) this.getApplication()).getTracker(
+                    MyApplication.TrackerName.APP_TRACKER);
+            t.send(new HitBuilders.EventBuilder()
+                    .setCategory("SERVICE_STATUS")
+                    .setAction("OFF")
+                    .setLabel(Helper.getDeviceId())
+                    .build());
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("STATUS", "OFF");
+            params.put("DEVICE_ID", Helper.getDeviceId());
+
+            FlurryAgent.logEvent("SERVICE",params);
             TelephonyManager mtelTelephonyManager = (TelephonyManager) this
                     .getSystemService(Context.TELEPHONY_SERVICE);
             ParseQuery<ParseObject> query = ParseQuery
@@ -699,6 +713,7 @@ boolean cancelButtonFound = false;
                         service_status.put("SERVICE_STATUS", "ON");
                         service_status.increment("SERVICE_TOGGLE_COUNT");
                         service_status.saveEventually();
+
                     }
                 }
             });

@@ -1,6 +1,5 @@
 package com.builder.ibalance.datainitializers;
 
-import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -28,7 +27,9 @@ import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.database.models.DateDurationModel;
 import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.messages.DataLoadingDone;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
+import com.crashlytics.android.Crashlytics;
 
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -99,7 +100,16 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         ussdDataList =( mBalanceHelper.getEntriesFromDate(fromDate.getTime(),sim_slot));
 		 //Log.d(TAG,ussdDataList.toString());
 	}
-
+    /* (non-Javadoc)
+         * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+         */
+    @Override
+    protected void onPostExecute(Integer result) {
+        super.onPostExecute(result);
+        //V10Log.d(TAG, "POSTING DataLoadingDone Event");
+        EventBus.getDefault().postSticky(new DataLoadingDone());
+        //new SmsDataInitializer().execute();
+    }
 	@Override
 	protected Integer doInBackground(Void... p) {
 		{
@@ -135,10 +145,13 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME", true);
         /*//for US
         last_indexed_id = Long.MAX_VALUE;*/
-       //V10Log.d(TAG, "INDEXED ID = " + last_indexed_id);
+        Log.d(TAG, "INDEXED ID = " + last_indexed_id);
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
         Cursor callLogCursor = mCallLogsHelper.getAllSystemCallLogs(last_indexed_id);
-       //V10Log.d(TAG,"Number of Rows = "+callLogCursor.getCount());
+        int num_rows = callLogCursor.getCount();
+        Log.d(TAG,"Number of Rows = "+num_rows);
+        if(num_rows==0)
+            return;
         int slot,duration,type;
         Calendar c =Calendar.getInstance();
         DateDurationModel dateDurationModel = new DateDurationModel(0l,0,0,0,0,0,0);
@@ -192,7 +205,6 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             {
                 dateDurationModel = mCallLogsHelper.getDateDurationModel(curr_date);
             }
-            dateDurationModel.setDate(curr_date);
             //Sun -1 ... Sat -7
             dateDurationModel.setDay_of_the_week(c.get(Calendar.DAY_OF_WEEK));
 
@@ -235,33 +247,20 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
                 }
                 if(!firstTime)
                 {
-                    normalizedNumber = number;
-                    if (normalizedNumber.startsWith("+91"))
-                    {
-                        normalizedNumber = normalizedNumber.substring(3);
-                    }
-                    if(normalizedNumber.startsWith("0"))
-                    {
-                        normalizedNumber = normalizedNumber.substring(1);
-                    }
-                    normalizedNumber = normalizedNumber.replaceAll(" ","").replaceAll("-", "");
+                    normalizedNumber = Helper.normalizeNumber(number);
                     //Check if you got the number in the previous pass
                     contactDetail = contactDetailMap.get(normalizedNumber);
                     if(contactDetail == null)
                     {
                         //If nt try to get from DB
                         contactDetail = mCallLogsHelper.getContactDetailFromDb(normalizedNumber);
-                        if (contactDetail == null)
+                        if (contactDetail == null )
                         {
                             //If its a new Number then Get fresh Details
                             contactDetail = getContactDetails(number);
                         }
-                        else
-                        {
-                            //Put the Details Fetched from Db into Map
-                            contactDetailMap.put(normalizedNumber, contactDetail);
-
-                        }
+                        //Put the Details Fetched from Db into Map
+                        contactDetailMap.put(normalizedNumber, contactDetail);
                     }
                 }
                 else
@@ -340,7 +339,8 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         }
         catch (SQLException e)
         {
-           //V10e.printStackTrace();
+            e.printStackTrace();
+            Crashlytics.logException(e);
         }
         finally
         {
@@ -673,17 +673,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 
 
 
-    /* (non-Javadoc)
-         * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-         */
-	@SuppressLint("NewApi")
-	@Override
-	protected void onPostExecute(Integer result) {
-		super.onPostExecute(result);
-   //V10Log.d(TAG, "POSTING DataLoadingDone Event");
-        EventBus.getDefault().postSticky(new DataLoadingDone());
-        //new SmsDataInitializer().execute();
-    }
+
 
 	private void updateWidgetInitially(Context ctx) {
         //Todo make widget dependant on Sim

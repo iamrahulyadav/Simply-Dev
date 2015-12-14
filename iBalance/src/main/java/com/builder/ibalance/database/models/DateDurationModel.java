@@ -83,7 +83,7 @@ public class DateDurationModel
     public String toString()
     {
         return
-                "INSERT INTO " +
+                "INSERT OR REPLACE INTO " +
                         IbalanceContract.DateDurationEntry.TABLE_NAME +
                         "("+
                         IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE+","+

@@ -5,12 +5,12 @@ import android.os.AsyncTask;
 import android.provider.CallLog;
 import android.util.Log;
 
-import com.builder.ibalance.CallPatternFragment;
 import com.builder.ibalance.database.helpers.CallLogsHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
 import com.builder.ibalance.database.helpers.IbalanceContract;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.messages.FilteredData;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.Tuple;
 
 import java.sql.SQLException;
@@ -33,7 +33,6 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
     public static Map<String, ContactDetailModel> contactDetailMap = new TreeMap<String, ContactDetailModel>();
 	public static boolean dataLoaded = false;
     ArrayList<Tuple> mostCalled,carrierOutCount,circleOutDuration;
-	CallPatternFragment mCallPatternFragment;
     long startDate=0l,endDate= 1544755421;
 	public FilteredDataInitializer(long startDate,long endDate)
 	{
@@ -94,7 +93,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
         ContactDetailHelper mContactDetailHelper = new ContactDetailHelper();
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
         Cursor callLogCursor = mCallLogsHelper.getFilteredLocalCallLogs(startDate,endDate);
-       //V10Log.d(TAG, "Number of Rows = " + callLogCursor.getCount());
+        Log.d(TAG, "Number of Rows = " + callLogCursor.getCount());
         int slot,duration,type;
         Calendar c =Calendar.getInstance();
         ContactDetailModel contactDetail;
@@ -105,6 +104,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
         String phNumber;
         if(!callLogCursor.moveToFirst())
         {
+            Log.d(TAG,"Call Log Cursor was empty");
             callLogCursor.close();
             mostCalled = new ArrayList<>();
             circleOutDuration = new ArrayList<>();
@@ -120,17 +120,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
                 type = callLogCursor.getInt(type_index);
                 duration = callLogCursor.getInt(duration_index);
                 phNumber = callLogCursor.getString(number_index);
-                phNumber = phNumber.replace(" ", "");
-                if (phNumber.startsWith("+91"))
-                {
-                    phNumber = phNumber.substring(3);
-                }
-                if(phNumber.startsWith("0"))
-                {
-                    phNumber = phNumber.substring(1);
-                }
-                phNumber = phNumber.replaceAll(" ", "");
-                phNumber = phNumber.replaceAll("-", "");
+                phNumber = Helper.normalizeNumber(phNumber);
 
                 contactDetail = contactDetailMap.get(phNumber);
                 //First Time Get it From Contact Detail Map
@@ -160,7 +150,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
             }
 
             //Process all the ContactDetails
-           //V10Log.d(TAG, "Contacts Created = " + contactDetailMap.size());
+           Log.d(TAG, "Contacts Created = " + contactDetailMap.size());
 
             List<ContactDetailModel> mList = new ArrayList<>();
             Map<String, MutableInt> carrierMap = new TreeMap<String, MutableInt>();
@@ -220,22 +210,25 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
                     break;
                 mostCalled.add(new Tuple(mList.get(i).name, mList.get(i).out_count));
             }
-           //V10Log.d(TAG,"Total ContactDetail List = "+mList.toString());
-           //V10Log.d(TAG,"mostCalled List = "+mostCalled.toString());
-           //V10Log.d(TAG,"Carrier List = "+carrierOutCount.toString());
-           //V10Log.d(TAG, "Circle List = " + circleOutDuration.toString());
+           Log.d(TAG,"Total ContactDetail List = "+mList.toString());
+           Log.d(TAG,"mostCalled List = "+mostCalled.toString());
+           Log.d(TAG,"Carrier List = "+carrierOutCount.toString());
+           Log.d(TAG, "Circle List = " + circleOutDuration.toString());
             long endTime = System.nanoTime();
-           //V10Log.d(TAG, "Filtered Data Took  = " + ((endTime - clockStartTime) / 1000000) + "ms");
+           Log.d(TAG, "Filtered Data Took  = " + ((endTime - clockStartTime) / 1000000) + "ms");
         }
         catch (SQLException e)
         {
-           //V10e.printStackTrace();
+           e.printStackTrace();
         }
         finally
         {
             callLogCursor.close();
         }
-		/*filteredMainMap.clear();
+
+		return 0;
+	}
+/*filteredMainMap.clear();
 		filteredDateDurationMap.clear();
 		MappingHelper mMappingHelper = new MappingHelper();
         Long startDate = params[0];//cal.getTimeInMillis();
@@ -258,7 +251,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 				new String[] {CallLog.Calls.NUMBER,CallLog.Calls.DATE,CallLog.Calls.TYPE,CallLog.Calls.DURATION},
 				CallLog.Calls.DATE + ">?",
 				new String[] { String.valueOf(startDate)}, CallLog.Calls.DATE + " ASC");*/
-		//Log.d("DataInit", managedCursor.getCount() + " ");
+    //Log.d("DataInit", managedCursor.getCount() + " ");
 /*		// Get Indexes
 		int number = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
 		int type = managedCursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE);
@@ -278,7 +271,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 			if(phNumber==null)
 				continue;
 			name_image = DataInitializer.nameCache.get(phNumber);
-			
+
 			if (name_image == null) {
 				name_image = new String[2];
 				name_image =  getContactName(phNumber).toArray(name_image);
@@ -314,14 +307,14 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 			String callType = managedCursor.getString(type);
 			String callDate = managedCursor.getString(date);
 			// //Log.d("datainit", callDate);
-			
+
 			String onlyDateString = sdf
 					.format(new Date(Long.valueOf(callDate)));
 			// //Log.d("dataint", onlyDateString);
 			// SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			// String onlyDateString = df.format(callDayTime);
 			Date onlyDate = null;
-			
+
 			try {
 				onlyDate = sdf.parse(onlyDateString);
 			} catch (ParseException e2) {
@@ -358,7 +351,7 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 
 			// check for the existance of map entry
 
-			if (!filteredMainMap.containsKey(phNumber)) { 
+			if (!filteredMainMap.containsKey(phNumber)) {
 				// Extract the first 4 digits of the number
 				try {
 					ph = phNumber.substring(phNumber.length() - 10,
@@ -433,7 +426,4 @@ public class FilteredDataInitializer extends AsyncTask<Long, Integer, Integer > 
 		}
 		managedCursor.close();
 		//nameCache.clear();*/
-		return 0;
-	}
-
 }

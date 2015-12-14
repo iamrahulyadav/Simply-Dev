@@ -1,11 +1,11 @@
 package com.builder.ibalance;
 
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -51,6 +51,13 @@ public class ContactDetailActivity extends AppCompatActivity implements OnChartV
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_contact_detail);
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.canShowOverflowMenu();
+		setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+
 		Intent it = this.getIntent();
 		c = it.getParcelableExtra("DETAILS");
 		//ActionBar mActionBar = getActionBar();
@@ -61,7 +68,7 @@ public class ContactDetailActivity extends AppCompatActivity implements OnChartV
             //key = number values = name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,image_uri
 			number = (TextView)findViewById(R.id.contact_detail_number);
 			name  = (TextView)findViewById(R.id.contact_detail_name);
-			//mActionBar.setTitle(c.name);
+			toolbar.setTitle(c.name);
 			total_duration  = (TextView)findViewById(R.id.contact_detail_duration);
 			outgoing = (TextView)findViewById(R.id.contact_detail_outgoing_calls);
 			cost = (TextView)findViewById(R.id.contact_detail_cost);
@@ -217,12 +224,16 @@ public class ContactDetailActivity extends AppCompatActivity implements OnChartV
 		Tracker t = ((MyApplication) this.getApplication()).getTracker(
 			    TrackerName.APP_TRACKER);
 		switch (id) {
+            case android.R.id.home:
+                onBackPressed();
+                break;
 		case R.id.call:
 			t.send(new HitBuilders.EventBuilder()
 					.setCategory("CALL")
 					.setAction("CONTACT_DETAIL")
 					.setLabel("")
 					.build());
+			//dummy comment
 //Todo call icon in contactdetail action bar is huge
 	FlurryAgent.logEvent("CALL");
 			Intent intent = new Intent(Intent.ACTION_DIAL);
