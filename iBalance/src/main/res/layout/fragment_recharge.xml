@@ -9,258 +9,258 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:id="@+id/nested_scroll_view">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#efefef"
-        android:baselineAligned="false"
-        android:orientation="vertical"
-        android:weightSum="1">
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:layout_marginTop="5dp"
-            android:layout_margin="5dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="25dp"
-                android:textSize="16sp"
-                android:layout_marginLeft="3dp"
-                android:layout_marginTop="5dp"
-                android:gravity="center_vertical"
-                android:text="Usage Summary : "/>
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:id="@+id/call_summary_expand_button"
-                android:background="@android:drawable/ic_menu_more"
-                android:layout_marginRight="10dp"/>
-        </RelativeLayout>
-        <include layout="@layout/call_summary"/>
-
         <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#efefef"
+            android:baselineAligned="false"
             android:orientation="vertical"
-
-            >
-
+            android:weightSum="1">
             <RelativeLayout
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-
-                android:padding="5dp"
-
-                >
-
-                <ImageView
-                    android:id="@+id/call_icon"
-                    android:layout_width="20dp"
-                    android:layout_height="40dp"
-                    android:layout_alignParentLeft="true"
-
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentTop="true"
-                    android:src="@drawable/phone_icon"/>
-
-                <EditText
-                    android:id="@+id/numberField"
+                android:background="@color/white"
+                android:layout_marginTop="5dp"
+                android:layout_margin="5dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="25dp"
+                    android:textSize="16sp"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center_vertical"
+                    android:text="Usage Summary : "/>
+                <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/call_icon"
-                    android:layout_toLeftOf="@+id/conatact_select"
-                    android:layout_toRightOf="@+id/call_icon"
-                    android:layout_toStartOf="@+id/conatact_select"
-                    android:maxLength="10"
-                    android:layout_weight=".2"
-                    android:hint="Mobile Number                              "
-                    android:inputType="phone"
-                    android:paddingTop="10dp"
-                    android:textColorHint="#e1e1e1"
-                    android:textSize="15dp"/>
-
-
-                <ImageButton
-                    android:id="@+id/conatact_select"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_alignBottom="@+id/numberField"
-                    android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_weight=".2"
-                    android:background="@drawable/contact_list_icon"/>
-
-
+                    android:id="@+id/call_summary_expand_button"
+                    android:background="@android:drawable/ic_menu_more"
+                    android:layout_marginRight="10dp"/>
             </RelativeLayout>
+            <include layout="@layout/call_summary"/>
 
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/imageView2"
-                        android:layout_width="28dp"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/carrier_icon"
-                        />
-
-                    <Spinner
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:id="@+id/recharge_carrier"
-                        android:spinnerMode="dialog"
-                        android:layout_marginLeft="2dp"
-                        android:layout_marginRight="5dp"
-                        android:clickable="true"
-                        />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/circle_icon"
-                        />
-
-                    <Spinner
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:spinnerMode="dialog"
-                        android:id="@+id/recharge_circle"
-                        android:layout_marginLeft="2dp"
-                        android:layout_marginRight="5dp"
-                        android:clickable="true"
-                        />
-                </LinearLayout>
-            </LinearLayout>
-
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
+                android:layout_margin="5dp"
+                android:background="@color/white"
+                android:orientation="vertical"
 
                 >
 
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
 
-                <ImageView
-                    android:id="@+id/Rupee_icon"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/rupee_symbol_gray"/>
+                    android:padding="5dp"
 
-                <EditText
-                    android:id="@+id/amountField"
+                    >
+
+                    <ImageView
+                        android:id="@+id/call_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentLeft="true"
+
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:src="@drawable/phone_icon"/>
+
+                    <EditText
+                        android:id="@+id/numberField"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/call_icon"
+                        android:layout_toLeftOf="@+id/conatact_select"
+                        android:layout_toRightOf="@+id/call_icon"
+                        android:layout_toStartOf="@+id/conatact_select"
+                        android:maxLength="10"
+                        android:layout_weight=".2"
+                        android:hint="Mobile Number                              "
+                        android:inputType="phone"
+                        android:paddingTop="10dp"
+                        android:textColorHint="#e1e1e1"
+                        android:textSize="15dp"/>
+
+
+                    <ImageButton
+                        android:id="@+id/conatact_select"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignBottom="@+id/numberField"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_weight=".2"
+                        android:background="@drawable/contact_list_icon"/>
+
+
+                </RelativeLayout>
+
+                <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginRight="10dp"
-                    android:layout_toEndOf="@+id/Rupee_icon"
-                    android:layout_toLeftOf="@+id/recharge_butt_id"
-                    android:layout_toRightOf="@+id/Rupee_icon"
-                    android:layout_toStartOf="@+id/recharge_butt_id"
-                    android:layout_weight=".2"
-                    android:hint="Enter Amount"
-                    android:inputType="number"
-                    android:textColorHint="#e1e1e1"
-                    android:textSize="15dp"/>
+                    android:orientation="horizontal"
+                    android:weightSum="2">
 
-                <Button
-                    android:id="@+id/recharge_butt_id"
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/imageView2"
+                            android:layout_width="28dp"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/carrier_icon"
+                            />
+
+                        <Spinner
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:id="@+id/recharge_carrier"
+                            android:spinnerMode="dialog"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="5dp"
+                            android:clickable="true"
+                            />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/circle_icon"
+                            />
+
+                        <Spinner
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:spinnerMode="dialog"
+                            android:id="@+id/recharge_circle"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="5dp"
+                            android:clickable="true"
+                            />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <RelativeLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="34dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@drawable/button_background"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp"
-                    android:text="Recharge"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold"/>
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
 
-            </RelativeLayout>
+                    >
 
 
-        </LinearLayout>
+                    <ImageView
+                        android:id="@+id/Rupee_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/rupee_symbol_gray"/>
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Popular plans"
-            android:id="@+id/plans_head"
-            android:textSize="18dp"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+                    <EditText
+                        android:id="@+id/amountField"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginRight="10dp"
+                        android:layout_toEndOf="@+id/Rupee_icon"
+                        android:layout_toLeftOf="@+id/recharge_butt_id"
+                        android:layout_toRightOf="@+id/Rupee_icon"
+                        android:layout_toStartOf="@+id/recharge_butt_id"
+                        android:layout_weight=".2"
+                        android:hint="Enter Amount"
+                        android:inputType="number"
+                        android:textColorHint="#e1e1e1"
+                        android:textSize="15dp"/>
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="0.5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="5dp"
-            android:background="#efefef"
-            android:id="@+id/plans_list"/>
+                    <Button
+                        android:id="@+id/recharge_butt_id"
+                        android:layout_width="wrap_content"
+                        android:layout_height="34dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@drawable/button_background"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp"
+                        android:text="Recharge"
+                        android:textColor="#ffffff"
+                        android:textStyle="bold"/>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/plans_list_view"
-            android:layout_width="fill_parent"
-            android:layout_height="368dp"
-            android:layout_marginBottom="5dp"
-            android:divider="@color/list_divider"
-            android:dividerHeight="1dp"
-            android:listSelector="@drawable/list_row_selector"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-        <LinearLayout
-            android:id="@+id/plans_loading"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.10"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:weightSum="1">
+                </RelativeLayout>
+
+
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/info_text"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:paddingRight="5dp"
                 android:gravity="center"
-                android:text="Loading plans"
-                android:textAppearance="?android:attr/textAppearanceMedium"/>
+                android:text="Popular plans"
+                android:id="@+id/plans_head"
+                android:textSize="18dp"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="38dp"
-                android:layout_weight="0.05"/>
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="5dp"
+                android:background="#efefef"
+                android:id="@+id/plans_list"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/plans_list_view"
+                android:layout_width="fill_parent"
+                android:layout_height="368dp"
+                android:layout_marginBottom="5dp"
+                android:divider="@color/list_divider"
+                android:dividerHeight="1dp"
+                android:listSelector="@drawable/list_row_selector"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+            <LinearLayout
+                android:id="@+id/plans_loading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.10"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="1">
+
+                <TextView
+                    android:id="@+id/info_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="5dp"
+                    android:gravity="center"
+                    android:text="Loading plans"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_weight="0.05"/>
+            </LinearLayout>
+
         </LinearLayout>
-
-    </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/sim_switch"

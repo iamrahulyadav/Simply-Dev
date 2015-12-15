@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class PlansRecyclerAdapter extends RecyclerView.Adapter<PlansRecyclerAdapter.ViewHolder> {
 
-    TextView priceText,validityText,typeText,talktimeText, benefitsText;
+
     private LayoutInflater inflater;
     private List<ParseObject> plansList;
     Typeface tf;
@@ -49,17 +49,17 @@ public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
 @Override
 public void onBindViewHolder(ViewHolder convertView, int i) {
     ParseObject mPlan = plansList.get(i);
-    priceText.setText(mPlan.getInt("price") + "");
-    typeText.setText(mPlan.getString("type"));
+    convertView.priceText.setText(mPlan.getInt("price") + "");
+    convertView.typeText.setText(mPlan.getString("type"));
     String temp = mPlan.getString("validity");
-    validityText.setText(temp);
+    convertView.validityText.setText(temp);
     Double talktime = mPlan.getDouble("talktime");
     if(talktime==null)
         temp = "N/A";
     else
         temp = talktime+"";
-    talktimeText.setText(temp);
-    benefitsText.setText(mPlan.getString("benefits"));
+    convertView.talktimeText.setText(temp);
+    convertView.benefitsText.setText(mPlan.getString("benefits"));
 
 }
 
@@ -69,7 +69,7 @@ public int getItemCount() {
         }
 
 public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-
+    public TextView priceText,validityText,typeText,talktimeText, benefitsText;
     ViewHolder(View convertView) {
         super(convertView);
         priceText = (TextView) convertView.findViewById(R.id.price_id);
@@ -78,7 +78,6 @@ public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickL
         typeText.setTypeface(tf);
         validityText = (TextView) convertView.findViewById(R.id.Validity_id);
         validityText.setTypeface(tf);
-
         talktimeText = (TextView) convertView.findViewById(R.id.Talktime_id);
         talktimeText.setTypeface(tf);
         benefitsText = (TextView) convertView.findViewById(R.id.benefits_id);

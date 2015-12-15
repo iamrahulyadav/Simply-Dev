@@ -137,6 +137,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         LinearLayoutManager linearLayoutManager2 = new LinearLayoutManager(getActivity().getBaseContext());
         plansListView.setLayoutManager(linearLayoutManager2);
         plansListView.setNestedScrollingEnabled(true);
+        plansListView.setHasFixedSize(true);
 
        // plansListView.setOnScrollListener(new );
 
