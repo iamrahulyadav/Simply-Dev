@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <android.support.v7.widget.RecyclerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
         android:id="@+id/recyclerview"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        android:textColor="@color/dark_grey"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <LinearLayout
         android:id="@+id/rootRL"
@@ -43,7 +43,7 @@
                     android:gravity="center"
                     android:text="Balance"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/darker_gray"/>
+                    android:textColor="@android:color/darker_gray" />
 
                 <TextView
                     android:id="@+id/balanceView"
@@ -52,7 +52,7 @@
                     android:gravity="center"
                     android:text="--.--"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@android:color/background_dark"/>
+                    android:textColor="@android:color/background_dark" />
             </LinearLayout>
 
 
@@ -70,7 +70,7 @@
                     android:gravity="center"
                     android:text="Data"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/darker_gray"/>
+                    android:textColor="@android:color/darker_gray" />
 
                 <TextView
                     android:id="@+id/dataView"
@@ -79,7 +79,7 @@
                     android:gravity="center"
                     android:text="--.-- MB"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@android:color/background_dark"/>
+                    android:textColor="@android:color/background_dark" />
             </LinearLayout>
         </LinearLayout>
 
@@ -100,7 +100,7 @@
                 android:layout_centerHorizontal="true"
                 android:gravity="center"
                 android:text="Balance is predicted to get over on --"
-                android:textColor="#1AD3A2"/>
+                android:textColor="#1AD3A2" />
 
             <ProgressBar
                 android:id="@+id/balscreen_prediction"
@@ -108,28 +108,29 @@
                 android:layout_height="15dp"
                 android:layout_alignBottom="@+id/predictionView"
                 android:layout_marginLeft="14dp"
-                android:layout_toRightOf="@+id/predictionView"/>
+                android:layout_toRightOf="@+id/predictionView" />
         </RelativeLayout>
-            <android.support.design.widget.CoordinatorLayout
+
+        <android.support.design.widget.CoordinatorLayout
+            android:id="@+id/parallax_container"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:weightSum="10">
+
+            <android.support.design.widget.AppBarLayout
                 android:layout_width="match_parent"
-                android:layout_height="fill_parent"
-                android:id="@+id/parallax_container"
-                android:orientation="vertical"
-                android:weightSum="10"
-                >
+                android:layout_height="wrap_content"
+                android:background="#F8F8F8">
 
-                <android.support.design.widget.AppBarLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background = "#F8F8F8">
+                <include layout="@layout/balance_deduction_graph" />
+            </android.support.design.widget.AppBarLayout>
 
-                <include layout="@layout/balance_deduction_graph"/>
-                </android.support.design.widget.AppBarLayout>
+            <include layout="@layout/recent_call_list" />
 
-                <include layout="@layout/recent_call_list"/>
-                <include layout="@layout/no_balance_layout"/>
+            <include layout="@layout/no_balance_layout" />
 
-            </android.support.design.widget.CoordinatorLayout>
+        </android.support.design.widget.CoordinatorLayout>
 
     </LinearLayout>
 
@@ -167,6 +168,5 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:indeterminate="false"
-        />
+        android:indeterminate="false" />
 </RelativeLayout>

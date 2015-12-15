@@ -73,8 +73,7 @@ import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
 
-public class BalanceFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnChartValueSelectedListener
-{
+public class BalanceFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnChartValueSelectedListener {
     static int sim_slot = 0;
     final String tag = BalanceFragment.class.getSimpleName();
     //Button balance_DetailsButton;
@@ -93,8 +92,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     RecyclerView mListView;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Typeface tf = Typeface.createFromAsset(getResources().getAssets(), "Roboto-Regular.ttf");
         rootView = inflater.inflate(R.layout.fragment_balance, container, false);
 
@@ -124,16 +122,12 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         dataTextView.setTypeface(tf);
         balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
         mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
-        if (GlobalData.globalSimList.size() >= 2)
-        {
+        if (GlobalData.globalSimList.size() >= 2) {
             sim_switch.setVisibility(View.VISIBLE);
-            sim_switch.setOnClickListener(new OnClickListener()
-            {
+            sim_switch.setOnClickListener(new OnClickListener() {
                 @Override
-                public void onClick(View v)
-                {
-                    if (sim_slot == 0)
-                    {
+                public void onClick(View v) {
+                    if (sim_slot == 0) {
                         sim_slot = 1;
 
                     } else sim_slot = 0;
@@ -143,31 +137,25 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
                     new USSDLoader().execute(sim_slot);
                 }
             });
-        } else
-        {
+        } else {
             sim_switch.setVisibility(View.GONE);
         }
         String carrier = "Unknown";
-        try
-        {
+        try {
             //V12Log.d(tag,"Bal Frag Loading Slot = "+sim_slot);
             carrier = GlobalData.globalSimList.get(sim_slot).carrier;
 
             current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -1.0);
             minimum_balance = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
-            if (current_balance > 0.0)
-            {
-                if (current_balance < minimum_balance)
-                {
-                    if ((sim_slot == 0 && MainActivity.sim1BalanceReminderShown == false) || (sim_slot == 1 && MainActivity.sim2BalanceReminderShown == false))
-                    {
+            if (current_balance > 0.0) {
+                if (current_balance < minimum_balance) {
+                    if ((sim_slot == 0 && MainActivity.sim1BalanceReminderShown == false) || (sim_slot == 1 && MainActivity.sim2BalanceReminderShown == false)) {
                         createReminderDialog(this.getActivity());
                     }
                 }
             }
         }//Catch exception when no sim are detected
-        catch (Exception e)
-        {
+        catch (Exception e) {
         }
         /*getActivity().getActionBar().setTitle(carrier+"-"+(sim_slot+1));*/
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(carrier + "-" + (sim_slot + 1));
@@ -175,8 +163,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         return rootView;
     }
 
-    private void callingScreen(String phoneNumber)
-    {
+    private void callingScreen(String phoneNumber) {
         Tracker t = ((MyApplication) MyApplication.context).getTracker(TrackerName.APP_TRACKER);
         t.send(new HitBuilders.EventBuilder().setCategory("CALL").setAction("RECENTS").setLabel("").build());
         FlurryAgent.logEvent("CALL");
@@ -192,13 +179,10 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         startActivity(intent);
     }
 
-    private void createReminderDialog(Context context)
-    {
-        if (sim_slot == 0)
-        {
+    private void createReminderDialog(Context context) {
+        if (sim_slot == 0) {
             MainActivity.sim1BalanceReminderShown = true;
-        } else
-        {
+        } else {
             MainActivity.sim2BalanceReminderShown = true;
         }
         AlertDialog.Builder alertbox = new AlertDialog.Builder(context);
@@ -211,11 +195,9 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
         final AlertDialog alert = alertbox.create();
 
-        rechargeNow.setOnClickListener(new OnClickListener()
-        {
+        rechargeNow.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 ((MainActivity) getActivity()).goToRechargepage();
                 alert.dismiss();
             }
@@ -232,15 +214,12 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args)
-    {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
 
-        return new CursorLoader(getActivity().getApplicationContext())
-        {
+        return new CursorLoader(getActivity().getApplicationContext()) {
             @Override
-            public Cursor loadInBackground()
-            {
+            public Cursor loadInBackground() {
                 Cursor cursor = new CallLogsHelper().getAllOutGoingLocalCallLogs();
                 return cursor;
             }
@@ -248,8 +227,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data)
-    {
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
         RecentListRecycleAdapter mRecentListAdapter = new RecentListRecycleAdapter(getActivity().getBaseContext(), data, false);
         mListView.setAdapter(mRecentListAdapter);
@@ -257,58 +235,48 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     @Override
-    public void onLoaderReset(Loader loader)
-    {
+    public void onLoaderReset(Loader loader) {
 
     }
 
     @Override
-    public void onStart()
-    {
+    public void onStart() {
         super.onStart();
         EventBus.getDefault().registerSticky(this);
     }
 
     @Override
-    public void onStop()
-    {
+    public void onStop() {
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
 
-    public void onEvent(DataLoadingDone m)
-    {
+    public void onEvent(DataLoadingDone m) {
         setPredictedDays(sim_slot);
     }
 
-    public void onEvent(MinimumBalanceMessage m)
-    {
-        if (mLineChart != null)
-        {
+    public void onEvent(MinimumBalanceMessage m) {
+        if (mLineChart != null) {
             updateLimitLine(m.minimum_bal);
             mLineChart.notifyDataSetChanged();
             mLineChart.invalidate();
         }
     }
 
-    void intializeScreen(int sim_slot)
-    {
+    void intializeScreen(int sim_slot) {
         ImageView chartImage = null;
         //V12Log.d(tag,"Bal Frag intializeScreen");
-        if (sim_slot == 0)
-        {
+        if (sim_slot == 0) {
             //V12Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
             currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, mSharedPreferences.getFloat("CURRENT_BALANCE", (float) -1.0));
-        } else
-        {
+        } else {
             //V12Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
             currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -1.0);
         }
         currData = mSharedPreferences.getFloat("CURRENT_DATA_" + sim_slot, mSharedPreferences.getFloat("CURRENT_DATA", (float) -1.0));
         //Log.d(tag,"Balance  = "+currBalance);
         //Log.d(tag,"DATA  = "+currData);
-        if (DataInitializer.done == true)
-        {
+        if (DataInitializer.done == true) {
             Log.d(tag, "Setting Predicted days");
             setPredictedDays(sim_slot);
         }
@@ -319,26 +287,22 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         else
             balanceTextView.setText(getResources().getString(R.string.rupee_symbol) + " " + currBalance);
 
-        balance_layout.setOnClickListener(new View.OnClickListener()
-        {
+        balance_layout.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 startActivity(new Intent(MyApplication.context, HistoryActivity.class));
             }
         });
         //V12Log.d(tag, "Bal Frag currBalance = " + currBalance);
 
-        if (currBalance > -1.0)
-        {
+        if (currBalance > -1.0) {
             //mListView = (ParallaxListView) rootView.findViewById(R.id.recents_list);
             rootView.findViewById(R.id.nobal).setVisibility(View.GONE);
             mListView = (RecyclerView) rootView.findViewById(R.id.recents_list);
             mListView.setVisibility(View.VISIBLE);
             mLineChart.setVisibility(View.VISIBLE);
-            if (mLineChart == null)
-            {
+            if (mLineChart == null) {
 
 				/*mLineChart = (LineChart)this.getActivity().getLayoutInflater().inflate(R.layout.balance_deduction_graph, null, false);
                 final float scale = getResources().getDisplayMetrics().density;
@@ -354,8 +318,8 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
             //chartImage = (ImageView)rootView.findViewById(R.id.collapsing_image);
             //chartImage.setBackgroundColor(getResources().getColor(R.color.white));
-			/*LinearLayout chartItem = (LinearLayout)rootView.findViewById(R.id.collapsing_image);
-			chartItem.addView(mLineChart);
+            /*LinearLayout chartItem = (LinearLayout)rootView.findViewById(R.id.collapsing_image);
+            chartItem.addView(mLineChart);
 */
             //RecentListAdapter mRecentListAdapter = null;
 			/*RecentListRecycleAdapter mRecentListAdapter = null;
@@ -401,13 +365,10 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             rootView.findViewById(R.id.nobal).setVisibility(View.VISIBLE);
             //this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, container, true);
             contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
-            contactUsButton.setOnClickListener(new OnClickListener()
-            {
+            contactUsButton.setOnClickListener(new OnClickListener() {
                 @Override
-                public void onClick(View v)
-                {
-                    if (!Helper.contactExists("+919739663487"))
-                    {
+                public void onClick(View v) {
+                    if (!Helper.contactExists("+919739663487")) {
                         //V10Log.d(tag, "Whatsapp contact not found adding contact");
 
                         Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
@@ -415,8 +376,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
                         intent.putExtra(ContactsContract.Intents.Insert.EMAIL, "simplyappcontact@gmail.com").putExtra(ContactsContract.Intents.Insert.NAME, "Simply App").putExtra(ContactsContract.Intents.Insert.EMAIL_TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK).putExtra(ContactsContract.Intents.Insert.PHONE, "+919739663487").putExtra(ContactsContract.Intents.Insert.PHONE_TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_WORK);
 
                         startActivity(intent);
-                    } else
-                    {
+                    } else {
                         //Sending Device Id doesn't work
                         startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
                     }
@@ -425,32 +385,27 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         }
 
 
-        if (DataInitializer.ussdDataList.size() > 0)
-        {
+        if (DataInitializer.ussdDataList.size() > 0) {
 
 
             setData();
 
         }
 
-        if (currData > 0.0)
-        {
+        if (currData > 0.0) {
             dataTextView.setText(currData + "MB");
         }
-        dataTextView.setOnClickListener(new View.OnClickListener()
-        {
+        dataTextView.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 //Toast.makeText(getActivity(), "This Feature is  in Build!", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         //Log.d(tag,"ONResume");
         //intializeScreen();
         Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(TrackerName.APP_TRACKER);
@@ -472,32 +427,26 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
 
         FlurryAgent.endTimedEvent("BalanceScreen");
         super.onPause();
     }
 
-    void setPredictedDays(int sim_slot)
-    {
+    void setPredictedDays(int sim_slot) {
         //Log.d("TEST", "setPredictedDays Called");
         SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
         currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -1.0);
         //Log.d("TEST", "setPredictedDays currBalance = "+currBalance);
-        if (currBalance >= 0.0)
-        {
+        if (currBalance >= 0.0) {
 
             Integer predictedDays = mSharedPreferences.getInt("PREDICTED_DAYS", -1);
             //Log.d("TEST", "setPredictedDays predictedDays = "+predictedDays);
-            if (predictedDays == -1)
-            {
+            if (predictedDays == -1) {
                 predictionTextView.setText("Balance is predicted to get over on --");
-            } else if (predictedDays == 0)
-            {
+            } else if (predictedDays == 0) {
                 predictionTextView.setText("Balance is predicted to get over Today");
-            } else
-            {
+            } else {
                 Calendar c = Calendar.getInstance();
 
                 c.setTime(new Date()); //  use today date.
@@ -511,8 +460,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         balProgress.setVisibility(View.GONE);
     }
 
-    private void createGraph()
-    {
+    private void createGraph() {
         mLineChart.setDrawGridBackground(false);
         mLineChart.setOnChartValueSelectedListener(this);
         // no description text
@@ -556,14 +504,12 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         mLineChart.setMarkerView(mk);
     }
 
-    private void setData()
-    {
+    private void setData() {
 
         xVals = new ArrayList<String>();
         ArrayList<Entry> yVals = new ArrayList<Entry>();
         int i = 0;
-        if (DataInitializer.ussdDataList == null)
-        {
+        if (DataInitializer.ussdDataList == null) {
             BalanceHelper mBalanceHelper = new BalanceHelper();
             //Log.d(tag, "Got Nullfrom DataInitializer creating a again");
             //mBalanceHelper.addDemoentries();
@@ -577,8 +523,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             //Log.d(tag ,ussdDataList.toString());
         } else ussdDataList = DataInitializer.ussdDataList;
         //Log.d(tag, "Adding Values");
-        for (NormalCall be : ussdDataList)
-        {
+        for (NormalCall be : ussdDataList) {
             xVals.add((String) android.text.format.DateFormat.format("EEE, hh:mm a", be.date));
             yVals.add(new Entry(be.bal, i));
             i++;
@@ -624,15 +569,12 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
      * after {@link #onStop()} and before {@link #onDetach()}.
      */
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
     }
 
-    void updateLimitLine(float minimum_bal)
-    {
-        if (mLineChart != null)
-        {
+    void updateLimitLine(float minimum_bal) {
+        if (mLineChart != null) {
             YAxis leftAxis = mLineChart.getAxisLeft();
             leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
             LimitLine balanceReminderLine = new LimitLine(minimum_bal, "Minimum Balance = " + minimum_bal);
@@ -649,31 +591,26 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     @Override
-    public void onValueSelected(Entry e, int dataSetIndex, Highlight h)
-    {
+    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
 
     }
 
     @Override
-    public void onNothingSelected()
-    {
+    public void onNothingSelected() {
 
     }
 
-    class USSDLoader extends AsyncTask<Integer, Void, Void>
-    {
+    class USSDLoader extends AsyncTask<Integer, Void, Void> {
 
 
         @Override
-        protected void onPreExecute()
-        {
+        protected void onPreExecute() {
             //V12Log.d(tag,"Bal Frag onPreExecute");
 
             super.onPreExecute();
             //((AppCompatActivity)getActivity()).findViewById(R.id.spinner_nav).setVisibility(View.INVISIBLE);
             rootView.findViewById(R.id.rootRL).setVisibility(View.GONE);
-            if (GlobalData.globalSimList.size() >= 2)
-            {
+            if (GlobalData.globalSimList.size() >= 2) {
                 rootView.findViewById(R.id.sim_switch).setVisibility(View.GONE);
             }
             rootView.findViewById(R.id.ussd_progress).setVisibility(View.VISIBLE);
@@ -681,41 +618,34 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         }
 
         @Override
-        protected Void doInBackground(Integer... params)
-        {
+        protected Void doInBackground(Integer... params) {
             //V12Log.d(tag,"Bal Frag doInBackground");
             DataInitializer.initializeUSSDData(params[0]);
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid)
-        {
+        protected void onPostExecute(Void aVoid) {
             //V12Log.d(tag,"Bal Frag onPostExecute");
             super.onPostExecute(aVoid);
-            if (isAdded())
-            {
+            if (isAdded()) {
                 rootView.findViewById(R.id.rootRL).setVisibility(View.VISIBLE);
-                if (GlobalData.globalSimList.size() >= 2)
-                {
+                if (GlobalData.globalSimList.size() >= 2) {
                     rootView.findViewById(R.id.sim_switch).setVisibility(View.VISIBLE);
                 }
                 rootView.findViewById(R.id.ussd_progress).setVisibility(View.GONE);
                 intializeScreen(sim_slot);
-            } else
-            {
+            } else {
                 //V12Log.d(tag,"Bal Frag not added");
             }
         }
     }
 
-    public class BalanceMarkerView extends MarkerView
-    {
+    public class BalanceMarkerView extends MarkerView {
 
         private TextView tvContent;
 
-        public BalanceMarkerView(Context context, int layoutResource)
-        {
+        public BalanceMarkerView(Context context, int layoutResource) {
             super(context, layoutResource);
             // this markerview only displays a textview
             tvContent = (TextView) findViewById(R.id.tvContent);
@@ -731,22 +661,19 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         // callbacks everytime the MarkerView is redrawn, can be used to update the
         // content (user-interface)
         @Override
-        public void refreshContent(Entry e, Highlight highlight)
-        {
+        public void refreshContent(Entry e, Highlight highlight) {
             tvContent.setText("Time:" + xVals.get(e.getXIndex()) + "\nBalance: " + e.getVal()); // set the entry-value as the display text
         }
 
 
         @Override
-        public int getXOffset()
-        {
+        public int getXOffset() {
             // this will center the marker-view horizontally
             return -(getWidth() / 2);
         }
 
         @Override
-        public int getYOffset()
-        {
+        public int getYOffset() {
             // this will cause the marker-view to be above the selected value
             return -getHeight();
         }

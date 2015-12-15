@@ -6,7 +6,7 @@
     android:background="@color/white"
     android:orientation="horizontal"
     android:weightSum="10"
-
+    android:textColor="@android:color/darker_gray"
     android:id="@+id/contact_list" >
 
     <!-- contact_picture -->
@@ -56,10 +56,9 @@
         android:text="TATA-DOCOMO,Maharashtra-Goa"
         android:textColor="@android:color/darker_gray"
         android:textSize="13sp"
-        android:layout_marginTop="8dp"
         android:layout_toRightOf="@+id/recents_picture"
         android:layout_below="@+id/recents_number"
-        android:layout_alignBaseline="@+id/recent_cost"/>
+        />
 
     <!-- Duration in HH::MM::SS format -->
 
@@ -69,7 +68,7 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
         android:text="Rs --.--"
-        android:layout_above="@+id/recents_duration"
+        android:layout_alignBaseline="@+id/recents_carrier_circle"
         android:layout_alignRight="@+id/recents_duration"
         android:layout_alignEnd="@+id/recents_duration"/>
     <!-- Cost -->

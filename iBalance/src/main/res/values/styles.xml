@@ -19,6 +19,7 @@
         <item name="colorPrimary">@color/primary_material_dark</item>
         <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
         <item name="colorAccent">@color/primary_material_dark</item>
+        <item name="android:textColorPrimary">@color/dark_grey</item>
 
 
     </style>
