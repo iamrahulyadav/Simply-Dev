@@ -35,6 +35,8 @@ import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.builder.ibalance.util.PieChartItem;
 import com.builder.ibalance.util.Tuple;
 import com.flurry.android.FlurryAgent;
+import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -895,7 +897,7 @@ public class CallPatternFragment extends Fragment implements
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-
+            ((Chart)holder.convertView.findViewById(R.id.chart)).animateY(1200, Easing.EasingOption.EaseOutBack);
         }
 
         @Override
@@ -909,8 +911,10 @@ public class CallPatternFragment extends Fragment implements
             return mChartItems.size();
         }
         public class ViewHolder extends RecyclerView.ViewHolder {
+            public View convertView ;
             ViewHolder(View convertView) {
                 super(convertView);
+                this.convertView = convertView;
 
             }
         }

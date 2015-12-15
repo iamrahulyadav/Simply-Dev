@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="regexcreator.regexcreator">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/regexcreator/build/libs/regexcreator.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

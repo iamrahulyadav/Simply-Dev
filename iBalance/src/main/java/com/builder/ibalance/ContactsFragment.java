@@ -8,21 +8,17 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 
 import com.appsflyer.AppsFlyerLib;
-import com.builder.ibalance.adapters.CustomContactsAdapter;
 import com.builder.ibalance.adapters.CustomContactsRecyclerAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
@@ -42,6 +38,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
+import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 
 public class ContactsFragment extends Fragment implements OnItemClickListener {
 	final String TAG = "ContactsFragment";
@@ -258,7 +255,9 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 				//adapter=(new CustomContactsRecyclerAdapter(contactsList1));
 				adapter = (new CustomContactsRecyclerAdapter(getActivity().getApplicationContext(),contactsList1));
 			}
-			recyclerView.setAdapter(adapter);
+
+			ScaleInAnimationAdapter animContactAdapter = new ScaleInAnimationAdapter(adapter);
+			recyclerView.setAdapter(animContactAdapter);
 			//listView.setAdapter(adapter);
 			/*ProgressBar mProgressBar = (ProgressBar) view
 					.findViewById(R.id.contact_data_Loading);

@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
+import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 
 public class BalanceFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnChartValueSelectedListener
 {
@@ -252,7 +253,8 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     {
 
         RecentListRecycleAdapter mRecentListAdapter = new RecentListRecycleAdapter(getActivity().getBaseContext(), data, false);
-        mListView.setAdapter(mRecentListAdapter);
+        ScaleInAnimationAdapter animRecentAdapter = new ScaleInAnimationAdapter(mRecentListAdapter);
+        mListView.setAdapter(animRecentAdapter);
 
     }
 
@@ -519,8 +521,6 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         mLineChart.setDescription("");
         mLineChart.setNoDataTextDescription("Please Make Calls for Balance tracking");
 
-        // enable value highlighting
-        mLineChart.setHighlightEnabled(true);
         // enable touch gestures
         mLineChart.setTouchEnabled(true);
         // enable scaling and dragging
@@ -736,20 +736,35 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             tvContent.setText("Time:" + xVals.get(e.getXIndex()) + "\nBalance: " + e.getVal()); // set the entry-value as the display text
         }
 
-
+        /**
+         * Use this to return the desired offset you wish the MarkerView to have on the x-axis. By returning -(getWidth() /
+         * 2) you will center the MarkerView horizontally.
+         *
+         * @param xpos the position on the x-axis in pixels where the marker is drawn
+         * @return
+         */
         @Override
-        public int getXOffset()
+        public int getXOffset(float xpos)
         {
             // this will center the marker-view horizontally
             return -(getWidth() / 2);
         }
 
+        /**
+         * Use this to return the desired position offset you wish the MarkerView to have on the y-axis. By returning
+         * -getHeight() you will cause the MarkerView to be above the selected value.
+         *
+         * @param ypos the position on the y-axis in pixels where the marker is drawn
+         * @return
+         */
         @Override
-        public int getYOffset()
+        public int getYOffset(float ypos)
         {
             // this will cause the marker-view to be above the selected value
             return -getHeight();
         }
+
+
 
 
     }

@@ -9,7 +9,6 @@
     android:layout_margin="5dp"
     app:layout_collapseMode="parallax"
     android:visibility="gone"
-    app:parallax_factor="1.9"
     tools:showIn="@layout/fragment_balance"
     app:layout_scrollFlags="scroll|enterAlways"
     >

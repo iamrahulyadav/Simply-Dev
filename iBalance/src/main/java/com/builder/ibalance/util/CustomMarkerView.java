@@ -31,17 +31,33 @@ public class CustomMarkerView extends MarkerView {
         tvContent.setText("" +e.getVal()); // set the entry-value as the display text
     }
 
-
-
+    /**
+     * Use this to return the desired offset you wish the MarkerView to have on the x-axis. By returning -(getWidth() /
+     * 2) you will center the MarkerView horizontally.
+     *
+     * @param xpos the position on the x-axis in pixels where the marker is drawn
+     * @return
+     */
     @Override
-    public int getXOffset() {
+    public int getXOffset(float xpos)
+    {
         // this will center the marker-view horizontally
         return -(getWidth() / 2);
     }
 
+    /**
+     * Use this to return the desired position offset you wish the MarkerView to have on the y-axis. By returning
+     * -getHeight() you will cause the MarkerView to be above the selected value.
+     *
+     * @param ypos the position on the y-axis in pixels where the marker is drawn
+     * @return
+     */
     @Override
-    public int getYOffset() {
+    public int getYOffset(float ypos)
+    {
         // this will cause the marker-view to be above the selected value
         return -getHeight();
     }
+
+
 }

@@ -32,12 +32,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 public class ContactDetailActivity extends AppCompatActivity implements OnChartValueSelectedListener {
-	@Override
-	public boolean onNavigateUp()
-    {
-	    onBackPressed();
-	    return true;
-	}
 	String phnumber;
 	TextView name,number,total_duration,outgoing,cost,incoming,missed;
 	ImageView contactPicture;
@@ -110,7 +104,7 @@ public class ContactDetailActivity extends AppCompatActivity implements OnChartV
 		 // mChart.setDrawUnitsInChart(true);
 		 // add a selection listener
 		 mChart.setOnChartValueSelectedListener(this);
-		 mChart.setHighlightEnabled(true);
+		 //mChart.setHighlightEnabled(true);
 		 mChart.setNoDataTextDescription("No Call Data Available");
 		 
 

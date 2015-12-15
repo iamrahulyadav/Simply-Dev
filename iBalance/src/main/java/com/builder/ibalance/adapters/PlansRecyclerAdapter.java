@@ -4,12 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -27,6 +25,8 @@ import java.util.List;
 public class PlansRecyclerAdapter extends RecyclerView.Adapter<PlansRecyclerAdapter.ViewHolder> {
 
     TextView priceText,validityText,typeText,talktimeText, benefitsText;
+    View container;
+    private int lastPosition = -1;
     private LayoutInflater inflater;
     private List<ParseObject> plansList;
     Typeface tf;
@@ -60,8 +60,8 @@ public void onBindViewHolder(ViewHolder convertView, int i) {
         temp = talktime+"";
     talktimeText.setText(temp);
     benefitsText.setText(mPlan.getString("benefits"));
-
 }
+
 
 @Override
 public int getItemCount() {
@@ -72,6 +72,7 @@ public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickL
 
     ViewHolder(View convertView) {
         super(convertView);
+        container = convertView.findViewById(R.id.container);
         priceText = (TextView) convertView.findViewById(R.id.price_id);
         priceText.setTypeface(tf);
         typeText = (TextView) convertView.findViewById(R.id.types_id);
