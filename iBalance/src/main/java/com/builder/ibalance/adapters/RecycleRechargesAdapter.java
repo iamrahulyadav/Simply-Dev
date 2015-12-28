@@ -28,7 +28,7 @@ public class RecycleRechargesAdapter extends RecyclerView.Adapter<RecycleRecharg
         this.cursor = c;
     }
     @Override
-    public RecycleRechargesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_recharge, parent, false);
 
         ViewHolder mViewHolder = new ViewHolder(view);
@@ -37,7 +37,7 @@ public class RecycleRechargesAdapter extends RecyclerView.Adapter<RecycleRecharg
     }
 
     @Override
-    public void onBindViewHolder(RecycleRechargesAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, int position) {
         cursor.moveToPosition(position);
         SimpleDateFormat sdf = new SimpleDateFormat("EEE, d, MMM, yyyy");
         holder.rechargeDateTextView.setText("Date: "+sdf.format(new Date(cursor.getLong(1))));

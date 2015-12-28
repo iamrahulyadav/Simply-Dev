@@ -253,8 +253,8 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     {
 
         RecentListRecycleAdapter mRecentListAdapter = new RecentListRecycleAdapter(getActivity().getBaseContext(), data, false);
-        ScaleInAnimationAdapter animRecentAdapter = new ScaleInAnimationAdapter(mRecentListAdapter);
-        mListView.setAdapter(animRecentAdapter);
+        ScaleInAnimationAdapter animPlanAdapter =  new ScaleInAnimationAdapter(mRecentListAdapter);
+        mListView.setAdapter(animPlanAdapter);
 
     }
 
@@ -321,7 +321,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         else
             balanceTextView.setText(getResources().getString(R.string.rupee_symbol) + " " + currBalance);
 
-        balance_layout.setOnClickListener(new View.OnClickListener()
+        balance_layout.setOnClickListener(new OnClickListener()
         {
 
             @Override
@@ -439,7 +439,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         {
             dataTextView.setText(currData + "MB");
         }
-        dataTextView.setOnClickListener(new View.OnClickListener()
+        dataTextView.setOnClickListener(new OnClickListener()
         {
 
             @Override
@@ -521,7 +521,8 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         mLineChart.setDescription("");
         mLineChart.setNoDataTextDescription("Please Make Calls for Balance tracking");
 
-
+        // enable value highlighting
+        //mLineChart.setHighlightEnabled(true);
         // enable touch gestures
         mLineChart.setTouchEnabled(true);
         // enable scaling and dragging
@@ -737,6 +738,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             tvContent.setText("Time:" + xVals.get(e.getXIndex()) + "\nBalance: " + e.getVal()); // set the entry-value as the display text
         }
 
+
         /**
          * Use this to return the desired offset you wish the MarkerView to have on the x-axis. By returning -(getWidth() /
          * 2) you will center the MarkerView horizontally.
@@ -766,9 +768,9 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         }
 
 
-
-
     }
 
 
 }
+
+

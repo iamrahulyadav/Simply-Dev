@@ -387,8 +387,8 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                     {
                         pObj.put("NUMBER", phNumber);
                     }
-                    pObj.put("MODEL", android.os.Build.MODEL);
-                    pObj.put("MANUFACTURER", android.os.Build.MANUFACTURER);
+                    pObj.put("MODEL", Build.MODEL);
+                    pObj.put("MANUFACTURER", Build.MANUFACTURER);
                     pObj.put("ANDROID_VERSION", Build.VERSION.SDK_INT);
                     pObj.put("TWO_SLOTS", SimModel.isTwo_slots());
                     pObj.put("DUAL_SIM", !DualSimConstants.IS_SINGLE_SIM);

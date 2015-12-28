@@ -54,7 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
-import jp.wasabeef.recyclerview.adapters.SlideInLeftAnimationAdapter;
+import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.SlideInLeftAnimator;
 
 public class RechargeFragment extends Fragment implements OnClickListener,AdapterView.OnItemClickListener
@@ -140,7 +140,6 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         LinearLayoutManager linearLayoutManager2 = new LinearLayoutManager(getActivity().getBaseContext());
         plansListView.setLayoutManager(linearLayoutManager2);
         plansListView.setNestedScrollingEnabled(true);
-        plansListView.setHasFixedSize(true);
 
        // plansListView.setOnScrollListener(new );
 
@@ -349,7 +348,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             {
                // PlansAdapter mPlansAdapter = new PlansAdapter(plans);
                 PlansRecyclerAdapter mPlansAdapter = new PlansRecyclerAdapter(plans);
-                SlideInLeftAnimationAdapter animPlanAdapter =  new SlideInLeftAnimationAdapter(mPlansAdapter);
+                ScaleInAnimationAdapter animPlanAdapter =  new ScaleInAnimationAdapter(mPlansAdapter);
                 plansListView.setAdapter(animPlanAdapter);
                 //plansListView.setOnItemClickListener(this);
                 plansLoading.setVisibility(View.GONE);

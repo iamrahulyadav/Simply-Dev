@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Kahuna">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/iBalance/libs/Kahuna.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

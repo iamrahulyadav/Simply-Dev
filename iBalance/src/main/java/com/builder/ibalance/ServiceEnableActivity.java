@@ -46,7 +46,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
         ImageView gifImageView = (ImageView) findViewById(R.id.splash_simply_rec_img_id);
 
 		AnimationDrawable anim = new AnimationDrawable();
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT || android.os.Build.MANUFACTURER.toUpperCase().contains("XIAOMI"))
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT || Build.MANUFACTURER.toUpperCase().contains("XIAOMI"))
         {
             //White Screen service enable
 			anim.addFrame(getResources().getDrawable(R.drawable.service_white_1), 2000);

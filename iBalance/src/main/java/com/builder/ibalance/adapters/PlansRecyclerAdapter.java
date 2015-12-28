@@ -4,12 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -26,7 +24,9 @@ import java.util.List;
  */
 public class PlansRecyclerAdapter extends RecyclerView.Adapter<PlansRecyclerAdapter.ViewHolder> {
 
-    TextView priceText,validityText,typeText,talktimeText, benefitsText;
+
+    View container;
+    private int lastPosition = -1;
     private LayoutInflater inflater;
     private List<ParseObject> plansList;
     Typeface tf;
@@ -49,19 +49,19 @@ public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
 @Override
 public void onBindViewHolder(ViewHolder convertView, int i) {
     ParseObject mPlan = plansList.get(i);
-    priceText.setText(mPlan.getInt("price") + "");
-    typeText.setText(mPlan.getString("type"));
+    convertView.priceText.setText(mPlan.getInt("price") + "");
+    convertView.typeText.setText(mPlan.getString("type"));
     String temp = mPlan.getString("validity");
-    validityText.setText(temp);
+    convertView.validityText.setText(temp);
     Double talktime = mPlan.getDouble("talktime");
     if(talktime==null)
         temp = "N/A";
     else
         temp = talktime+"";
-    talktimeText.setText(temp);
-    benefitsText.setText(mPlan.getString("benefits"));
-
+    convertView.talkTimeText.setText(temp);
+    convertView.benefitsText.setText(mPlan.getString("benefits"));
 }
+
 
 @Override
 public int getItemCount() {
@@ -69,9 +69,10 @@ public int getItemCount() {
         }
 
 public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-
+   public TextView priceText,validityText,typeText, talkTimeText, benefitsText;
     ViewHolder(View convertView) {
         super(convertView);
+        container = convertView.findViewById(R.id.container);
         priceText = (TextView) convertView.findViewById(R.id.price_id);
         priceText.setTypeface(tf);
         typeText = (TextView) convertView.findViewById(R.id.types_id);
@@ -79,8 +80,8 @@ public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickL
         validityText = (TextView) convertView.findViewById(R.id.Validity_id);
         validityText.setTypeface(tf);
 
-        talktimeText = (TextView) convertView.findViewById(R.id.Talktime_id);
-        talktimeText.setTypeface(tf);
+        talkTimeText = (TextView) convertView.findViewById(R.id.Talktime_id);
+        talkTimeText.setTypeface(tf);
         benefitsText = (TextView) convertView.findViewById(R.id.benefits_id);
         benefitsText.setTypeface(tf);
 
