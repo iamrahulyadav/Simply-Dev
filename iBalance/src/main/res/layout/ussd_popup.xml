@@ -213,7 +213,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Call Cost" />
+                android:text="Call Cost"
+                android:textColor="@color/dark_grey"/>
 
             <TextView
                 android:id="@+id/field1"
@@ -238,7 +239,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Current Balance" />
+                android:text="Current Balance"
+                android:textColor="@color/dark_grey"/>
 
             <TextView
                 android:id="@+id/field2"
@@ -270,7 +272,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Call Duration" />
+                android:text="Call Duration"
+                android:textColor="@color/dark_grey"/>
 
             <TextView
                 android:id="@+id/field3"
@@ -295,7 +298,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Call Rate" />
+                android:text="Call Rate"
+                android:textColor="@color/dark_grey"/>
 
             <TextView
                 android:id="@+id/field4"
@@ -351,7 +355,8 @@
         android:text=""
         android:id="@+id/originalMessage"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:textColor="@color/dark_grey"/>
 </RelativeLayout>
 
 

@@ -19,9 +19,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
@@ -40,50 +42,53 @@ import com.kahuna.sdk.Kahuna;
 import de.greenrobot.event.EventBus;
 
 public class MainActivity extends AppCompatActivity {
-	final String tag = MainActivity.class.getSimpleName();
-	SharedPreferences mSharedPreferences;
-	protected RecyclerView mRecyclerView;
-	public static boolean sim1BalanceReminderShown = false,sim2BalanceReminderShown = false;
-	EditText input ;
-	//MoPubInterstitial mInterstitial;
+    final String tag = MainActivity.class.getSimpleName();
+    SharedPreferences mSharedPreferences;
+    protected RecyclerView mRecyclerView;
+    public static boolean sim1BalanceReminderShown = false, sim2BalanceReminderShown = false;
+    EditText input;
+    //MoPubInterstitial mInterstitial;
 
-	//public static int appOpenCount = 0;
-	//public static int adFrequency = -1;
+    //public static int appOpenCount = 0;
+    //public static int adFrequency = -1;
 
-	// MainActivityAdapter mainActivityAdapter;
-	MainActivityAdapter mainActivityAdapter;
-	ViewPager mViewPager;
-	public ActionBar ab;
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+    // MainActivityAdapter mainActivityAdapter;
+    MainActivityAdapter mainActivityAdapter;
+    ViewPager mViewPager;
+    public ActionBar ab;
 
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		setSupportActionBar(toolbar);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 
-		final TabLayout tabLayout =(TabLayout)findViewById(R.id.tablayout);
-
-		ab = getSupportActionBar();
-		ab.setLogo(R.drawable.ic_launcher);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
 
-		// Create the adapter that will return a fragment for each of the three
-		// primary sections of the activity.
-		mainActivityAdapter = new MainActivityAdapter(getFragmentManager());
+        final TabLayout tabLayout = (TabLayout) findViewById(R.id.tablayout);
+        ImageView view = (ImageView) findViewById(android.R.id.home);
 
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mainActivityAdapter);
-		mViewPager.setOffscreenPageLimit(1);
+        ab = getSupportActionBar();
+        ab.setHomeAsUpIndicator(null);
+        ab.setLogo(R.drawable.ic_launcher);
 
 
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mainActivityAdapter = new MainActivityAdapter(getFragmentManager());
 
-		// When swiping between different sections, select the corresponding
-		// tab. We can also use ActionBar.Tab#select() to do this if we have
-		// a reference to the Tab.
-	/*	mViewPager
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setAdapter(mainActivityAdapter);
+        mViewPager.setOffscreenPageLimit(1);
+
+
+        // When swiping between different sections, select the corresponding
+        // tab. We can also use ActionBar.Tab#select() to do this if we have
+        // a reference to the Tab.
+    /*	mViewPager
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 					@Override
 					public void onPageSelected(int position) {
@@ -92,122 +97,116 @@ public class MainActivity extends AppCompatActivity {
 					}
 				});*/
 
-		// For each of the sections in the app, add a tab to the action bar.
-		for (int i = 0; i < mainActivityAdapter.getCount(); i++) {
-			// Create a tab with text corresponding to the page title defined by
-			// the adapter. Also specify this Activity object, which implements
-			// the TabListener interface, as the callback (listener) for when
-			// this tab is selected.s
+        // For each of the sections in the app, add a tab to the action bar.
+        for (int i = 0; i < mainActivityAdapter.getCount(); i++) {
+            // Create a tab with text corresponding to the page title defined by
+            // the adapter. Also specify this Activity object, which implements
+            // the TabListener interface, as the callback (listener) for when
+            // this tab is selected.s
 
-	        tabLayout.addTab(tabLayout.newTab().setText(mainActivityAdapter.getPageTitle(i)));
-			tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+            tabLayout.addTab(tabLayout.newTab().setText(mainActivityAdapter.getPageTitle(i)));
+            tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 			/*actionBar.addTab(actionBar.newTab()
 					.setText(mainActivityAdapter.getPageTitle(i))
 					.setTabListener(this));*/
-		}
-		tabLayout.setupWithViewPager(mViewPager);
-		//If Recharge was called
-		if(this.getIntent().getBooleanExtra("RECHARGE",false))
-		{
-			goToRechargepage();
-		}
+        }
+        tabLayout.setupWithViewPager(mViewPager);
+        //If Recharge was called
+        if (this.getIntent().getBooleanExtra("RECHARGE", false)) {
+            goToRechargepage();
+        }
 
 
-	}
+    }
 
-	public void goToRechargepage()
-	{
-		mViewPager.setCurrentItem(3);
-	}
-	@Override
-	protected void onResume() {
-		// Logs 'install' and 'app activate' App Events.
-		AppEventsLogger.activateApp(this);
-		super.onResume();
-	}
+    public void goToRechargepage() {
+        mViewPager.setCurrentItem(3);
+    }
 
-
-	@Override
-	protected void onPause() {
-
-		// Logs 'app deactivate' App Event.
-		AppEventsLogger.deactivateApp(this);
-		super.onPause();
-	}
-
-	 @Override
-	    protected void onStart() {
-	       //V10Log.d(tag, "onStart Main Activity");
-         Kahuna.getInstance().start();
-	        FlurryAgent.logEvent("MainScreen", true);
-	      //Get an Analytics tracker to report app starts and uncaught exceptions etc.
-	        GoogleAnalytics.getInstance(this).reportActivityStart(this);
-	        super.onStart();
-	        // Your Code Here
-	    }
-
-	    @Override
-	    protected void onStop() {
-
-	       //V10Log.d(tag, "Stopping Main Activity");
-	        Kahuna.getInstance().stop();
-	        FlurryAgent.endTimedEvent("MainScreen");
-	      //Stop the analytics tracking
-	        GoogleAnalytics.getInstance(this).reportActivityStop(this);
-	        super.onStop();
-	    } 
+    @Override
+    protected void onResume() {
+        // Logs 'install' and 'app activate' App Events.
+        AppEventsLogger.activateApp(this);
+        super.onResume();
+    }
 
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
+    @Override
+    protected void onPause() {
 
-		getMenuInflater().inflate(R.menu.main, menu);
-		//Show n Hide Date menu itme
+        // Logs 'app deactivate' App Event.
+        AppEventsLogger.deactivateApp(this);
+        super.onPause();
+    }
 
-		View view = (View)findViewById(R.id.spinner_nav);
-		view.getVisibility();
-		if((view.getVisibility() == view.VISIBLE))
-			view.setVisibility(View.GONE);
-		return true;
+    @Override
+    protected void onStart() {
+        //V10Log.d(tag, "onStart Main Activity");
+        Kahuna.getInstance().start();
+        FlurryAgent.logEvent("MainScreen", true);
+        //Get an Analytics tracker to report app starts and uncaught exceptions etc.
+        GoogleAnalytics.getInstance(this).reportActivityStart(this);
+        super.onStart();
+        // Your Code Here
+    }
 
-	}
+    @Override
+    protected void onStop() {
 
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-		if(mSharedPreferences.getBoolean("USER_VERIFIED",false))
-        {
+        //V10Log.d(tag, "Stopping Main Activity");
+        Kahuna.getInstance().stop();
+        FlurryAgent.endTimedEvent("MainScreen");
+        //Stop the analytics tracking
+        GoogleAnalytics.getInstance(this).reportActivityStop(this);
+        super.onStop();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+
+        getMenuInflater().inflate(R.menu.main, menu);
+        //Show n Hide Date menu itme
+
+        View view = (View) findViewById(R.id.spinner_nav);
+        view.getVisibility();
+        if ((view.getVisibility() == view.VISIBLE))
+            view.setVisibility(View.GONE);
+        return true;
+
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+        if (mSharedPreferences.getBoolean("USER_VERIFIED", false)) {
             //menu.findItem().setTitle("Login");
             menu.removeItem(R.id.log);
         }
 
 
-		return true;
-	}
+        return true;
+    }
 
 
-
-
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
         Tracker t = ((MyApplication) getApplication()).getTracker(
-				TrackerName.APP_TRACKER);
-		switch (id) {
+                TrackerName.APP_TRACKER);
+        switch (id) {
             case R.id.share:
                 boolean isWhatsappInstalled = Helper.whatsappInstalledOrNot();
                 Intent sendIntent = new Intent();
                 sendIntent.setAction(Intent.ACTION_SEND);
                 sendIntent.putExtra(Intent.EXTRA_TEXT, "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": https://goo.gl/v3YMrN ");
                 sendIntent.setType("text/plain");
-                if(isWhatsappInstalled)
-                {
+                if (isWhatsappInstalled) {
 
                     // Build and send an Event.
                     t.send(new HitBuilders.EventBuilder()
@@ -220,9 +219,7 @@ public class MainActivity extends AppCompatActivity {
                     //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"WhatsApp_Share","");
                     sendIntent.setPackage("com.whatsapp");
                     startActivity(sendIntent);
-                }
-                else
-                {
+                } else {
                     // Build and send an Event.
                     t.send(new HitBuilders.EventBuilder()
                             .setCategory("SHARE")
@@ -234,139 +231,135 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(sendIntent);
                 }
                 break;
-		case R.id.set_bal:
-			//Log.d(tag, "Set Bal");
-			return setbal();
-		case R.id.privacy:
-			//Log.d(tag, "Prefrences selected");
+            case R.id.set_bal:
+                //Log.d(tag, "Set Bal");
+                return setbal();
+            case R.id.privacy:
+                //Log.d(tag, "Prefrences selected");
 
 			/*USSDParser mParser = new USSDParser();
 			mParser.parseMessage("CALLCOST:RS.0.00 DURATION:00:00:00 BAL:RS.14.05 DIAL 578786, PAYIEN NAYE, PURANE HELLOTUNE PAR 40% KA DISCOUNT NULL");
 			Log.d(tag,mParser.getType()+"");
 			Log.d(tag,mParser.getDetails().toString());*/
-			String url = "http://ibalanceapp.com/privacy-policy/";
-			Intent i = new Intent(Intent.ACTION_VIEW);
-			i.setData(Uri.parse(url));
-			startActivity(i);
-			break;
-		case R.id.contact_us:
-			//Log.d(tag, "contact_us selected");
-			startActivity(new Intent(this, ContactUs.class));
-			break;
-			case R.id.log:
-				//Log.d(tag, "contact_us selected");
-				verifyUser();				break;
-		case R.id.rate:
-			t.send(new HitBuilders.EventBuilder().setCategory("RATE")
-					.setAction("Rate").setLabel("").build());
-			FlurryAgent.logEvent("Rate");
-			AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
-					"Rate", "");
-			Uri uri = Uri.parse("market://details?id=" + this.getPackageName());
-			//Log.d(tag,"URI = "+ uri);
-			Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-			try {
-			  startActivity(goToMarket);
-			} catch (ActivityNotFoundException e) {
-			  startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
-			}
-	        break;
-		}
-		return super.onOptionsItemSelected(item);
-	}
+                String url = "http://ibalanceapp.com/privacy-policy/";
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+                break;
+            case R.id.contact_us:
+                //Log.d(tag, "contact_us selected");
+                startActivity(new Intent(this, ContactUs.class));
+                break;
+            case R.id.log:
+                //Log.d(tag, "contact_us selected");
+                verifyUser();
+                break;
+            case R.id.rate:
+                t.send(new HitBuilders.EventBuilder().setCategory("RATE")
+                        .setAction("Rate").setLabel("").build());
+                FlurryAgent.logEvent("Rate");
+                AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
+                        "Rate", "");
+                Uri uri = Uri.parse("market://details?id=" + this.getPackageName());
+                //Log.d(tag,"URI = "+ uri);
+                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                try {
+                    startActivity(goToMarket);
+                } catch (ActivityNotFoundException e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
+                }
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-	private void verifyUser() {
-		SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-					Digits.authenticate(((DigitLoginActivity) getApplication()).getAuthCallback(), R.style.CustomDigitsTheme);
-            finish();
+    private void verifyUser() {
+        SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+        Digits.authenticate(((DigitLoginActivity) getApplication()).getAuthCallback(), R.style.CustomDigitsTheme);
+        finish();
 
-	}
+    }
 
-	private Boolean setbal() {
-	
-		
-		// create a dialog box to enter the minimum balance
-		final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-		LayoutInflater inflater = getLayoutInflater();
+    private Boolean setbal() {
+
+
+        // create a dialog box to enter the minimum balance
+        final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
         View mView = inflater.inflate(R.layout.set_balance_reminder, null);
-		alertBuilder.setView(mView);
+        alertBuilder.setView(mView);
 
-		// Set an EditText view to get user input
-		input = (EditText) mView.findViewById(R.id.balance_value);
-		Float previousSetBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
-		input.setText(previousSetBal+"");
-		input.setFocusable(true);
-		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
-		input.setMinimumWidth(5);
-		
-		input.setSelection(input.getText().length(), input.getText().length());
-		input.setGravity(Gravity.CENTER_HORIZONTAL);
-		input.setInputType(InputType.TYPE_CLASS_NUMBER);
-		Button done = (Button) mView.findViewById(R.id.balance_reminder_done);
-		Button cancel = (Button) mView.findViewById(R.id.balance_reminder_cancel);
+        // Set an EditText view to get user input
+        input = (EditText) mView.findViewById(R.id.balance_value);
+        Float previousSetBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
+        input.setText(previousSetBal + "");
+        input.setFocusable(true);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
+        input.setMinimumWidth(5);
+
+        input.setSelection(input.getText().length(), input.getText().length());
+        input.setGravity(Gravity.CENTER_HORIZONTAL);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        Button done = (Button) mView.findViewById(R.id.balance_reminder_done);
+        Button cancel = (Button) mView.findViewById(R.id.balance_reminder_cancel);
         final AlertDialog alert = alertBuilder.create();
-		done.setOnClickListener(new View.OnClickListener()
-        {
+        done.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 Float setBal;
-                try
-                {
+                try {
 
                     setBal = Float.parseFloat(input.getText().toString());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     setBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
                 }
                 //Log.d("CHART", setBal + " ");
-                mSharedPreferences.edit().putFloat("MINIMUM_BALANCE",  setBal).commit();
+                mSharedPreferences.edit().putFloat("MINIMUM_BALANCE", setBal).commit();
                 EventBus.getDefault().post(new MinimumBalanceMessage(setBal));
                 alert.dismiss();
 
             }
         });
-		cancel.setOnClickListener(new View.OnClickListener()
-        {
+        cancel.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 alert.dismiss();
             }
         });
         alert.show();
-		//Log.d("CHART", "Dialog Creation done");
-		return true;
+        //Log.d("CHART", "Dialog Creation done");
+        return true;
 
-	}
-	/*@Override
-	public void onTabSelected(ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction) {
-		// When the given tab is selected, switch to the corresponding page in
-		// the ViewPager.
-		mViewPager.setCurrentItem(tab.getPosition());
-	}
+    }
 
-	@Override
-	public void onTabUnselected(ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction) {
-	}
+    /*@Override
+    public void onTabSelected(ActionBar.Tab tab,
+            FragmentTransaction fragmentTransaction) {
+        // When the given tab is selected, switch to the corresponding page in
+        // the ViewPager.
+        mViewPager.setCurrentItem(tab.getPosition());
+    }
 
-	@Override
-	public void onTabReselected(ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction) {
-	}
+    @Override
+    public void onTabUnselected(ActionBar.Tab tab,
+            FragmentTransaction fragmentTransaction) {
+    }
+
+    @Override
+    public void onTabReselected(ActionBar.Tab tab,
+            FragmentTransaction fragmentTransaction) {
+    }
 
 */
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		mSharedPreferences.edit().putInt("FILTER",0).commit();
-		sim1BalanceReminderShown = false;
-		sim2BalanceReminderShown = false;
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSharedPreferences.edit().putInt("FILTER", 0).commit();
+        sim1BalanceReminderShown = false;
+        sim2BalanceReminderShown = false;
 		/*if(mInterstitial!=null)
 		mInterstitial.destroy();*/
-	}
+    }
 
 }

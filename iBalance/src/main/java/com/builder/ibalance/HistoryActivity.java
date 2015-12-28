@@ -13,6 +13,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -43,35 +47,20 @@ public class HistoryActivity extends AppCompatActivity  {
 		Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		//toolbar.setLogo(R.drawable.ic_launcher);
 		TabLayout tabLayout =(TabLayout)findViewById(R.id.tablayout);
-
-
-		toolbar.setLogo(R.drawable.ic_launcher);
 		toolbar.setContentInsetsAbsolute(0, 0);
 
 		final ActionBar ab = getSupportActionBar();
+
 		ab.setDisplayHomeAsUpEnabled(true);
 		ab.setHomeButtonEnabled(true);
-		//ab.setDisplayShowCustomEnabled(true);
 		ab.setTitle("Transactions");
-		//toolbar.setTitle("Transactions");
-		//ab.setC
 
 
 
 		mAdapter = new RechargeDeductionsPagerAdapter(getFragmentManager());
 		
-		//final ActionBar actionBar = getActionBar();
-		//actionBar.setHomeButtonEnabled(true);
-		//actionBar.setTitle("Transactions");
-		// Specify that we will be displaying tabs in the action bar.
-        //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);/*
-		//actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-		//actionBar.setDisplayShowHomeEnabled(true);
-		//actionBar.setHomeButtonEnabled(true);
-		//actionBar.setCustomView(R.layout.custom_history_title);*/
-        
+
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mAdapter);
 		mViewPager.setOffscreenPageLimit(1);

@@ -17,28 +17,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import com.builder.ibalance.R;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
-        import com.builder.ibalance.database.helpers.IbalanceContract;
-        import com.builder.ibalance.database.models.ContactDetailModel;
-        import com.builder.ibalance.util.CircleTransform;
-        import com.builder.ibalance.util.Helper;
-        import com.builder.ibalance.util.MyApplication;
+import com.builder.ibalance.database.helpers.IbalanceContract;
+import com.builder.ibalance.database.models.ContactDetailModel;
+import com.builder.ibalance.util.CircleTransform;
+import com.builder.ibalance.util.Helper;
+import com.builder.ibalance.util.MyApplication;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.squareup.picasso.Picasso;
 
-        import java.util.Calendar;
-        import java.util.Map;
-        import java.util.TimeZone;
-        import java.util.TreeMap;
+import java.util.Calendar;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.TreeMap;
 
 
-public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRecycleAdapter.ViewHolder>
-{
-    Map<String,ContactDetailModel> contactDetailMap = new TreeMap<String,ContactDetailModel>();
+public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRecycleAdapter.ViewHolder> {
+    Map<String, ContactDetailModel> contactDetailMap = new TreeMap<String, ContactDetailModel>();
     ViewHolder mHolder;
     String ruppee_symbol = "Rs.";
     BalanceHelper mBalanceHelper;
@@ -49,9 +49,10 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
     Cursor cursor;
     Context context;
     int previous;
+
     public RecentListRecycleAdapter(Context context, Cursor c, boolean autoRequery) {
         this.cursor = c;
-        this.context= context;
+        this.context = context;
 
     }
 
@@ -60,7 +61,7 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
         View view = LayoutInflater.from(context).inflate(R.layout.list_item_recent, parent, false);
         ViewHolder mViewHolder = new ViewHolder(view);
 
-                view.setOnClickListener(mViewHolder);
+        view.setOnClickListener(mViewHolder);
         return mViewHolder;
 
 
@@ -70,32 +71,30 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
     public void onBindViewHolder(ViewHolder mHolder, int position) {
 
         cursor.moveToPosition(position);
-            int id_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_ID),
-                    date_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DATE),
-                    type_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE),
-                    slot_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT),
-                    dur_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION),
-                    num_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
+        int id_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_ID),
+                date_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DATE),
+                type_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_TYPE),
+                slot_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_SLOT),
+                dur_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_DURATION),
+                num_idx = cursor.getColumnIndex(IbalanceContract.CallLogEntry.COLUMN_NAME_NUMBER);
         String phNumber = cursor.getString(num_idx);
-        if(mContactDetailHelper==null)
+        if (mContactDetailHelper == null)
             mContactDetailHelper = new ContactDetailHelper();
         contactDetails = contactDetailMap.get(phNumber);
-        if(contactDetails == null)
-        {
+        if (contactDetails == null) {
             contactDetails = mContactDetailHelper.getDetailsforRecentList(phNumber);
-            contactDetailMap.put(phNumber,contactDetails);
+            contactDetailMap.put(phNumber, contactDetails);
         }
-        if (contactDetails.image_uri!=null) {
+        if (contactDetails.image_uri != null) {
             //Log.d("PAI", image_uri);
             Picasso.with(context).load(contactDetails.image_uri).transform(mCircleTransform).into(mHolder.contactPicture);
-        }
-        else
+        } else
             Picasso.with(context).load(R.drawable.default_contact_picture).transform(mCircleTransform).into(mHolder.contactPicture);
         mHolder.name.setText(contactDetails.name);
-        mHolder.carrier_circle.setText(contactDetails.carrier+","+contactDetails.circle);
+        mHolder.carrier_circle.setText(contactDetails.carrier + "," + contactDetails.circle);
         mHolder.days_ago.setText(getDaysAgo(cursor.getLong(date_idx)));
-        int simslot = cursor.getInt(slot_idx)+1;
-        mHolder.slot.setText("Sim: "+simslot);
+        int simslot = cursor.getInt(slot_idx) + 1;
+        mHolder.slot.setText("Sim: " + simslot);
         mHolder.number.setText(phNumber);
         int duration = cursor.getInt(dur_idx);
         mHolder.duration.setText(Helper.getTotalDurationFormatted(duration));
@@ -117,19 +116,19 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
                 break;
         }
 
-        }
+    }
 
     @Override
     public int getItemCount() {
-              return cursor.getCount();
+        return cursor.getCount();
 
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public ImageView contactPicture;
-        public TextView name,number,days_ago,duration,carrier_circle,callType,slot,call_cost;
-        ViewHolder(View view)
-        {
+        public TextView name, number, days_ago, duration, carrier_circle, callType, slot, call_cost;
+
+        ViewHolder(View view) {
             super(view);
             Typeface tf = Typeface.createFromAsset(MyApplication.context.getAssets(), "Roboto-Regular.ttf");
             contactPicture = (ImageView) view.findViewById(R.id.recents_picture);
@@ -153,7 +152,7 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
 
         @Override
         public void onClick(View v) {
-            String phoneNumber = ((TextView)v.findViewById(R.id.recents_number)).getText().toString();
+            String phoneNumber = ((TextView) v.findViewById(R.id.recents_number)).getText().toString();
             //Log.e("Phone  Number",((TextView)view.findViewById(R.id.recents_number)).getText().toString());
             Tracker t = ((MyApplication) MyApplication.context).getTracker(
                     MyApplication.TrackerName.APP_TRACKER);
@@ -166,7 +165,7 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
             Intent intent = new Intent(Intent.ACTION_DIAL);
 
 
-            Uri data = Uri.parse("tel:" +phoneNumber);
+            Uri data = Uri.parse("tel:" + phoneNumber);
 
 
             intent.setData(data);
@@ -177,10 +176,12 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
 
         }
     }
+
     private static void callingScreen(String phoneNumber) {
 
     }
-        private String getDaysAgo(Long time){
+
+    private String getDaysAgo(Long time) {
         Calendar date = Calendar.getInstance(TimeZone.getDefault());
         // reset hour, minutes, seconds and millis
         date.set(Calendar.HOUR_OF_DAY, 0);
@@ -195,21 +196,17 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
         long days = (date.getTimeInMillis() - time) / 86400000;
         //Log.d("DATE", "Diff days "+  days);
 
-        if(days == 0) return "Today";
-        else
-        if(days == 1) return "Yesterday";
-        else
-        if(days<=10)
-        {
+        if (days == 0) return "Today";
+        else if (days == 1) return "Yesterday";
+        else if (days <= 10) {
             return days + " days ago";
-        }
-        else
+        } else
 
         {
             //Converting back to UTC
             //future self but why?
             //future future because date format uses UTC
-            return (String)android.text.format.DateFormat.format("dd MMM yy",time - 19800l );
+            return (String) android.text.format.DateFormat.format("dd MMM yy", time - 19800l);
         }
     }
 
