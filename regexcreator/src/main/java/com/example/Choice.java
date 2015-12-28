@@ -1,5 +1,7 @@
 package com.example;
 
+import org.json.JSONException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,6 +26,9 @@ public class Choice
             ptln("4 --- Experiments");
             ptln("5 --- Tests");
             ptln("6 --- Create Encrypted Regex");
+            ptln("7 --- Sort JSON");
+            ptln("8 --- USSDParser");
+            ptln("9 --- Scratch Pad");
             readChoice();
         }
         switch (choice)
@@ -52,6 +57,24 @@ public class Choice
             case 6:
                 new Encdec();
                 break;
+            case 7:
+                try
+                {
+                    new SortJson();
+                } catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
+                break;
+
+            case 8:
+                new USSDParser();
+                break;
+
+            case 9:
+                new ScratchPad();
+                break;
+
             default:
                 ptln("Wrong Input");
                  readChoice();

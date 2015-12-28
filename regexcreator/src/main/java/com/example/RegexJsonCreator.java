@@ -21,8 +21,8 @@ public class RegexJsonCreator
      BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     String regex;
     JSONArray allJson = null;
-    File call_json = new File("G:/SimplyV2/TextMining/json/CALL_PATTERNS.json");
-    String carrier = "AIRTEL";
+    String TYPE = "SMS_PACK";
+    File regex_json = new File("G:/SimplyV2/TextMining/json/SMS_PACK_PATTERNS.json");
     int costPos = -1, durationSecPos = -1,mainBalPos = -1,durationClockPosHH = -1,durationClockPosMM = -1,durationClockPosSS = -1;
     int usedData = -1, leftData = -1,type = -1,usedDataMetric = -1,leftDataMetric = -1,validity = -1,mainbalance = -1;
     int cont = -1;
@@ -33,10 +33,19 @@ public class RegexJsonCreator
     {
         try
         {
-            mFileReader = new FileInputStream(call_json);
+            if(!regex_json.exists())
+            {
+                regex_json.createNewFile();
+                mFileWriter = new FileOutputStream(regex_json);
+                mFileWriter.write("[]".getBytes());
+                mFileWriter.flush();
+                mFileWriter.close();
+            }
+
+            mFileReader = new FileInputStream(regex_json);
 
 
-            data = new byte[(int) call_json.length()];
+            data = new byte[(int) regex_json.length()];
             mFileReader.read(data);
             mFileReader.close();
 
@@ -60,14 +69,15 @@ public class RegexJsonCreator
                 else if(regex.equals("0"))
                 {
                     ptln("Enter Carrier");
-                    carrier = reader.readLine();
                     continue;
                 }
-                JSONObject entry = getnewEntryforData(regex);
+                //JSONObject entry = getnewEntryforData(regex);
+                JSONObject entry = getnewEntryforSMSPack(regex);
 
                 //entry.put("CARRIER",carrier);
                 entry.put("id",id++);
                 entry.put("version",version);
+                entry.put("type",TYPE);
                /*
                 Call Entry
                 ptln("Enter the regex for call");
@@ -110,7 +120,7 @@ public class RegexJsonCreator
 
             }while (true);
 
-            mFileWriter = new FileOutputStream(call_json);
+            mFileWriter = new FileOutputStream(regex_json);
             mFileWriter.write(mJsonArray.toString().getBytes());
             mFileWriter.flush();
 
@@ -134,6 +144,13 @@ public class RegexJsonCreator
         }
 
 
+    }
+
+    private JSONObject getnewEntryforSMSPack(String regex) throws JSONException
+    {
+        JSONObject entry = new JSONObject();
+        entry.put("REGEX",regex);
+        return entry;
     }
 
     private JSONObject getnewEntryforCall(String regex) throws JSONException

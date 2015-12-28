@@ -32,5 +32,6 @@
     <orderEntry type="library" exported="" name="jackson-annotations-2.0.1" level="project" />
     <orderEntry type="library" exported="" name="jackson-core-2.0.1" level="project" />
     <orderEntry type="library" exported="" name="java-json" level="project" />
+    <orderEntry type="library" exported="" name="regexcreator.regexcreator" level="project" />
   </component>
 </module>

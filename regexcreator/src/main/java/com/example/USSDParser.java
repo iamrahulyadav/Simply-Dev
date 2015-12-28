@@ -1,126 +1,109 @@
-package com.builder.ibalance.parsers;
+package com.example;
 
-import android.content.ContentResolver;
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
-import android.util.Log;
-
-import com.builder.ibalance.database.models.DataPack;
-import com.builder.ibalance.database.models.DatabaseEntryBase;
-import com.builder.ibalance.database.models.NormalCall;
-import com.builder.ibalance.database.models.NormalData;
-import com.builder.ibalance.database.models.NormalSMS;
-import com.builder.ibalance.util.ConstantsAndStatics;
-import com.builder.ibalance.util.ConstantsAndStatics.USSDMessageType;
-import com.builder.ibalance.util.Loki;
-import com.builder.ibalance.util.MyApplication;
 import com.google.code.regexp.Matcher;
 import com.google.code.regexp.Pattern;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.util.Date;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-import javax.crypto.NoSuchPaddingException;
+import static com.example.Choice.ptln;
 
-public class USSDParser {
 
+/**
+ * Created by Shabaz on 28-Dec-15.
+ */
+public class USSDParser
+{
     final String TAG = USSDParser.class.getSimpleName();
-    USSDMessageType type;
-    DatabaseEntryBase details;
-    Loki mLoki;
-    public DatabaseEntryBase getDetails() {
-        return details;
-    }
 
     public USSDParser()
     {
+        long startTime = System.nanoTime();
         try
         {
-            mLoki = new Loki();
-        } catch (NoSuchAlgorithmException e)
-        {
-            //V10e.printStackTrace();
-        } catch (NoSuchPaddingException e)
-        {
-            //V10e.printStackTrace();
-        } catch (NoSuchProviderException e)
-        {
-            //V10e.printStackTrace();
-        }
-    }
-    public USSDMessageType getType()
-    {
-        return type;
-    }
-    public boolean parseMessage(String message)
-    {
-        Log.d(TAG,"Recent event = "+ConstantsAndStatics.RECENT_EVENT);
-        try
-        {
-            switch (ConstantsAndStatics.RECENT_EVENT)
+            Charset charset = Charset.forName("UTF-8");
+            BufferedReader br = new BufferedReader(Files.newBufferedReader(Paths.get("G:/SimplyV2/TextMining/unique_pat/Done/Unit_tests/Pack_Call.txt"),charset));
+            String message = null;
+            while((message = br.readLine())!=null)
             {
-                case Intent.ACTION_NEW_OUTGOING_CALL:
-                    ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
-                    if(normalCall(message))
-                    {
-                        Log.d(TAG,"Was A Normal Call");
-                        return true;
-                    }
-                    if(packCall(message))
-                    {
-                        Log.d(TAG,"Was A Normal Call");
-                        return true;
-                    }
-                case Intent.ACTION_DATE_CHANGED:
-                    ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
-                    if(packData(message))
-                    {
-                        Log.d(TAG,"Was A Pack Data");
-                        return true;
-                    }
-                    if(normalData(message))
-                    {
-                        Log.d(TAG,"Was A Normal Data");
-                        return true;
-                    }
-                case "UNKNOWN":
-                    if(tryAllTypes(message))
-                    {
-                        Log.d(TAG,"Got from new Version");
-                        return true;
-                    }
-                    Log.d(TAG,"Trying old school methods");
-                    return tryOldSchoolMethod(message);
+                if(!packCall(message))
+                {
+                    ptln("Failed:\n"+message);
+                }
             }
-        }
-        catch (JSONException e)
+        } catch (FileNotFoundException e)
         {
             e.printStackTrace();
-            return tryOldSchoolMethod(message);
         }
-        return false;
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        long endTime = System.nanoTime();
+        ptln("Time Taken = "+((endTime-startTime)/1000000)+"ms");
     }
+
+    public boolean parseMessage(String message) throws JSONException
+    {
+
+        if (normalCall(message))
+        {
+            //Log.d(TAG, "Was A Normal Call");
+            System.out.println("Was A Normal Call");
+            return true;
+        }
+        else if (packCall(message))
+        {
+            //Log.d(TAG, "Was A Normal Call");
+            return true;
+        }
+        else if (packData(message))
+        {
+            //Log.d(TAG, "Was A Pack Data");
+            return true;
+        }
+        else if (normalData(message))
+        {
+            //Log.d(TAG, "Was A Normal Data");
+            return true;
+        }
+        else if (packSMS(message))
+        {
+            return true;
+        }
+        else if (normalSMS(message))
+        {
+            return true;
+        }
+        else
+            return tryOldSchoolMethod(message);
+
+    }
+
     private boolean tryAllTypes(String message)
     {
-        Log.d(TAG,"Trying all Types");
+        //Log.d(TAG, "Trying all Types");
         try
         {
-            if(normalCall(message))
-                return true;
-            if(normalSMS(message))
-                return true;
-            if(packSMS(message))
-                return true;
-            if(packCall(message))
-                return true;
-            if(packData(message))
-                return true;
-            if(normalData(message))
-                return true;
+            if (normalCall(message)) return true;
+            if (normalSMS(message)) return true;
+            if (packSMS(message)) return true;
+            if (packCall(message)) return true;
+            if (packData(message)) return true;
+            if (normalData(message)) return true;
         } catch (JSONException e)
         {
             e.printStackTrace();
@@ -132,21 +115,26 @@ public class USSDParser {
 
     private boolean normalCall(String message) throws JSONException
     {
-        Log.d(TAG,"Trying Normal Call");
-        Matcher result = findDetails(mLoki.getNormalCallRegex(),message);
-        if(result!=null)
+       // Log.d(TAG, "Trying Normal Call");
+        Matcher result = findDetails(getNormalCallRegex(), message);
+        if (result != null)
         {
-            Log.d(TAG,"Matched!");
-            float mainBal =  Float.parseFloat( result.group("MBAL"));
+           // Log.d(TAG, "Matched!");
+            String bal = result.group("MBAL");
+            //to take care of number like 1,208.990
+            bal = bal.replace(",","").trim();
+            //to take care of number like "20."
+            if(bal.charAt(bal.length()-1)=='.')
+                bal = bal.substring(0,bal.length()-2);
+            float mainBal = Float.parseFloat(bal);
             //ptln("Cost = " + mMatcher.group("COST"));
             // ptln("Balance = " +);
             int duration = -1;
             float cost = -1.0f;
             try
             {
-                cost = Float.parseFloat( result.group("COST"));
-            }
-            catch (IndexOutOfBoundsException e)
+                cost = Float.parseFloat(result.group("COST"));
+            } catch (IndexOutOfBoundsException e)
             {
                 cost = -1.0f;
             }
@@ -154,47 +142,44 @@ public class USSDParser {
             {
                 duration = Integer.parseInt(result.group("DURS"));
                 //ptln("Duration Secs = " + duration);
-            }catch (IndexOutOfBoundsException e0)
+            } catch (IndexOutOfBoundsException e0)
             {
-                try{
+                try
+                {
                     String clock = result.group("DURC");
                     String sub[] = clock.split(":");
-                    //Log.d(TAG + "call sec 0 ", sub[0]);
-                    //Log.d(TAG + "call sec 1 ", sub[1]);
-                    //Log.d(TAG + "call sec 2 ", sub[2]);
                     duration = Integer.parseInt(sub[0]) * 60 * 60;
                     duration += Integer.parseInt(sub[1]) * 60;
                     duration += Integer.parseInt(sub[2]);
                     //ptln("Duration Clock = " + duration);
-                }
-                catch (IndexOutOfBoundsException e1)
+                } catch (IndexOutOfBoundsException e1)
                 {
                     try
                     {
-                        duration = Integer.parseInt(result.group("DURMIN") ) * 60;
-                        duration+= Integer.parseInt(result.group("DURSEC"));
+                        duration = Integer.parseInt(result.group("DURMIN")) * 60;
+                        duration += Integer.parseInt(result.group("DURSEC"));
                         //ptln("Duration Min:Secs = " + duration);
-                    }
-                    catch (IllegalArgumentException e2)
+                    } catch (IllegalArgumentException e2)
                     {
                         duration = -1;
                         //ptln("No Duration Found A-Hole Telecos");
                     }
                 }
             }
-            this.type = USSDMessageType.NORMAL_CALL;
-            details = new  NormalCall((new Date()).getTime(),cost,mainBal,duration,message);
-            Log.d(TAG,"details = "+details.toString());
+            //this.type = USSDMessageType.NORMAL_CALL;
+            //details = new NormalCall((new Date()).getTime(), cost, mainBal, duration, message);
+            //Log.d(TAG, "details = " + details.toString());
             return true;
         }
-        Log.d(TAG,"Normal Call Didn't Match");
+        //Log.d(TAG, "Normal Call Didn't Match");
         return false;
     }
+
     private boolean packData(String message) throws JSONException
     {
-        Log.d(TAG,"Trying Pack Data");
-        Matcher result = findDetails(mLoki.getPackDataRegex(),message);
-        if(result!=null)
+        //Log.d(TAG, "Trying Pack Data");
+        Matcher result = findDetails(getPackDataRegex(), message);
+        if (result != null)
         {
           /*type(String/Unknown)- TYPE [types (3G,2G,-1,GPRS) (will be empty)or(Exception might be thrown assume 2G) ]
             data used(Mb/-1.0f)	- DUSED
@@ -205,19 +190,19 @@ public class USSDParser {
             data used Metric- DLEFTM [B KB MB GB  (KB,MB,K,empty (assume K))]
             validity 		- VAL [(will be empty)or(exception thrown)] , might be incompelete like 31/07/ or 31/07/20
             balance 		- MBAL ? (optional -1)]*/
-            String type,usedMetric,leftMetric,validity;
-            float dataUsed,dataLeft,mainBal;
-            try{
+            String type, usedMetric, leftMetric, validity;
+            float dataUsed, dataLeft, mainBal;
+            try
+            {
                 type = result.group("TYPE");
-            }
-            catch (IndexOutOfBoundsException e)
+            } catch (IndexOutOfBoundsException e)
             {
                 type = "Unknown";
             }
-            try{
-                usedMetric =  result.group("DUSEDM");
-            }
-            catch (IndexOutOfBoundsException e)
+            try
+            {
+                usedMetric = result.group("DUSEDM");
+            } catch (IndexOutOfBoundsException e)
             {
                 usedMetric = "KB";
             }
@@ -227,30 +212,29 @@ public class USSDParser {
                 switch (usedMetric)
                 {
                     case "B":
-                        dataUsed = dataUsed/1000000f;
+                        dataUsed = dataUsed / 1000000f;
                         break;
                     case "K":
                     case "KB":
-                        dataUsed = dataUsed/1000f;
+                        dataUsed = dataUsed / 1000f;
                         break;
+                    case "M":
                     case "MB":
                         break;
                     case "GB":
-                        dataUsed = dataUsed*1000;
+                        dataUsed = dataUsed * 1000;
                         break;
                 }
-            }
-            catch (IndexOutOfBoundsException e)
+            } catch (IndexOutOfBoundsException e)
             {
                 //Can be a MB Kb Split
                 boolean found = false;
-                float mb,kb;
+                float mb, kb;
                 try
                 {
                     mb = Float.parseFloat(result.group("DMBUSED"));
                     found = true;
-                }
-                catch (IndexOutOfBoundsException e1)
+                } catch (IndexOutOfBoundsException e1)
                 {
                     mb = 0.0f;
                 }
@@ -258,26 +242,24 @@ public class USSDParser {
                 {
                     kb = Float.parseFloat(result.group("DKBUSED"));
                     found = true;
-                }
-                catch (IndexOutOfBoundsException e1)
+                } catch (IndexOutOfBoundsException e1)
                 {
                     kb = 0.0f;
                 }
-                if(found)
+                if (found)
                 {
-                    dataUsed = mb+(kb*1000f);
-                }
-                else
+                    dataUsed = mb + (kb * 1000f);
+                } else
                 {
                     dataUsed = -1.0f;
                 }
             }
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //Data Left
-            try{
-                leftMetric =  result.group("DLEFTM");
-            }
-            catch (IndexOutOfBoundsException e)
+            try
+            {
+                leftMetric = result.group("DLEFTM");
+            } catch (IndexOutOfBoundsException e)
             {
                 leftMetric = "KB";
             }
@@ -287,30 +269,28 @@ public class USSDParser {
                 switch (leftMetric)
                 {
                     case "B":
-                        dataLeft = dataLeft/1000000f;
+                        dataLeft = dataLeft / 1000000f;
                         break;
                     case "K":
                     case "KB":
-                        dataLeft = dataLeft/1000f;
+                        dataLeft = dataLeft / 1000f;
                         break;
                     case "MB":
                         break;
                     case "GB":
-                        dataLeft = dataLeft*1000;
+                        dataLeft = dataLeft * 1000;
                         break;
                 }
-            }
-            catch (IndexOutOfBoundsException e)
+            } catch (IndexOutOfBoundsException e)
             {
                 //Can be a MB Kb Split
                 boolean found = false;
-                float mb,kb;
+                float mb, kb;
                 try
                 {
                     mb = Float.parseFloat(result.group("DMBLEFT"));
                     found = true;
-                }
-                catch (IndexOutOfBoundsException e1)
+                } catch (IndexOutOfBoundsException e1)
                 {
                     mb = 0.0f;
                 }
@@ -318,49 +298,54 @@ public class USSDParser {
                 {
                     kb = Float.parseFloat(result.group("DKBLEFT"));
                     found = true;
-                }
-                catch (IndexOutOfBoundsException e1)
+                } catch (IndexOutOfBoundsException e1)
                 {
                     kb = 0.0f;
                 }
-                if(found)
+                if (found)
                 {
-                    dataLeft = mb+(kb*1000f);
-                }
-                else
+                    dataLeft = mb + (kb * 1000f);
+                } else
                 {
                     dataLeft = -1.0f;
                 }
             }
-            try{
+            try
+            {
                 validity = result.group("VAL");
                 //Have to convert it to machine understandable
-            }
-            catch (IndexOutOfBoundsException e)
+            } catch (IndexOutOfBoundsException e)
             {
                 validity = "N/A";
             }
-            try{
-
-                mainBal = Float.parseFloat(result.group("MBAL"));
-            }
-            catch (IndexOutOfBoundsException e)
+            try
+            {
+                String bal = result.group("MBAL");
+                //to take care of number like 1,208.990
+                bal = bal.replace(",","").trim();
+                //to take care of number like "20."
+                if(bal.charAt(bal.length()-1)=='.')
+                    bal = bal.substring(0,bal.length()-2);
+                mainBal = Float.parseFloat(bal);
+            } catch (IndexOutOfBoundsException e)
             {
                 mainBal = -1.0f;
             }
-            this.type = USSDMessageType.DATA_PACK;
+            //this.type = USSDMessageType.DATA_PACK;
             //Long time, Float data_consumed,Float data_left,Float bal,String validity, String message
-            details = new DataPack((new Date()).getTime(),dataUsed,dataLeft,mainBal,validity,message);
-            Log.d(TAG,"Pack details : "+details);
-            return  true;
+            //details = new DataPack((new Date()).getTime(), dataUsed, dataLeft, mainBal, validity, message);
+            //Log.d(TAG, "Pack details : " + details);
+            return true;
         }
 
 
         return false;
     }
+
+
+
     private boolean packSMS(String message) throws JSONException
     {
-        Log.d(TAG,"Trying Pack SMS");
         //Log.d(TAG, "Trying Pack SMS");
         //TYPE - optional Type (?<TYPE>NAT|LOC|NIGHT|STD|NAT&LCL|L(?:OC)?\+STDSTD|LOCAL\s*AIRTEL|LOCAL|LOCAL&STD\s*AIRTEL|LOC&NAT|L(?:OC)?\+STDN|LOCAL\s*AND\s*NATIONAL|VF\s*2\s*VF\s*LOCAL)\s*
         //DEDT - optional SMS deducted
@@ -368,7 +353,7 @@ public class USSDParser {
         //MBAL -optional Main Balance
         //Validity - optional sometimes may be incomplete
         //anything negative or null means its missing.
-        Matcher result = findDetails(mLoki.getPackSMSRegex(), message);
+        Matcher result = findDetails(getPackSMSRegex(), message);
         if (result != null)
         {
             //ptln(message);
@@ -418,19 +403,21 @@ public class USSDParser {
             {
                 mainBal = -1.0f;
             }
-            //TODO details
-            //ptln((i++)+")Deducted = "+deductedSMS+" Rem = "+remSMS+" main Bal = "+mainBal+" Val = "+validity+" Type = "+packType);
+
+            ptln((i++)+")Deducted = "+deductedSMS+" Rem = "+remSMS+" main Bal = "+mainBal+" Val = "+validity+" Type = "+packType);
             return true;
         }
         return false;
     }
+
+
+
     private boolean normalSMS(String message) throws JSONException
     {
-        Log.d(TAG,"Trying Normal SMS");
         //Log.d(TAG, "Trying Normal SMS");
         //Normal SMS has cost and balance left
         //Named Group COST and MBAL
-        Matcher result = findDetails(mLoki.getNormalSMSRegex(), message);
+        Matcher result = findDetails(getNormalSMSRegex(), message);
         if (result != null)
         {
             String bal = result.group("MBAL");
@@ -441,18 +428,15 @@ public class USSDParser {
                 bal = bal.substring(0,bal.length()-2);
             float mainBal = Float.parseFloat(bal);
             float cost = Float.parseFloat(result.group("COST"));
-            //ptln(message);
-            //ptln("Cost = "+cost+"  Main Bal = "+mainBal);
-            type = USSDMessageType.NORMAL_SMS;
-            details = new NormalSMS(new Date().getTime(), cost, mainBal, "9972115447", message);
-            Log.d(TAG+" SMS", "details = "+details.toString());
+            ptln(message);
+            ptln("Cost = "+cost+"  Main Bal = "+mainBal);
             return true;
         }
         return false;
     }
+    int i=1;
     private boolean normalData(String message) throws JSONException
     {
-        Log.d(TAG,"Trying Normal Data");
         //Log.d(TAG, "Trying Normal Data");
         //MBAL - Main Balance
         //DCOST - optional cost
@@ -461,10 +445,10 @@ public class USSDParser {
         //DMBUSED- optional MB Used
         //DKBUSED - optional KB used
         //DBUSED - optional Bytes used
-        Matcher result = findDetails(mLoki.getNormalDataRegex(), message);
+        Matcher result = findDetails(getNormalDataRegex(), message);
         if (result != null)
         {
-            //ptln(message);
+            ptln(message);
             float mainBal,dataUsed=0.0f,cost,bUsed=0.0f,kUsed=0.0f,mUsed=0.0f;
             String usedMetric;
             boolean normalTypeFound = false;
@@ -544,20 +528,21 @@ public class USSDParser {
                 dataUsed = mUsed + (kUsed/1000f) + (bUsed/1000000f);
 
             }
-            //TODO details
-            //ptln((i++)+")Data used = "+dataUsed+"MB Cost = "+cost+" Main Bal = "+mainBal+"\n");
-
+            ptln((i++)+")Data used = "+dataUsed+"MB Cost = "+cost+" Main Bal = "+mainBal+"\n");
             return true;
         }
         return false;
     }
+
+
+
     private boolean packCall(String message) throws JSONException
     {
-        Log.d(TAG,"Trying Pack Call");
-        Matcher result = findDetails(mLoki.getPackCallRegex(), message);
+        //Log.d(TAG, "Trying Pack Call");
+        Matcher result = findDetails(getPackCallRegex(), message);
         if (result != null)
         {
-            //ptln(message);
+            ptln(message);
             /*
             TYPE : optional Pack Type LOCALA2A loc+nat etc etc
             CUSED : Call Pack Used duration
@@ -598,27 +583,27 @@ public class USSDParser {
             {
                 int min =0 ,sec = 0;
                 int err = 0;
-                try
-                {
-                    min = Integer.parseInt(result.group("CUMIN"));
-                    freeMinType = true;
+               try
+               {
+                   min = Integer.parseInt(result.group("CUMIN"));
+                   freeMinType = true;
 
-                }
-                catch (RuntimeException e1)
-                {
-                    min = 0;
-                    err--;
-                }
-                try
-                {
-                    sec = Integer.parseInt(result.group("CUSEC"));
-                    freeMinType = true;
-                }
-                catch (RuntimeException e1)
-                {
-                    sec = 0;
-                    err--;
-                }
+               }
+               catch (RuntimeException e1)
+               {
+                   min = 0;
+                   err--;
+               }
+               try
+               {
+                   sec = Integer.parseInt(result.group("CUSEC"));
+                   freeMinType = true;
+               }
+               catch (RuntimeException e1)
+               {
+                   sec = 0;
+                   err--;
+               }
                 if(err<=-2)
                     usedSecs = -1;
                 else
@@ -690,7 +675,7 @@ public class USSDParser {
                 }
                 catch (RuntimeException e1)
                 {
-                    //Hr mim sec split
+                   //Hr mim sec split
                     int hr = 0,min =0 ,sec = 0;
                     int err = 0;
                     try
@@ -817,14 +802,13 @@ public class USSDParser {
                     packBal = -1.0f;
                 }
             }
-            //TODO details
             if(freeMinType)
             {
-                //ptln((i++)+")Type = "+type+" Used "+usedSecs+" metric = "+usedMetric+" Duration = "+durSec+" Left = "+leftSecs+" Metric= "+leftMetric+" Validity = "+validity+" Main Bal ="+mainBal+"\n");
+                ptln((i++)+")Type = "+type+" Used "+usedSecs+" metric = "+usedMetric+" Duration = "+durSec+" Left = "+leftSecs+" Metric= "+leftMetric+" Validity = "+validity+" Main Bal ="+mainBal+"\n");
             }
             else
             {
-                //ptln((i++)+")Type = "+type+" Duration = "+durSec+" Pcost = "+packCost+" Pbal = "+packBal+" Validity = "+validity+" Main Bal ="+mainBal+"\n");
+                ptln((i++)+")Type = "+type+" Duration = "+durSec+" Pcost = "+packCost+" Pbal = "+packBal+" Validity = "+validity+" Main Bal ="+mainBal+"\n");
             }
             return  true;
         }
@@ -832,60 +816,149 @@ public class USSDParser {
     }
 
 
+
+
     boolean tryOldSchoolMethod(String message)
     {
-        Log.d(TAG,"Trying Old School Method");
-        if(parseForNormalCall(message))
+       /* Log.d(TAG, "Trying Old School Method");
+        if (parseForNormalCall(message))
         {
             return true;
-        }
-        else
-        if(parseForNormalData(message))
+        } else if (parseForNormalData(message))
         {
             return true;
-        }
-        else
-        if(parseForDataPack(message))
+        } else if (parseForDataPack(message))
         {
             return true;
-        }
-        else
-        if (parseForNormalSMS(message)) {
+        } else if (parseForNomalSMS(message))
+        {
             return true;
-        }
+        }*/
 
 
         return false;//Invalid
     }
+    private JSONArray getPackCallRegex()
+    {
+        return getJSONArray("G:/SimplyV2/TextMining/json/CALL_PACK_PATTERNS.json");
+    }
+    private JSONArray getNormalCallRegex()
+    {
+        return getJSONArray("G:/SimplyV2/TextMining/json/CALL_PATTERNS.json");
+    }
+    private JSONArray getNormalDataRegex()
+    {
+        return getJSONArray("G:/SimplyV2/TextMining/json/DATA_PATTERNS.json");
+    }
+    private JSONArray getPackSMSRegex()
+    {
+        return getJSONArray("G:/SimplyV2/TextMining/json/SMS_PACK_PATTERNS.json");
+    }
+    private JSONArray getNormalSMSRegex()
+    {
+        return getJSONArray("G:/SimplyV2/TextMining/json/SMS_PATTERNS.json");
+    }
+    private JSONArray getPackDataRegex()
+    {
+        return getJSONArray("G:/SimplyV2/TextMining/json/DATA_PACK_PATTERNS.json");
+    }
+    JSONArray getJSONArray(String fileName)
+    {
+        FileInputStream mFileReader = null;
+        File jsonFile = null;
+        try
+        {
+            jsonFile = new File(fileName);
+            mFileReader = new FileInputStream(jsonFile);
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
 
 
-    private boolean parseForNormalSMS(String message) {
-        Float balance=(float) 0.0, cost = (float) 0.0;
+        byte[] data = new byte[(int) jsonFile.length()];
+        try
+        {
+            mFileReader.read(data);
+            mFileReader.close();
+
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        String str = null;
+        try
+        {
+            str = new String(data, "UTF-8");
+        } catch (UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+        JSONArray mJsonArray = null;
+        try
+        {
+            mJsonArray = new JSONArray(str);
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return mJsonArray;
+    }
+
+    private Matcher findDetails(JSONArray regexArray, String message) throws JSONException
+    {
+        int length = regexArray.length();
+        //Log.d(TAG, "Trying with " + length + "Regexes");
+        Pattern mPattern;
+        Matcher mMatcher;
+        String regex;
+        for (int i = 0; i < length; i++)
+        {
+            regex = regexArray.getJSONObject(i).getString("REGEX");
+            //Log.d(TAG, "Trying with : " + regex);
+            mPattern = Pattern.compile(regex);
+            mMatcher = mPattern.matcher(message);
+            if (mMatcher.find())
+            {
+                //Log.d(TAG, "Found a Match");
+                //ptln("Matched with "+regex);
+                return mMatcher;
+
+            }
+        }
+        //Log.d(TAG, "No Match Found");
+        return null;
+    }
+    /*private boolean parseForNomalSMS(String message)
+    {
+        Float balance = (float) 0.0, cost = (float) 0.0;
         Long time = (new Date()).getTime();
         String lastNumber = "";
-        int count=0;
+        int count = 0;
 
         String smsCost = mLoki.getNormal_sms_smsCost();//"(Last SMS|SMS cost|SMS Cost|SMS COST|SMS charge from Main Bal):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
         Pattern pcc;
         Matcher mcc;
         pcc = Pattern.compile(smsCost);
         mcc = pcc.matcher(message);
-        if (mcc.find()) {
+        if (mcc.find())
+        {
             cost = Float.parseFloat(mcc.group(2));
             count++;
-            System.out.println(TAG+" SMS "+ "Found SMS Cost " + cost);
+            System.out.println(TAG + " SMS " + "Found SMS Cost " + cost);
         }
 
-        boolean flag=false;
+        boolean flag = false;
         // get the remaining balance
         String smsBal = mLoki.getNormal_sms_smsBal1();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|RemainingSMSBal|Account Balance is):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
         pcc = Pattern.compile(smsBal);
         mcc = pcc.matcher(message);
-        if (mcc.find()) {
-            flag=true;
+        if (mcc.find())
+        {
+            flag = true;
             count++;
             balance = Float.parseFloat(mcc.group(2));
-            System.out.println(TAG +" SMS"+ "Found bal " + balance.toString());
+            System.out.println(TAG + " SMS" + "Found bal " + balance.toString());
         }
 
         {
@@ -893,41 +966,43 @@ public class USSDParser {
             smsBal = mLoki.getNormal_sms_smsBal2();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Main Bal:):?\\s*Rs\\s*[\\.=]?\\s*(\\d+\\.?\\d+)";
             pcc = Pattern.compile(smsBal);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
-                if(!flag)
-                    count++;
+            if (mcc.find())
+            {
+                if (!flag) count++;
                 balance = Float.parseFloat(mcc.group(2));
-                System.out.println(TAG +" SMS"+ "Found bal " + balance.toString());
+                System.out.println(TAG + " SMS" + "Found bal " + balance.toString());
             }
         }
-        if(count==2)
+        if (count == 2)
         {
             System.out.println("Found SMS Pattern");
             // Create Sent box URI
             Uri sentURI = Uri.parse("content://sms/sent");
 
             // List required columns
-            String[] reqCols = new String[] {"address"};
+            String[] reqCols = new String[]{"address"};
 
             // Get Content Resolver object, which will deal with Content Provider
             ContentResolver cr = MyApplication.context.getContentResolver();
 
             // Fetch Sent SMS Message from Built-in Content Provider
-            Cursor c = cr.query(sentURI, reqCols, null, null, "date "+ "DESC  , address" + " LIMIT 1");
-            if(c.moveToFirst())
+            Cursor c = cr.query(sentURI, reqCols, null, null, "date " + "DESC  , address" + " LIMIT 1");
+            if (c.moveToFirst())
             {
                 lastNumber = c.getString(c.getColumnIndex("address"));
             }
             type = USSDMessageType.NORMAL_SMS;
             details = new NormalSMS(time, cost, balance, lastNumber, message);
-            Log.d(TAG+" SMS", "details = "+details.toString());
+            Log.d(TAG + " SMS", "details = " + details.toString());
             return true;
         }
         return false;
     }
-    private boolean parseForDataPack(String message) {
-        Float data_consumed = (float)0.0,bal=(float)0.0,data_left = (float)0.0;
-        int count=0;
+
+    private boolean parseForDataPack(String message)
+    {
+        Float data_consumed = (float) 0.0, bal = (float) 0.0, data_left = (float) 0.0;
+        int count = 0;
         //3G usage:0.04MB 3G Bal:1048.45MB Val:Jun 02 2015 Bal:Rs.93.35
         //USSD2G usage:9.91MB 2G Bal:163.65MB Val:May 13 2015 Bal:Rs.60.44
         //Data_CHRG:0.00 INR, Bal_Left=71.85 INR, Vol_Used:0.027343 MB,Freebie_bal:492.76 MB, Pack_exp: May 13 2015
@@ -936,13 +1011,15 @@ public class USSDParser {
         //CHRG:0.00INR,VOL:0.064MB, Available 3G Pack Benefit 212.720MB,Val till 24-05-2015,BAL-LEFT:99.560INR.
         //Data Session Charge:Rs 0. Bal Rs.0.01. Vol Used :0.00 MB. Data Left: 749 MB. Val :24/05/2015.
         //Your last call of 10Kb was charged from 50MBFREE.Remaining Balance 46Mb 806Kb. Your Main Account Balance: 15.155
-        try{
-            String dataUsedRegex =  mLoki.getData_pack_dataUsedRegex();//"[usage|Vol_Used|last data session Usage|VOL|Vol|vol|USAGE|Usage|Vol Used|vol used|VOL USED|InternetUsage|DataUsage|Data_Usage|Data\\-Usage|Consumed volume|Consumed_volume|ConsumedVolume|Vol_Used|Volume Used|Vol\\-Used][\\s+]?:?[\\s+]?(\\d+\\.\\d+)[\\s+]?(MB|Mb)";
+        try
+        {
+            String dataUsedRegex = mLoki.getData_pack_dataUsedRegex();//"[usage|Vol_Used|last data session Usage|VOL|Vol|vol|USAGE|Usage|Vol Used|vol used|VOL USED|InternetUsage|DataUsage|Data_Usage|Data\\-Usage|Consumed volume|Consumed_volume|ConsumedVolume|Vol_Used|Volume Used|Vol\\-Used][\\s+]?:?[\\s+]?(\\d+\\.\\d+)[\\s+]?(MB|Mb)";
             Pattern pcc;
             Matcher mcc;
             pcc = Pattern.compile(dataUsedRegex);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 data_consumed = Float.parseFloat(mcc.group(1));
                 count++;
                 //Log.d(TAG+" DATA ", "Found Data Pack Consumed " + data_consumed);
@@ -950,28 +1027,30 @@ public class USSDParser {
             String bsnlDataUsedRegex = mLoki.getData_pack_bsnlDataUsedRegex1();//"Your last call of (\\d+)Mb|MB\\s*(\\d+)Kb|KB";
             pcc = Pattern.compile(bsnlDataUsedRegex);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 //V10System.out.println("Group 2 "+mcc.group(2));
-                data_consumed = Float.parseFloat(mcc.group(1))+(Float.parseFloat(mcc.group(2))/1000);
+                data_consumed = Float.parseFloat(mcc.group(1)) + (Float.parseFloat(mcc.group(2)) / 1000);
                 count++;
-                System.out.println(TAG+" DATA BSNL"+ "Found Data Pack Consumed " + data_consumed);
-            }
-            else
+                System.out.println(TAG + " DATA BSNL" + "Found Data Pack Consumed " + data_consumed);
+            } else
             {
                 bsnlDataUsedRegex = mLoki.getData_pack_bsnlDataUsedRegex2();//"Your last call of\\s*(\\d+)Kb|KB";
                 pcc = Pattern.compile(bsnlDataUsedRegex);
                 mcc = pcc.matcher(message);
-                if (mcc.find()) {
+                if (mcc.find())
+                {
 
-                    data_consumed = Float.parseFloat(mcc.group(1))/1000;
+                    data_consumed = Float.parseFloat(mcc.group(1)) / 1000;
                     count++;
-                    System.out.println(TAG+" DATA BSNL"+ "Found Data Pack Consumed " + data_consumed);
+                    System.out.println(TAG + " DATA BSNL" + "Found Data Pack Consumed " + data_consumed);
                 }
             }
             String dataLeftRegex = mLoki.getData_pack_dataLeftRegex();//"(Bal|BAL|bal|Data Left|DATA LEFT|data left|Available 3G Pack Benefit|Available 2G Pack Benefit|Freebie_bal|Data_Left)\\s*:?\\s*(\\d+\\.?\\d*)\\s?MB";
             pcc = Pattern.compile(dataLeftRegex);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 data_left = Float.parseFloat(mcc.group(2));
                 count++;
                 //Log.d(TAG+" DATA ", "Found Data Pack Left " + data_left);
@@ -980,22 +1059,23 @@ public class USSDParser {
             String bsnlDataLeftRegex = mLoki.getData_pack_bsnlDataLeftRegex1();//"Remaining Balance (\\d+)(Mb|MB)\\s*(\\d+)Kb|KB";
             pcc = Pattern.compile(bsnlDataLeftRegex);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
+            if (mcc.find())
+            {
 
                 //V10System.out.println("Group 1 "+mcc.group(1));
                 //V10System.out.println("Group 2 "+mcc.group(3));
-                data_left = Float.parseFloat(mcc.group(1))+(Float.parseFloat(mcc.group(3))/1000);
+                data_left = Float.parseFloat(mcc.group(1)) + (Float.parseFloat(mcc.group(3)) / 1000);
                 count++;
-                System.out.println(TAG+" DATA BSNL"+ "Found Data Pack data_left " + data_left);
-            }
-            else
+                System.out.println(TAG + " DATA BSNL" + "Found Data Pack data_left " + data_left);
+            } else
             {
                 bsnlDataLeftRegex = mLoki.getData_pack_bsnlDataLeftRegex2();//"Remaining Balance\\s*(\\d+)Kb|KB";
                 pcc = Pattern.compile(bsnlDataLeftRegex);
                 mcc = pcc.matcher(message);
-                if (mcc.find()) {
+                if (mcc.find())
+                {
 
-                    data_left = Float.parseFloat(mcc.group(1))/1000;
+                    data_left = Float.parseFloat(mcc.group(1)) / 1000;
                     count++;
                     //Log.d(TAG+" DATA BSNL", "Found Data Pack data_left " + data_consumed);
                 }
@@ -1006,28 +1086,30 @@ public class USSDParser {
             String remBalanceRegex = mLoki.getData_pack_remBalanceRegex1();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|Main Account Balance)\\s*:?\\s*(Rs)?\\s*[\\.]?=?\\s*(\\d+\\.\\d+)";
             pcc = Pattern.compile(remBalanceRegex);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 count++;
                 flag = true;
                 bal = Float.parseFloat(mcc.group(3));
-                System.out.println(TAG +" DATA "+ "Found DataPack Rs bal " + bal.toString());
+                System.out.println(TAG + " DATA " + "Found DataPack Rs bal " + bal.toString());
             }
             //hack to the problem posed by BSNL
             remBalanceRegex = mLoki.getData_pack_remBalanceRegex2();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|Main Account Balance)\\s*:?\\s*(Rs)\\s*[\\.]?=?\\s*(\\d+\\.\\d+)";
             pcc = Pattern.compile(remBalanceRegex);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
-                if(!flag)
-                    count++;
+            if (mcc.find())
+            {
+                if (!flag) count++;
 
                 bal = Float.parseFloat(mcc.group(3));
-                System.out.println(TAG +" DATA "+ "Found Hack DataPack Rs bal " + bal.toString());
-            }
-            else{
+                System.out.println(TAG + " DATA " + "Found Hack DataPack Rs bal " + bal.toString());
+            } else
+            {
                 String INRremBalanceRegex = mLoki.getData_pack_INRremBalanceRegex();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left)\\s*:?\\s*R?s?\\s*[\\.]?=?\\s*(\\d+\\.\\d+)\\s*INR";
                 pcc = Pattern.compile(INRremBalanceRegex);
                 mcc = pcc.matcher(message);
-                if (mcc.find()) {
+                if (mcc.find())
+                {
                     count++;
                     bal = Float.parseFloat(mcc.group(2));
                     //Log.d(TAG +" DATA ", "Found DataPack INR bal " + bal.toString());
@@ -1037,12 +1119,13 @@ public class USSDParser {
             pcc = Pattern.compile(validityRegex);
             mcc = pcc.matcher(message);
             String validity = "Unknown";
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 count++;
                 validity = mcc.group(2);
-                System.out.println(TAG +" DATA "+ "Found DataPack Validity " + mcc.group(2));
+                System.out.println(TAG + " DATA " + "Found DataPack Validity " + mcc.group(2));
             }
-            if(count>=3)
+            if (count >= 3)
             {
                 //Log.d(TAG+" DATA ","Found Data pack Message");
                 type = USSDMessageType.DATA_PACK;
@@ -1051,8 +1134,7 @@ public class USSDParser {
             }
 
             //Log.d(TAG+" DATA ","NOT a Data pack Message");
-        }
-        catch(Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
             //Log.d(TAG, "Failed to parse");
@@ -1060,36 +1142,17 @@ public class USSDParser {
         return false;
     }
 
-    private Matcher findDetails(JSONArray regexArray, String message) throws JSONException
+    public USSDMessageType getType()
     {
-        int length = regexArray.length();
-        Log.d(TAG,"Trying with "+length+"Regexes");
-        Pattern mPattern;
-        Matcher mMatcher;
-        String regex ;
-        for(int i=0;i<length;i++)
-        {
-            regex = regexArray.getJSONObject(i).getString("REGEX");
-            Log.d(TAG,"Trying with : "+regex);
-            mPattern = Pattern.compile(regex);
-            mMatcher = mPattern.matcher(message);
-            if(mMatcher.find())
-            {
-                Log.d(TAG,"Found a Match");
-                return  mMatcher;
 
-            }
-        }
-        Log.d(TAG,"No Match Found");
-        return null;
+        return type;
     }
-
 
     private boolean parseForNormalCall(String message)
     {
         int secs = 0, count = 0;
         Float bal = (float) 0.0, callCost = (float) 0.0;
-        Long time = (new Date()).getTime()+19800l;//to ist
+        Long time = (new Date()).getTime() + 19800l;//to ist
         //Log.d(TAG+" CALL", "parseForNormalCall");
         //Log.d(TAG+" CALL" + "from service", message);
         //Log.d(TAG+" CALL" + "time from service", time.toString());
@@ -1101,24 +1164,27 @@ public class USSDParser {
         //Last call charge for 00:01:50 is from Main Bal:0.500.Main Bal:Rs.24.460,28-07-2027.RCH91 All India calls at 25p for 84days
         //Your last call cost Rs.0.225,talk time used 0:0:15,main balance left 15.365.
         //Your last call cost Rs.0.660,talk time used 0:0:44,main balance left 25.258.null
-        try{
+        try
+        {
 
             String callCostRegex = mLoki.getNormal_call_costRegex();//"(Call|call|Voice|voice|VOICE|Last|LAST|last)?_?\\s*(Deduction:CORE BAL|Call charged from:Main Bal|Charge|call cost|CALL COST|Call Cost|charge|cost|Cost|COST|CHRG|CHARGE|from Main Bal|CHRG:main_cost|Usage|USAGE|usage)\\s*:?\\s*R?s?\\s*-?:?[\\.=]?\\s*(\\d+\\.\\d+)";
             pcc = Pattern.compile(callCostRegex);
             mcc = pcc.matcher(message);
 
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 callCost = Float.parseFloat(mcc.group(3));
                 count++;
                 //Log.d(TAG+" CALL", "Found callCost " + callCost.toString());
                 // System.out.println("Airtel call cost: " + mcc.group(1));
             }
-            boolean flag=false;
+            boolean flag = false;
             // get the remaining balance
             String remBalanceRegex = mLoki.getNormal_call_remBalanceRegex(); //"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Current bal is|BAL_LEFT: main|BAL_LEFT:main|BAL_LEFT : main|BAL_LEFT :main|Balance :Talktime|Remaing Main Account Bal)\\s*:?-?\\s?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)\\s*(INR)?";
             pcc = Pattern.compile(remBalanceRegex);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 flag = true;
                 count++;
                 bal = Float.parseFloat(mcc.group(2));
@@ -1130,37 +1196,39 @@ public class USSDParser {
                 remBalanceRegex = mLoki.getNormal_call_remBalanceRegex2();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left|main balance left|balance left|Main Bal:|BAL_LEFT: main|BAL_LEFT:main|BAL_LEFT : main|BAL_LEFT :main|Balance :Talktime):?\\s*Rs\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
                 pcc = Pattern.compile(remBalanceRegex);
                 mcc = pcc.matcher(message);
-                if (mcc.find()) {
-                    if(!flag)
-                        count++;
+                if (mcc.find())
+                {
+                    if (!flag) count++;
                     bal = Float.parseFloat(mcc.group(2));
-                    System.out.println(TAG +" CALL"+ "Found bal  " + bal.toString());
+                    System.out.println(TAG + " CALL" + "Found bal  " + bal.toString());
                 }
             }
-            if(message.contains("Remaining bal after the call: Main Bal")|| message.contains("RemainingBal:CORE BAL"))
+            if (message.contains("Remaining bal after the call: Main Bal") || message.contains("RemainingBal:CORE BAL"))
             {
-                remBalanceRegex =  mLoki.getNormal_call_remBalanceRegex3();//"(Remaining bal after the call: Main Bal|RemainingBal:CORE BAL):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
+                remBalanceRegex = mLoki.getNormal_call_remBalanceRegex3();//"(Remaining bal after the call: Main Bal|RemainingBal:CORE BAL):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
                 pcc = Pattern.compile(remBalanceRegex);
                 mcc = pcc.matcher(message);
-                if (mcc.find()) {
+                if (mcc.find())
+                {
 
                     count++;
                     bal = Float.parseFloat(mcc.group(2));
-                    System.out.println(TAG +" CALL"+ "Found IDEA bal " + bal.toString());
+                    System.out.println(TAG + " CALL" + "Found IDEA bal " + bal.toString());
                 }
 
             }
-            if(message.contains("Available Main Bal"))
+            if (message.contains("Available Main Bal"))
             {
                 remBalanceRegex = mLoki.getNormal_call_remBalanceRegex4(); //"(Available Main Bal|AVAILABLE MAIN BAL|available main bal):?\\s*R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
                 pcc = Pattern.compile(remBalanceRegex);
                 mcc = pcc.matcher(message);
-                if (mcc.find()) {
+                if (mcc.find())
+                {
 
                     count++;
                     callCost = bal;
                     bal = Float.parseFloat(mcc.group(2));
-                    System.out.println(TAG +" CALL"+ "Found Reliance bal " + bal.toString());
+                    System.out.println(TAG + " CALL" + "Found Reliance bal " + bal.toString());
                 }
             }
             //Call_Durn : 00:00:51,
@@ -1171,7 +1239,8 @@ public class USSDParser {
             pcc = Pattern.compile(callDurationRegex);
             mcc = pcc.matcher(message);
 
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 String callDuration = mcc.group();
 
                 //Log.d(TAG +" CALL"+ "call Duration", callDuration);
@@ -1184,41 +1253,43 @@ public class USSDParser {
                 secs += Integer.parseInt(sub[2]);
                 //Log.d(TAG +" CALL"+ "found airtel/vodafone call Duration ",secs + " ");
                 count++;
-            } else {
+            } else
+            {
 
                 callDurationRegex = mLoki.getNormal_call_callDurationRegex2();//"(duration|Duration|DURATION|DURN|durn|DUR|dur|Dur|Call_Durn:):?\\s*(\\d+)\\s*(Sec|sec|SEC)(s|S)?";
                 pcc = Pattern.compile(callDurationRegex);
                 mcc = pcc.matcher(message);
-                if (mcc.find()) {
+                if (mcc.find())
+                {
 
                     secs = Integer.parseInt(mcc.group(2));
                     //Log.d(TAG+" CALL", "Found Docomo/idea/aircel" + secs);
                     count++;
                 }
             }
-            if(secs>36000)
+            if (secs > 36000)
             {
                 callDurationRegex = mLoki.getNormal_call_callDurationRegex3();//"(duration|Duration|DURATION|DURN|durn|DUR|dur|Dur|Call_Durn:):?\\s*(\\d+)\\s*(Sec|sec|SEC)(s|S)?";
                 pcc = Pattern.compile(callDurationRegex);
                 mcc = pcc.matcher(message);
-                if (mcc.find()) {
+                if (mcc.find())
+                {
 
                     secs = Integer.parseInt(mcc.group(2));
                     //Log.d(TAG+" CALL", "Found Docomo/idea/aircel" + secs);
                     count++;
                 }
             }
-            if(count>=3)
+            if (count >= 3)
             {
                 //Log.d(TAG +" CALL", "message was of NormalCall");
                 type = USSDMessageType.NORMAL_CALL;
-                details = new NormalCall(time,callCost,bal,secs,message);
+                details = new NormalCall(time, callCost, bal, secs, message);
                 return true;
             }
 
             //Log.d(TAG+" CALL", "message was of NOT OF NormalCall");
-        }
-        catch(Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
             //Log.d(TAG, "Failed to parse");
@@ -1227,10 +1298,11 @@ public class USSDParser {
         return false;
     }
 
-    private boolean parseForNormalData(String message) {
+    private boolean parseForNormalData(String message)
+    {
         //Log.d(TAG+" DATA", "parseForNormalData");
-        int count =0;
-        Float bal = (float) 0.0, cost = (float) 0.0,data_consumed =(float) 0.0;
+        int count = 0;
+        Float bal = (float) 0.0, cost = (float) 0.0, data_consumed = (float) 0.0;
         Long time = (new Date()).getTime();
         //Log.d(TAG+" DATA" + "from service", message);
         //Log.d(TAG+" DATA" + "time from service", time.toString());
@@ -1240,12 +1312,14 @@ public class USSDParser {
         // get the call cost
         //docomo Data Session Charge:Rs 0.10. Bal Rs.6.23. Vol Used :0.00 MB. .
         //Session date:19.05.2015, Session cost: 0.96INR, Consumed volume: 0.232MB, Current Balance: 27.10INR. Dial *121# for Internet Packs.
-        try{
+        try
+        {
             String costRegex = mLoki.getNormal_data_costRegex();//"[Data|DATA|data]?(Session|session|SESSION)\\s*(Charge|charge|cost|Cost|CHRG|CHARGE)\\s*:?\\s?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)[INR]?";
             pcc = Pattern.compile(costRegex);
             mcc = pcc.matcher(message);
 
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 cost = Float.parseFloat(mcc.group(3));
                 count++;
                 //Log.d(TAG+" DATA", "Found Normal Data Cost " + cost.toString());
@@ -1256,7 +1330,8 @@ public class USSDParser {
             pcc = Pattern.compile(dataConsumedRegex);
             mcc = pcc.matcher(message);
 
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 data_consumed = Float.parseFloat(mcc.group(2));
                 count++;
                 //System.out.println(TAG+" DATA "+ "Found Normal Data Consumed " + data_consumed);
@@ -1266,18 +1341,17 @@ public class USSDParser {
             }
 
 
-
-
             // get the remaining balance
             String remBalanceRegex = mLoki.getNormal_data_remBalanceRegex();//"(balance|Bal|BAL|Balance|BALANCE|BAL-LEFT|Bal_Left)\\s*?:?\\s*?R?s?\\s*[\\.=]?\\s*(\\d+\\.\\d+)";
             pcc = Pattern.compile(remBalanceRegex);
             mcc = pcc.matcher(message);
-            if (mcc.find()) {
+            if (mcc.find())
+            {
                 count++;
                 bal = Float.parseFloat(mcc.group(2));
                 //Log.d(TAG +" CALL", "Found bal " + bal.toString());
             }
-            if(count>=2)
+            if (count >= 2)
 
             {
                 type = USSDMessageType.NORMAL_DATA;
@@ -1285,14 +1359,14 @@ public class USSDParser {
                 //Log.d(TAG+" DATA", "message was of NOT OF NormalDATA");
                 return true;
             }
-        }
-        catch(Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
             //Log.d(TAG, "Failed to parse");
         }
         return false;
-    }
+    }*/
+
 
 
 }

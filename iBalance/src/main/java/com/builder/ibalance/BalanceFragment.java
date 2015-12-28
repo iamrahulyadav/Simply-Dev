@@ -521,6 +521,11 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         mLineChart.setDescription("");
         mLineChart.setNoDataTextDescription("Please Make Calls for Balance tracking");
 
+<<<<<<< HEAD
+=======
+        // enable value highlighting
+        //mLineChart.setHighlightEnabled(true);
+>>>>>>> 275769f... Deatached Head
         // enable touch gestures
         mLineChart.setTouchEnabled(true);
         // enable scaling and dragging
@@ -736,6 +741,10 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             tvContent.setText("Time:" + xVals.get(e.getXIndex()) + "\nBalance: " + e.getVal()); // set the entry-value as the display text
         }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 275769f... Deatached Head
         /**
          * Use this to return the desired offset you wish the MarkerView to have on the x-axis. By returning -(getWidth() /
          * 2) you will center the MarkerView horizontally.
@@ -771,5 +780,3 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
 
 }
-
-
