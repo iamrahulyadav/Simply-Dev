@@ -18,9 +18,9 @@ import com.kahuna.sdk.IKahunaUserCredentials;
 import com.kahuna.sdk.Kahuna;
 import com.kahuna.sdk.KahunaUserCredentials;
 import com.parse.Parse;
-
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterCore;
+
 import java.util.HashMap;
 
 import io.fabric.sdk.android.Fabric;
@@ -39,7 +39,7 @@ public class MyApplication extends Application
 
     @Override
     public void onCreate() {
-    	
+
         super.onCreate();
         Crashlytics crashlyticsKit = new Crashlytics.Builder()
                 .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
