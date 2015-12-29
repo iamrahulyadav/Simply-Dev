@@ -116,10 +116,10 @@ public class Loki
 
             try
             {
-                JSONObject assetJson = new JSONObject(loadJSONFromAsset());
-                if(assetJson!=null)
-                {
-                    SharedPreferences.Editor editor = parserPreferences.edit();
+            JSONObject assetJson = new JSONObject(loadJSONFromAsset());
+            if(assetJson!=null)
+            {
+                SharedPreferences.Editor editor = parserPreferences.edit();
 
 
                     editor.putString("NORMAL_CALL", assetJson.getString("NORMAL_CALL"));
@@ -129,9 +129,9 @@ public class Loki
                     editor.putString("NORMAL_SMS", assetJson.getString("NORMAL_SMS"));
                     editor.putString("PACK_SMS", assetJson.getString("PACK_SMS"));
                     editor.putString("VOICE_DATA", assetJson.getString("VOICE_DATA"));
-                    editor.putBoolean("NEW_VERSION_FISRT_TIME",false);
-                    editor.commit();
-                }
+                editor.putBoolean("NEW_VERSION_FISRT_TIME",false);
+                editor.commit();
+            }
             } catch (JSONException e)
             {
                 e.printStackTrace();
@@ -315,8 +315,8 @@ public class Loki
 
     private String[] getKeyIv()
     {
-        String ret[] = {MyApplication.context.getString(R.string.analytics_key),
-                MyApplication.context.getString(R.string.flurry_key)};
+         String ret[] = {MyApplication.context.getString(R.string.analytics_key),
+            MyApplication.context.getString(R.string.flurry_key)};
         return ret;
     }
 
@@ -419,19 +419,19 @@ public class Loki
             deciphered = decrypt(cipher);
         } catch (IllegalBlockSizeException e)
         {
-            //V10e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (BadPaddingException e)
         {
-            //V10e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (InvalidKeyException e)
         {
-            //V10e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (InvalidAlgorithmParameterException e)
         {
-            //V10e.printStackTrace();
+           //V10e.printStackTrace();
         } catch (UnsupportedEncodingException e)
         {
-            //V10e.printStackTrace();
+           //V10e.printStackTrace();
         }
         return deciphered;
     }

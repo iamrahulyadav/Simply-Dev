@@ -682,7 +682,7 @@ boolean cancelButtonFound = false;
         if (ConstantsAndStatics.WAITING_FOR_SERVICE)
         {
             Tracker t = ((MyApplication) this.getApplication()).getTracker(
-                    MyApplication.TrackerName.APP_TRACKER);
+                    TrackerName.APP_TRACKER);
             t.send(new HitBuilders.EventBuilder()
                     .setCategory("SERVICE_STATUS")
                     .setAction("OFF")
