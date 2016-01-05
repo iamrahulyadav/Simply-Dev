@@ -14,12 +14,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
+import com.builder.ibalance.parsers.USSDParser;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -189,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
+int i = 0;
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -237,14 +238,21 @@ public class MainActivity extends AppCompatActivity {
             case R.id.privacy:
                 //Log.d(tag, "Prefrences selected");
 
-			/*USSDParser mParser = new USSDParser();
-			mParser.parseMessage("CALLCOST:RS.0.00 DURATION:00:00:00 BAL:RS.14.05 DIAL 578786, PAYIEN NAYE, PURANE HELLOTUNE PAR 40% KA DISCOUNT NULL");
+			USSDParser mParser = new USSDParser();
+            /*    if(i==0)
+			mParser.parseMessage("INTERNETUSAGE:0.00MB MAINBAL:RS.119.68._124=124 TT 15DREPLY WITH 1");
+                if(i==1)*/
+            mParser.parseMessage("LAST SMS COST:RS.0.50 .UR A/C. BAL:RS.26.32");
+                if(i==2)
+            mParser.parseMessage("CHRG: NAT MIN 2 DUR: 111SEC  BAL_LEFT: MAIN RS 78.163 NAT MIN 94 EXP 02/08/2015 00HR RS5 MEIN  15MB 2G DATA POORE 1 DIN KE LIYE@NULL");
+
+                i++;
 			Log.d(tag,mParser.getType()+"");
-			Log.d(tag,mParser.getDetails().toString());*/
-                String url = "http://ibalanceapp.com/privacy-policy/";
+			Log.d(tag,mParser.getDetails().toString());
+               /* String url = "http://ibalanceapp.com/privacy-policy/";
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
-                startActivity(i);
+                startActivity(i);*/
                 break;
             case R.id.contact_us:
                 //Log.d(tag, "contact_us selected");

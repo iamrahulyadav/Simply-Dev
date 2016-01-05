@@ -24,7 +24,7 @@ public  class ConstantsAndStatics {
 		 public static int IMAGE_URI = 8;
 		
 	 }
-	 
+	//OLD one
 	 public enum USSDMessageType
 	 {
 		 NORMAL_CALL,//1
@@ -34,5 +34,16 @@ public  class ConstantsAndStatics {
 		 SMS_PACK,//5
 		 DATA_PACK,//6
 		 BALANCE,//7
+	 }
+	//New one
+	public static class USSD_TYPES
+	 {
+		 public static int NORMAL_CALL=1;
+		 public static int NORMAL_SMS = 2;
+		 public static int NORMAL_DATA = 3;
+		 public static int PACK_CALL= 4;
+		 public static int PACK_SMS = 5;
+		 public static int PACK_DATA = 6;
+		 public static int BALANCE = 7;
 	 }
 }

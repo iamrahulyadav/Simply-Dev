@@ -47,7 +47,7 @@ public class
             CallEntry.COLUMN_NAME_NUMBER + TEXT_TYPE +
             " )";
 
-
+//Wont work you need to have teo types of pack entry update DB
    public final static String CREATE_VOICE_PACK_TABLE = "CREATE TABLE IF NOT EXISTS VOICE_PACK ( "
             + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
             + "DURATION INTEGER, "+ "NUMBER TEXT, "+ "REMAINING INTEGER, " +"VALIDITY TEXT, " +"MESSAGE TEXT"+ " )";
