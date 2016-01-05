@@ -36,10 +36,10 @@ import android.widget.Toast;
 import com.builder.ibalance.adapters.RecentListRecycleAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.CallLogsHelper;
-import com.builder.ibalance.database.models.NormalCall;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
+import com.builder.ibalance.models.USSDModels.NormalCall;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
@@ -582,7 +582,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         for (NormalCall be : ussdDataList)
         {
             xVals.add((String) android.text.format.DateFormat.format("EEE, hh:mm a", be.date));
-            yVals.add(new Entry(be.bal, i));
+            yVals.add(new Entry(be.main_bal, i));
             i++;
         }
         //Log.d(tag, "Finished  Adding Values");

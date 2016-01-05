@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.builder.ibalance.database.helpers.BalanceHelper;
-import com.builder.ibalance.database.models.NormalSMS;
+import com.builder.ibalance.models.USSDModels.NormalSMS;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -31,9 +31,9 @@ public class NormalSMSHelper {
 		ContentValues values = new ContentValues();
 		values.put("DATE", entry.date); // get date in milliseconds
 		values.put("COST", entry.cost); // get callcost
-		values.put("BALANCE", entry.bal); // get balance
-		values.put("NUMBER", entry.lastNumber); // last dialled number
-		values.put("MESSAGE", entry.message);
+		values.put("BALANCE", entry.main_bal); // get balance
+		values.put("NUMBER", entry.ph_number); // last dialled number
+		values.put("MESSAGE", entry.original_message);
 		// 3. insert
 		db.insert("SMS", // table
 				null, // nullColumnHack
@@ -62,9 +62,9 @@ public class NormalSMSHelper {
 				entry = new NormalSMS();
 				entry.date = (Long.parseLong(cursor.getString(1)));
 				entry.cost = Float.parseFloat(cursor.getString(2));
-				entry.lastNumber = cursor.getString(3);
-				entry.bal = Float.parseFloat(cursor.getString(4));
-				entry.message = cursor.getString(5);
+				entry.ph_number = cursor.getString(3);
+				entry.main_bal = Float.parseFloat(cursor.getString(4));
+				entry.original_message = cursor.getString(5);
 				// Add book to entry
 				entries.add(entry);
 			} while (cursor.moveToNext());

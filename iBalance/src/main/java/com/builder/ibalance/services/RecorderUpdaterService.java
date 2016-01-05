@@ -7,7 +7,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.Handler;
 import android.os.Message;
 import android.telephony.TelephonyManager;
@@ -18,7 +17,6 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
@@ -27,27 +25,23 @@ import com.builder.ibalance.BuildConfig;
 import com.builder.ibalance.MainActivity;
 import com.builder.ibalance.R;
 import com.builder.ibalance.UssdPopup;
-import com.builder.ibalance.database.DataPackHelper;
-import com.builder.ibalance.database.NormalDataHelper;
-import com.builder.ibalance.database.NormalSMSHelper;
 import com.builder.ibalance.database.RechargeHelper;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
+import com.builder.ibalance.database.helpers.PackCallHelper;
 import com.builder.ibalance.database.models.ContactDetailModel;
-import com.builder.ibalance.database.models.DataPack;
-import com.builder.ibalance.database.models.DatabaseEntryBase;
-import com.builder.ibalance.database.models.NormalCall;
-import com.builder.ibalance.database.models.NormalData;
-import com.builder.ibalance.database.models.NormalSMS;
 import com.builder.ibalance.database.models.RechargeEntry;
 import com.builder.ibalance.messages.OutgoingCallMessage;
+import com.builder.ibalance.models.PopupModels.NormalCallPopup;
+import com.builder.ibalance.models.PopupModels.PackCallPopup;
+import com.builder.ibalance.models.USSDModels.NormalCall;
+import com.builder.ibalance.models.USSDModels.PackCall;
+import com.builder.ibalance.models.USSDModels.USSDBase;
 import com.builder.ibalance.parsers.USSDParser;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
-import com.builder.ibalance.util.RegexUpdater;
-import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -60,26 +54,25 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class RecorderUpdaterService extends AccessibilityService
 {
     final static String tag = RecorderUpdaterService.class.getSimpleName();
     static String TAG = "RecorderService", second = null;
-    boolean hasEditText = false;
     boolean isRegistered = false;
+    volatile boolean callEventDetailsReady = false;
+    volatile boolean callussdDetailsReady = false;
+    OutgoingCallMessage tempCallEventDetails;
+    USSDBase tempCallUSSDDetails;
     long startTime,endTime;
     float previousBalance = (float) -20.0;
     CallLogObserver mCallLogObserver;
-    StringBuilder sb = new StringBuilder();
     AccessibilityNodeInfo dismissNode = null;
-    CallDetailsModel mCallDetailsModel = null;
-    Handler noUSSDMsgHandler = null;
-    String lastNumber = null;
-    long _id = 0;
-    int sim_slot = 0;
-    int duration = 0;
     String text;
-    private void displayPopUp()
+   /* private void displayPopUp()
     {
 
         if (lastNumber != null)
@@ -155,60 +148,82 @@ public class RecorderUpdaterService extends AccessibilityService
             //wait for callLog to update
         }
     }
-
-    void addToDatabase(DatabaseEntryBase entryBase)
+*/
+    void addToDatabase(USSDBase entryBase)
     {
         SharedPreferences sharedPreferences = getSharedPreferences("USER_DATA",
             Context.MODE_PRIVATE);
 
-        switch (entryBase.type)
+        switch (entryBase.getType())
         {
-            case 0:
+            case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
                 NormalCall details = (NormalCall)entryBase;
                 BalanceHelper mBalanceHelper = new BalanceHelper();
-
-                previousBalance = sharedPreferences.getFloat(
-                        "CURRENT_BALANCE_"+details.slot, (float) -20.0);
-                ////V10Log.d(tag, "previousBalance " + previousBalance);
-                // if the entry is duplicate
-                if (Float.compare(previousBalance,  details.bal) == 0)
-                {
-                    ////V10Log.d(tag, "Duplicate  previousBalance ");
-                    return;
-                }
-                // if there has been a Recharge
-                if (previousBalance >= 0.0)
-                {
-                    if (details.bal - previousBalance > 1.0)
-                    {
-                        RechargeHelper mRechargeHelper = new RechargeHelper();
-                        ////V10Log.d(tag, "Recharge = "+ (details.bal -
-                        // previousBalance + details.callCost));
-                        ParseObject pObj = new ParseObject("RECHARGES");
-                        pObj.put("DEVICE_ID", sharedPreferences
-                                .getString("DEVICE_ID", "123456"));
-                        pObj.put("Total", text);
-                        pObj.put("NUMBER", sharedPreferences.getString(
-                                "NUMBER", "0000"));
-                        pObj.put("CARRIER", sharedPreferences
-                                .getString("CARRIER", "Unknown"));
-                        pObj.put("CIRCLE", sharedPreferences.getString(
-                                "CIRCLE", "Unknown"));
-                        pObj.put("Recharge", (details.bal
-                                - previousBalance + details.callCost));
-                        pObj.saveEventually();
-                        mRechargeHelper
-                                .addRechargeEntry(new RechargeEntry(
-                                        details.date,
-                                        (details.bal - previousBalance + details.callCost),
-                                        details.bal + details.callCost));
-                    }
-                }
+                checkForRecharge(entryBase);
                 mBalanceHelper.addEntry(details);
                 ////V10Log.d(tag + "Current Bal", details.bal + " ");
-                sharedPreferences.edit().putFloat("CURRENT_BALANCE_"+details.slot, (float) details.bal).commit();
+                sharedPreferences.edit().putFloat("CURRENT_BALANCE_"+details.sim_slot, (float) details.main_bal).commit();
+                break;
+            case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
+                PackCall mPackDetails = (PackCall) entryBase;
+                BalanceHelper mBalanceHelper2 = new BalanceHelper();
+                mBalanceHelper2.addEntry(mPackDetails.getBaseCallDetails());
+                (new PackCallHelper()).addEntry(mPackDetails);
+                ////V10Log.d(tag + "Current Bal", details.bal + " ");
+                SharedPreferences.Editor mEditor = sharedPreferences.edit();
+                if(mPackDetails.main_bal>0)
+                {
+                    mEditor.putFloat("CURRENT_BALANCE_"+mPackDetails.sim_slot, (float) mPackDetails.main_bal);
+                }
+                //TODO Shared pref for current STV
                 break;
             default:
+        }
+    }
+
+    private void checkForRecharge(USSDBase base)
+    {
+        NormalCall details = null;
+        if(base instanceof NormalCall)
+            details = (NormalCall)base;
+        SharedPreferences sharedPreferences = getSharedPreferences("USER_DATA",
+                Context.MODE_PRIVATE);
+        previousBalance = sharedPreferences.getFloat(
+                "CURRENT_BALANCE_"+details.sim_slot, (float) -20.0);
+        ////V10Log.d(tag, "previousBalance " + previousBalance);
+        // if the entry is duplicate
+        if (Float.compare(previousBalance,  details.main_bal) == 0)
+        {
+            ////V10Log.d(tag, "Duplicate  previousBalance ");
+            return;
+        }
+        // if there has been a Recharge
+        if (previousBalance >= 0.0)
+        {
+            if (details.main_bal - previousBalance > 1.0)
+            {
+                RechargeHelper mRechargeHelper = new RechargeHelper();
+                ////V10Log.d(tag, "Recharge = "+ (details.bal -
+                // previousBalance + details.callCost));
+                ParseObject pObj = new ParseObject("RECHARGES");
+                pObj.put("DEVICE_ID", sharedPreferences
+                        .getString("DEVICE_ID", "123456"));
+                pObj.put("Total", text);
+                pObj.put("NUMBER", sharedPreferences.getString(
+                        "NUMBER", "0000"));
+                pObj.put("CARRIER_"+details.sim_slot, sharedPreferences
+                        .getString("CARRIER", "Unknown"));
+                pObj.put("CIRCLE_"+details.sim_slot, sharedPreferences.getString(
+                        "CIRCLE", "Unknown"));
+                pObj.put("Recharge", (details.main_bal
+                        - previousBalance + details.call_cost));
+                pObj.saveEventually();
+                mRechargeHelper
+                        .addRechargeEntry(new RechargeEntry(
+                                details.date,
+                                (details.main_bal - previousBalance + details.call_cost),
+                                details.main_bal + details.call_cost));
+            }
         }
     }
 
@@ -236,8 +251,223 @@ public class RecorderUpdaterService extends AccessibilityService
 
 boolean cancelButtonFound = false;
 
-
     public void onAccessibilityEvent(AccessibilityEvent event)
+    {
+        cancelButtonFound = false;
+        text = getTextFromNode(event.getSource());// getEventText(event);
+        text = text.replace("\r", "_").replace("\n", "_").replace("\u0011"," ").replace("ยง"," ").toUpperCase();
+        Log.d(TAG,String
+                .format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
+                        getEventType(event), event.getClassName(),
+                        event.getPackageName(), event.getEventTime(), text));
+        if (event.getClassName().toString().toUpperCase(Locale.US).contains("ALERT"))
+        {
+        try
+        {
+            USSDParser parser = new USSDParser();
+            if (parser.parseMessage(text)==true) // if Valid
+            {
+                Log.d(TAG,"Successful Parse");
+                processUSSD(parser);
+            }
+            else
+            {
+                Log.d(TAG,"UnSuccessful Parse");
+                logOnParse(text);
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        }
+
+    }
+    public void mockAccesibility(String text)
+    {
+        cancelButtonFound = false;
+        text = text.replace("\r", "_").replace("\n", "_").replace("\u0011"," ").replace("ยง"," ").toUpperCase();
+        //if (event.getClassName().toString().toUpperCase(Locale.US).contains("ALERT"))
+        {
+            try
+            {
+                USSDParser parser = new USSDParser();
+                if (parser.parseMessage(text)==true) // if Valid
+                {
+                    Log.d(TAG,"Successful Parse");
+                    processUSSD(parser);
+                }
+                else
+                {
+                    Log.d(TAG,"UnSuccessful Parse");
+                    logOnParse(text);
+                }
+
+            }
+            catch (Exception e)
+            {
+
+            }
+
+        }
+
+    }
+    private void processUSSD(USSDParser parser)
+    {
+        USSDBase ussDetails = parser.getDetails();
+        Log.d(TAG,ussDetails.toString());
+        switch (ussDetails.getType())
+        {
+            case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
+                Log.d(TAG,"Type Normal call");
+                //reset callDbUpdate
+                //You have to wait for event details to show the pop up
+                processCallUSSD(ussDetails);
+                break;
+            case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
+                //reset callDbUpdate
+                processCallUSSD(ussDetails);
+                break;
+            case ConstantsAndStatics.USSD_TYPES.NORMAL_SMS:
+                ///Need to fetch the number messaged to
+                processSMS(ussDetails);
+            case ConstantsAndStatics.USSD_TYPES.PACK_SMS:
+                processSMS(ussDetails);
+                break;
+            case ConstantsAndStatics.USSD_TYPES.NORMAL_DATA:
+                //Just need to display the pop, no other data as of now
+                processData(ussDetails);
+                break;
+            case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
+                processData(ussDetails);
+                break;
+        }
+
+    }
+
+
+    private void processCallEvent(Message msg)
+    {
+        Log.d(TAG,"processCallEvent");
+        callEventDetailsReady = true;
+        tempCallEventDetails = (OutgoingCallMessage) msg.obj;
+        processAllCallDetails();
+        final ScheduledExecutorService exec = Executors.newScheduledThreadPool(1);
+
+        exec.schedule(new Runnable(){
+            @Override
+            public void run(){
+                //Reset all the race condition variables, If USSD message didn't arrive then insert an incomplete entry
+                finalizeCall();
+            }
+        }, 10, TimeUnit.SECONDS);
+    }
+
+    private void finalizeCall()
+    {
+        //TODO Insert incomplete call details
+        Log.d(TAG,"Resetting all Race Condition Variables");
+        callussdDetailsReady = false;
+        callEventDetailsReady = false;
+        tempCallEventDetails = null;
+        tempCallUSSDDetails = null;
+
+    }
+
+    private void processAllCallDetails()
+    {
+        Log.d(TAG,"processAllCallDetails ");
+        Log.d(TAG,"callussdDetailsReady "+callussdDetailsReady);
+        Log.d(TAG,"callEventDetailsReady "+callEventDetailsReady);
+
+        if(callussdDetailsReady && callEventDetailsReady)
+        {
+            Log.d(TAG,"Event details = "+ tempCallEventDetails.toString());
+            ((NormalCall)tempCallUSSDDetails).eventDetails(tempCallEventDetails);
+            Log.d(TAG,"Call Details = "+tempCallUSSDDetails.toString());
+            Intent popup_intent = new Intent(getApplicationContext(),
+                    UssdPopup.class);
+            if(tempCallUSSDDetails instanceof  NormalCall)
+            {
+                NormalCallPopup   mNormalCallDetails = new NormalCallPopup((NormalCall) tempCallUSSDDetails);
+                ContactDetailModel userDetails = new ContactDetailHelper().getPopUpDetails(tempCallEventDetails.lastNumber);
+                mNormalCallDetails.addUserDetails(userDetails);
+                popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
+
+                popup_intent.putExtra("DATA", mNormalCallDetails);
+
+                Log.d(TAG,"Call detail = "+mNormalCallDetails.toString());
+            }
+            else
+            {
+                PackCallPopup mPackCallPopupDetails = new PackCallPopup((PackCall) tempCallUSSDDetails);
+                ContactDetailModel userDetails = new ContactDetailHelper().getPopUpDetails(tempCallEventDetails.lastNumber);
+                mPackCallPopupDetails.addUserDetails(userDetails);
+                popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
+
+                popup_intent.putExtra("DATA", mPackCallPopupDetails);
+
+                Log.d(TAG,"Call detail = "+mPackCallPopupDetails.toString());
+            }
+
+            popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            if (dismissNode != null)
+                dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            dismissNode = null;
+            Log.d(TAG,"Displaying pop_up");
+            startActivity(popup_intent);
+            Log.d(TAG,"Adding to Db");
+            addToDatabase(tempCallUSSDDetails);
+        }
+        //wait till both are filled otherwise reset them after 10 secs
+    }
+    private void processCallUSSD(USSDBase ussDetails)
+    {
+        Log.d(TAG,"processCallUSSD ");
+        callussdDetailsReady  = true;
+        if(tempCallUSSDDetails == null)
+        {
+            tempCallUSSDDetails = ussDetails;
+        }
+        else
+        {
+            ((NormalCall) tempCallUSSDDetails).USSDDetails((NormalCall)ussDetails);
+        }
+        processAllCallDetails();
+
+    }
+
+    private void processSMS(USSDBase ussDetails)
+    {
+
+    }
+
+    private void processData(USSDBase ussDetails)
+    {
+    }
+    private void logOnParse(String text)
+    {
+        SharedPreferences sharedPreferences = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+
+        ParseObject pObj = new ParseObject("Invalid_USSD");
+        pObj.put("DEVICE_ID",Helper.getDeviceId());
+        if(text==null)
+            return;
+        pObj.put("Total", text);
+        pObj.put("NUMBER",
+                sharedPreferences.getString("VERIFIED_NUMBER", sharedPreferences.getString("NUMBER", "0000")));
+        pObj.put("CARRIER",
+                sharedPreferences.getString("CARRIER_0", "Unknown"));
+        pObj.put("CIRCLE",
+                sharedPreferences.getString("CIRCLE_0", "Unknown"));
+        pObj.saveEventually();
+    }
+
+    /*public void onAccessibilityEvent(AccessibilityEvent event)
     {
         startTime = System.nanoTime();
         mCallDetailsModel = null;
@@ -272,10 +502,10 @@ boolean cancelButtonFound = false;
                     Intent popup_intent;
                     switch (parser.getType())
                     {
-                    /*
+                    *//*
 					 * NORMAL_CALL,//1 NORMAL_SMS,//2 NORMAL_DATA,//3
 					 * VOICE_PACK,//4 SMS_PACK,//5 DATA_PACK,//6 BALANCE,//7
-					 */
+					 *//*
                         case NORMAL_CALL:
                             type = "NORMAL_CALL";
                             NormalCall details = (NormalCall) parser.getDetails();
@@ -511,7 +741,7 @@ boolean cancelButtonFound = false;
 
         hasEditText = false;
 
-    }
+    }*/
     public String getTextFromNode(AccessibilityNodeInfo accessibilityNodeInfo)
     {
         StringBuilder sb = new StringBuilder();
@@ -545,8 +775,7 @@ boolean cancelButtonFound = false;
 
                 sb.append(ac.getText());
                 ////V10Log.d("TEST", "Number:" + i + "   " + sb);
-            } else if (ac.getClassName().equals(EditText.class.getName()))
-                hasEditText = true;
+            }
             else if (ac.getClassName().equals(Button.class.getName()) && !cancelButtonFound)
             {
                 //V10Log.d("TEST", "Button " + ac.getText());
@@ -657,7 +886,7 @@ boolean cancelButtonFound = false;
     @Override
     public void onInterrupt()
     {
-        ////V10Log.d(TAG, "onInterrupt");
+        Log.d(TAG, "onInterrupt");
     }
 
     @Override
@@ -746,11 +975,8 @@ boolean cancelButtonFound = false;
            //V10Log.d(tag + " handleMessage", "What = " + msg.what + "  Contents" + msg.obj.toString());
             if (msg.what == 1729)
             {
-                sim_slot = msg.arg1;
-                lastNumber = ((OutgoingCallMessage) msg.obj).lastNumber;
-                duration = ((OutgoingCallMessage) msg.obj).duration;
-                _id = ((OutgoingCallMessage) msg.obj).id;
-                displayPopUp();
+                processCallEvent(msg);
+                //displayPopUp();
             }
 
         }

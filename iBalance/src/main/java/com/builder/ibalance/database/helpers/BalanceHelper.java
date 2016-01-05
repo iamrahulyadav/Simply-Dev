@@ -8,7 +8,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.builder.ibalance.database.DatabaseManager;
-import com.builder.ibalance.database.models.NormalCall;
+import com.builder.ibalance.models.USSDModels.NormalCall;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 
 import java.util.LinkedList;
@@ -25,28 +26,20 @@ public class BalanceHelper {
 
 		// 1. get reference to writable DB
 		SQLiteDatabase db = mMySQLiteHelper.getWritableDatabase();
-        String phNumber = entry.lastNumber;
-        if (phNumber.startsWith("+91"))
-        {
-            phNumber = phNumber.substring(3);
-        }
-        if(phNumber.startsWith("0"))
-        {
-            phNumber = phNumber.substring(1);
-        }
-        phNumber = phNumber.replaceAll(" ","").replace("-", "");
+        String phNumber = entry.ph_number;
+        phNumber = Helper.normalizeNumber(phNumber);
 		// 2. create ContentValues to add key "column"/value
 		ContentValues values = new ContentValues();
-		values.put("_id", entry.id); // Id which matches the call log id
-		values.put("DATE", entry.date); // get date in milliseconds
-		values.put(IbalanceContract.CallEntry.COLUMN_NAME_SLOT,entry.slot);
-		values.put("COST", entry.callCost); // get callcost
-		values.put("BALANCE", entry.bal); // get balance
-		values.put("DURATION", entry.callDuration); // get callduration
-		values.put("NUMBER", phNumber); // last dialled number
-		values.put("MESSAGE", entry.message);
+		values.put(IbalanceContract.CallEntry.COLUMN_NAME_ID, entry.id); // Id which matches the call log id
+		values.put(IbalanceContract.CallEntry.COLUMN_NAME_DATE, entry.date); // get date in milliseconds
+		values.put(IbalanceContract.CallEntry.COLUMN_NAME_SLOT,entry.sim_slot); //Sim slot
+		values.put(IbalanceContract.CallEntry.COLUMN_NAME_COST, entry.call_cost); // get callcost
+		values.put(IbalanceContract.CallEntry.COLUMN_NAME_BALANCE, entry.main_bal); // get balance
+		values.put(IbalanceContract.CallEntry.COLUMN_NAME_DURATION, entry.call_duration); // get callduration
+		values.put(IbalanceContract.CallEntry.COLUMN_NAME_NUMBER, phNumber); // last dialled number
+		values.put(IbalanceContract.CallEntry.COLUMN_NAME_MESSAGE, entry.original_message);
 		// 3. insert
-		db.insert("CALL", // table
+		db.insert(IbalanceContract.CallEntry.TABLE_NAME, // table
                 null, // nullColumnHack
                 values); // key/value -> keys = column names/ values = column
 							// values
@@ -84,25 +77,25 @@ public class BalanceHelper {
 		// 3. go over each row, build entry and add it to list
 		NormalCall entry = null;
 
-        //TODO need to change it IBalance Contract
-        int date_idx = cursor.getColumnIndex("DATE"),
-                slot_idx = cursor.getColumnIndex("SLOT"),
-                cost_idx = cursor.getColumnIndex("COST"),
-                dur_idx = cursor.getColumnIndex("DURATION"),
-                num_idx = cursor.getColumnIndex("NUMBER"),
-                bal_idx = cursor.getColumnIndex("BALANCE"),
-                msg_idx =cursor.getColumnIndex("MESSAGE");
+        int date_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_DATE),
+                slot_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_SLOT),
+                cost_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_COST),
+                dur_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_DURATION),
+                num_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_NUMBER),
+                bal_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_BALANCE),
+                msg_idx =cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_MESSAGE);
+
         while (cursor.moveToNext())
         {
             entry = new NormalCall();
             entry.date = cursor.getLong(date_idx);
-            entry.slot =  cursor.getInt(slot_idx);
-            entry.callCost = cursor.getFloat(cost_idx);
+            entry.sim_slot =  cursor.getInt(slot_idx);
+            entry.call_cost = cursor.getFloat(cost_idx);
 
-            entry.callDuration = cursor.getInt(dur_idx);
-            entry.lastNumber = cursor.getString(num_idx);
-            entry.bal = cursor.getFloat(bal_idx);
-            entry.message = cursor.getString(msg_idx);
+            entry.call_duration = cursor.getInt(dur_idx);
+            entry.ph_number = cursor.getString(num_idx);
+            entry.main_bal = cursor.getFloat(bal_idx);
+            entry.original_message = cursor.getString(msg_idx);
             // Add book to entry
             entries.add(entry);
 		}
@@ -154,25 +147,24 @@ public class BalanceHelper {
 		// 3. go over each row, build entry and add it to list
 		NormalCall entry = null;
 		// 1-DATE 2-slot 2-COST 3-DURATION 4-NUMBER 5-BALANCE 6 - TEXT
-        //TODO need to change it IBalance Contract
-        int date_idx = cursor.getColumnIndex("DATE"),
-                slot_idx = cursor.getColumnIndex("SLOT"),
-                cost_idx = cursor.getColumnIndex("COST"),
-                dur_idx = cursor.getColumnIndex("DURATION"),
-                num_idx = cursor.getColumnIndex("NUMBER"),
-                bal_idx = cursor.getColumnIndex("BALANCE"),
-                msg_idx =cursor.getColumnIndex("MESSAGE");
+        int date_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_DATE),
+                slot_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_SLOT),
+                cost_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_COST),
+                dur_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_DURATION),
+                num_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_NUMBER),
+                bal_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_BALANCE),
+                msg_idx =cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_MESSAGE);
 		if (cursor.moveToFirst()) {
 			do {
 				entry = new NormalCall();
 				entry.date = (Long.parseLong(cursor.getString(date_idx)));
-				entry.callCost = Float.parseFloat(cursor.getString(cost_idx));
-				total_call_cost += entry.callCost;
+				entry.call_cost = Float.parseFloat(cursor.getString(cost_idx));
+				total_call_cost += entry.call_cost;
 
-				entry.callDuration = (Integer.parseInt(cursor.getString(dur_idx)));
-				entry.lastNumber = cursor.getString(num_idx);
-				entry.bal = Float.parseFloat(cursor.getString(bal_idx));
-				total_call_duration += entry.callDuration;
+				entry.call_duration = (Integer.parseInt(cursor.getString(dur_idx)));
+				entry.ph_number = cursor.getString(num_idx);
+				entry.main_bal = Float.parseFloat(cursor.getString(bal_idx));
+				total_call_duration += entry.call_duration;
 				
 
 				// Add book to entry

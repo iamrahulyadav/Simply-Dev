@@ -5,7 +5,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.builder.ibalance.database.models.NormalData;
+import com.builder.ibalance.models.USSDModels.NormalData;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -27,9 +27,9 @@ public class NormalDataHelper {
 		ContentValues values = new ContentValues();
 		values.put("DATE", entry.date); // get date in milliseconds
 		values.put("COST", entry.cost); // get callcost
-		values.put("BALANCE", entry.bal); // get balance
-		values.put("DATA_CONSUMED", entry.data_consumed); // get callduration
-		values.put("MESSAGE", entry.message);
+		values.put("BALANCE", entry.main_bal); // get balance
+		values.put("DATA_CONSUMED", entry.data_used); // get callduration
+		values.put("MESSAGE", entry.original_message);
 		// 3. insert
 		db.insert("DATA", // table
 				null, // nullColumnHack
@@ -58,9 +58,9 @@ public class NormalDataHelper {
 				entry.date = (Long.parseLong(cursor.getString(1)));
 				entry.cost = Float.parseFloat(cursor.getString(2));
 				
-				entry.data_consumed = (Float.parseFloat(cursor.getString(3)));
-				entry.bal = Float.parseFloat(cursor.getString(4));
-				entry.message = cursor.getString(5);
+				entry.data_used = (Float.parseFloat(cursor.getString(3)));
+				entry.main_bal = Float.parseFloat(cursor.getString(4));
+				entry.original_message = cursor.getString(5);
 				// Add book to entry
 				entries.add(entry);
 			} while (cursor.moveToNext());

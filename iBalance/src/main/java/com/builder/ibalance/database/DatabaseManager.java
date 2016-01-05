@@ -27,7 +27,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     final static String tag = DatabaseManager.class.getSimpleName();
     private final static String DATABASE_NAME = "simply.db";
     private final static String OLD_DATABASE_NAME = "ibalance.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static DatabaseManager sInstance;
     public static synchronized DatabaseManager getInstance() {
         if (sInstance == null) {
@@ -129,7 +129,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
         db.execSQL(IbalanceContract.CREATE_CONTACT_DETAIL_TABLE);
 
-        db.execSQL(IbalanceContract.CREATE_VOICE_PACK_TABLE);
+        db.execSQL(IbalanceContract.CREATE_PACK_CALL_TABLE);
         //Log.d("databse", "executed " + CREATE_VOICE_PACK_TABLE);
 
         db.execSQL(IbalanceContract.CREATE_SMS_TABLE);
@@ -285,7 +285,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
         //V12Log.d(tag,"Oldversion = "+ oldVersion + "newVersion = "+ newVersion );
-        if(oldVersion==2 && newVersion==3)
+        if(oldVersion==2 && newVersion>2)
         {
             String tempTable = "temp_table";
             db.execSQL("ALTER TABLE " + IbalanceContract.CallEntry.TABLE_NAME + " RENAME TO " + tempTable);
@@ -315,6 +315,15 @@ public class DatabaseManager extends SQLiteOpenHelper {
                     " from " + tempTable);
             //V12Log.d(tag, "Call LOG Entry CopyOver complete");
             //V12Log.d(tag, "Everything Successful");
+        }
+        if(newVersion==4)
+        {
+
+            db.execSQL(IbalanceContract.CREATE_PACK_CALL_TABLE);
+            db.execSQL(IbalanceContract.DROP_SMS_TABLE);
+            db.execSQL(IbalanceContract.CREATE_SMS_PACK_TABLE);
+            db.execSQL(IbalanceContract.DROP_DATA_TABLE);
+            db.execSQL(IbalanceContract.CREATE_DATA_TABLE);
         }
 
 

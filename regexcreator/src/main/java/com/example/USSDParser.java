@@ -11,10 +11,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static com.example.Choice.ptln;
 
@@ -32,11 +31,12 @@ public class USSDParser
         try
         {
             Charset charset = Charset.forName("UTF-8");
-            BufferedReader br = new BufferedReader(Files.newBufferedReader(Paths.get("G:/SimplyV2/TextMining/unique_pat/Done/Unit_tests/Pack_Call.txt"),charset));
+            //CHRG:0.00 INR,BAL:5.20 INR,VOLUMEUSED:11.421875 MB,FREEBIEAVAILABLE:95.57MB.PLAN EXPIRES FEB 08 2016.. FREE 10 TT LOAN! DIAL *444# TO GET RS. 10 TT LOAN! ---------- FREE 10 TT LOAN! DIAL *444# TO GET RS. 10 TT LOAN! TC APPLY. LAST SMS DEDUCTED 0.00 INR. MAIN BALANCE IS 5.20 INR.
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));//Files.newBufferedReader(Paths.get("G:/SimplyV2/TextMining/unique_pat/Done/Unit_tests/Pack_Call.txt"),charset));
             String message = null;
             while((message = br.readLine())!=null)
             {
-                if(!packCall(message))
+                if(!normalData(message))
                 {
                     ptln("Failed:\n"+message);
                 }
@@ -54,6 +54,7 @@ public class USSDParser
         }
         long endTime = System.nanoTime();
         ptln("Time Taken = "+((endTime-startTime)/1000000)+"ms");
+
     }
 
     public boolean parseMessage(String message) throws JSONException
@@ -159,7 +160,7 @@ public class USSDParser
                         duration = Integer.parseInt(result.group("DURMIN")) * 60;
                         duration += Integer.parseInt(result.group("DURSEC"));
                         //ptln("Duration Min:Secs = " + duration);
-                    } catch (IllegalArgumentException e2)
+                    } catch (IndexOutOfBoundsException e2)
                     {
                         duration = -1;
                         //ptln("No Duration Found A-Hole Telecos");
@@ -783,8 +784,6 @@ public class USSDParser
             {
                 mainBal = -1.0f;
             }
-            if(!freeMinType)
-            {
                 try
                 {
                     packCost = Float.parseFloat(result.group("PBUSED"));
@@ -801,15 +800,10 @@ public class USSDParser
                 {
                     packBal = -1.0f;
                 }
-            }
-            if(freeMinType)
-            {
+
                 ptln((i++)+")Type = "+type+" Used "+usedSecs+" metric = "+usedMetric+" Duration = "+durSec+" Left = "+leftSecs+" Metric= "+leftMetric+" Validity = "+validity+" Main Bal ="+mainBal+"\n");
-            }
-            else
-            {
+
                 ptln((i++)+")Type = "+type+" Duration = "+durSec+" Pcost = "+packCost+" Pbal = "+packBal+" Validity = "+validity+" Main Bal ="+mainBal+"\n");
-            }
             return  true;
         }
         return false;
@@ -921,7 +915,7 @@ public class USSDParser
             if (mMatcher.find())
             {
                 //Log.d(TAG, "Found a Match");
-                //ptln("Matched with "+regex);
+                ptln("Matched with "+regex);
                 return mMatcher;
 
             }

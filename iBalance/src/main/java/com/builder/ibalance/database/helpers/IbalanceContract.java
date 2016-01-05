@@ -46,27 +46,44 @@ public class
             CallEntry.COLUMN_NAME_MESSAGE + TEXT_TYPE + COMMA_SEP +
             CallEntry.COLUMN_NAME_NUMBER + TEXT_TYPE +
             " )";
+    //Call pack will work in junction with Call table (Outer join), they will share id of call logs.
+    public final static String CREATE_PACK_CALL_TABLE = "CREATE TABLE IF NOT EXISTS " +
+            PackCallEntry.TABLE_NAME +
+            "( "
+            + PackCallEntry.COLUMN_NAME_ID +" INTEGER PRIMARY KEY  , "
+            + PackCallEntry.COLUMN_NAME_PACK_NAME+" TEXT  , "
+            + PackCallEntry.COLUMN_NAME_DURATION_USED+" INTEGER, "
+            + PackCallEntry.COLUMN_NAME_DURATION_LEFT+" INTEGER, "
+            + PackCallEntry.COLUMN_NAME_DURATION_USED_METRIC+" TEXT, "
+            + PackCallEntry.COLUMN_NAME_DURATION_LEFT_METRIC+" TEXT, "
+            + PackCallEntry.COLUMN_NAME_PACK_BAL_LEFT+" INTEGER, "
+            + PackCallEntry.COLUMN_NAME_VALIDITY+" TEXT"
+            + " )";
 
-
-   public final static String CREATE_VOICE_PACK_TABLE = "CREATE TABLE IF NOT EXISTS VOICE_PACK ( "
-            + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
-            + "DURATION INTEGER, "+ "NUMBER TEXT, "+ "REMAINING INTEGER, " +"VALIDITY TEXT, " +"MESSAGE TEXT"+ " )";
-
-    public static abstract class VoicePackEntry  {
-        public static final String TABLE_NAME = "VOICE_PACK";
+    public static abstract class PackCallEntry  {
+        public static final String TABLE_NAME = "PACK_CALL";
         public static final String COLUMN_NAME_ID = "_id";
-        public static final String COLUMN_NAME_SLOT = "SLOT";
-        public static final String COLUMN_NAME_DATE= "DATE";
-        public static final String COLUMN_NAME_DURATION = "DURATION";
-        public static final String COLUMN_NAME_REMAINING = "REMAINING";
+        public static final String COLUMN_NAME_PACK_NAME = "PACK_NAME";
+        public static final String COLUMN_NAME_DURATION_USED = "DURATION_USED";
+        public static final String COLUMN_NAME_DURATION_LEFT = "DURATION_LEFT";
+        public static final String COLUMN_NAME_DURATION_USED_METRIC = "DURATION_USED_METRIC";
+        public static final String COLUMN_NAME_DURATION_LEFT_METRIC  = "DURATION_LEFT_METRIC";
+        public static final String COLUMN_NAME_PACK_BAL_LEFT = "PACK_BAL_LEFT";
         public static final String COLUMN_NAME_VALIDITY = "VALIDITY";
-        public static final String COLUMN_NAME_NUMBER = "NUMBER";
-        public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
 
-    public final static String CREATE_SMS_TABLE = "CREATE TABLE IF NOT EXISTS SMS  ( "
-            + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
-            + "COST FLOAT, "  + "NUMBER TEXT, "+ "BALANCE FLOAT, " +"MESSAGE TEXT "+" )";
+    public final static String DROP_SMS_TABLE = "DROP TABLE IF EXISTS "+ SMSEntry.TABLE_NAME;
+    public final static String CREATE_SMS_TABLE = "CREATE TABLE IF NOT EXISTS " +
+            SMSEntry.TABLE_NAME +
+            "( "
+            + SMSEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY "
+            + SMSEntry.COLUMN_NAME_DATE+" INTEGER  , "
+            + SMSEntry.COLUMN_NAME_SLOT+" INTEGER  , "
+            + SMSEntry.COLUMN_NAME_COST+" FLOAT, "
+            + SMSEntry.COLUMN_NAME_NUMBER+" TEXT, "
+            + SMSEntry.COLUMN_NAME_BALANCE+" FLOAT, "
+            + SMSEntry.COLUMN_NAME_MESSAGE+" TEXT "
+            +" )";
 
     public static abstract class SMSEntry  {
         public static final String TABLE_NAME = "SMS";
@@ -78,24 +95,29 @@ public class
         public static final String COLUMN_NAME_NUMBER = "NUMBER";
         public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
-    public final static String CREATE_SMS_PACK_TABLE = "CREATE TABLE IF NOT EXISTS  SMS_PACK ( "
-            + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
-            + "NUMBER TEXT ,  "+ "REMAINING INTEGER, " +" VALIDITY TEXT, " +"MESSAGE TEXT"+ " )";
+    public final static String DROP_SMS_PACK_TABLE = "DROP TABLE IF EXISTS "+ SMSPackEntry.TABLE_NAME;
+    public final static String CREATE_SMS_PACK_TABLE = "CREATE TABLE IF NOT EXISTS  "
+            + SMSPackEntry.TABLE_NAME+" ( "
+            + SMSPackEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY , "
+            + SMSPackEntry.COLUMN_NAME_REMAINING+" INTEGER, "
+            + SMSPackEntry.COLUMN_NAME_VALIDITY+" TEXT "+ " )";
 
     public static abstract class SMSPackEntry  {
         public static final String TABLE_NAME = "SMS_PACK";
         public static final String COLUMN_NAME_ID = "_id";
-        public static final String COLUMN_NAME_SLOT = "SLOT";
-        public static final String COLUMN_NAME_DATE= "DATE";
         public static final String COLUMN_NAME_REMAINING = "REMAINING";
         public static final String COLUMN_NAME_VALIDITY = "VALIDITY";
-        public static final String COLUMN_NAME_NUMBER = "NUMBER";
-        public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
-    public final static String CREATE_DATA_TABLE = "CREATE TABLE  IF NOT EXISTS DATA ( "
-            + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
-            + "COST FLOAT, "  +"DATA_CONSUMED FLOAT , "+ "BALANCE FLOAT, " +"MESSAGE TEXT" + " )";
-
+    public final static String DROP_DATA_TABLE = "DROP TABLE IF EXISTS "+ DataEntry.TABLE_NAME;
+    public final static String CREATE_DATA_TABLE = "CREATE TABLE  IF NOT EXISTS " +
+            DataEntry.TABLE_NAME+" ( "
+            + DataEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY AUTOINCREMENT , "
+            + DataEntry.COLUMN_NAME_SLOT+" INTEGER  , "
+            + DataEntry.COLUMN_NAME_DATE+" INTEGER  , "
+            + DataEntry.COLUMN_NAME_COST+" FLOAT, "
+            + DataEntry.COLUMN_NAME_DATA_CONSUMED+" FLOAT , "
+            + DataEntry.COLUMN_NAME_BALANCE+" FLOAT, "
+            + DataEntry.COLUMN_NAME_MESSAGE+" TEXT" + " )";
     public static abstract class DataEntry  {
         public static final String TABLE_NAME = "DATA";
         public static final String COLUMN_NAME_ID = "_id";
@@ -107,10 +129,19 @@ public class
         public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
 
-    //TYPE: 0-2G 1-3G 2-4G
-    public final static String CREATE_DATA_PACK_TABLE = "CREATE TABLE  IF NOT EXISTS DATA_PACK ( "
-            + "_id INTEGER PRIMARY KEY AUTOINCREMENT , " + "DATE INTEGER  , "
-            + "TYPE INTEGER, "+ "DATA_CONSUMED FLOAT,  "+ "REMAINING INTEGER, " +"VALIDITY TEXT, "+"BALANCE FLOAT , " +"MESSAGE TEXT"+ " )";
+
+    public final static String DROP_DATA_PACK_TABLE = "DROP TABLE IF EXISTS "+ DataPackEntry.TABLE_NAME;
+    public final static String CREATE_DATA_PACK_TABLE = "CREATE TABLE  IF NOT EXISTS "
+            + DataPackEntry.TABLE_NAME+" ( "
+            + DataPackEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY AUTOINCREMENT , "
+            + DataPackEntry.COLUMN_NAME_DATE+" INTEGER  , "
+            + DataPackEntry.COLUMN_NAME_SLOT+" INTEGER  , "
+            + DataPackEntry.COLUMN_NAME_TYPE+" TEXT, "
+            + DataPackEntry.COLUMN_NAME_DATA_CONSUMED+" FLOAT,  "
+            + DataPackEntry.COLUMN_NAME_DATA_LEFT+" INTEGER, "
+            + DataPackEntry.COLUMN_NAME_VALIDITY+" TEXT, "
+            + DataPackEntry.COLUMN_NAME_BALANCE+" FLOAT , "
+            + DataPackEntry.COLUMN_NAME_MESSAGE+" TEXT"+ " )";
 
     public static abstract class DataPackEntry  {
         public static final String TABLE_NAME = "DATA_PACK";
@@ -119,15 +150,20 @@ public class
         public static final String COLUMN_NAME_DATE= "DATE";
         public static final String COLUMN_NAME_TYPE= "TYPE";
         public static final String COLUMN_NAME_DATA_CONSUMED = "DATA_CONSUMED";
-        public static final String COLUMN_NAME_REMAINING = "REMAINING";
+        public static final String COLUMN_NAME_DATA_LEFT = "DATA_LEFT";
         public static final String COLUMN_NAME_VALIDITY = "VALIDITY";
         public static final String COLUMN_NAME_BALANCE = "BALANCE";
         public static final String COLUMN_NAME_MESSAGE = "MESSAGE";
     }
 
-    public final static String CREATE_RECHARGE_TABLE = "CREATE TABLE  IF NOT EXISTS RECHARGE ( "
-            + "_id INTEGER PRIMARY KEY AUTOINCREMENT , "+ "DATE INTEGER  , " + "RECHARGE_AMOUNT FLOAT, "
-            + "BALANCE FLOAT, " +"MESSAGE TEXT" + " )";
+    public final static String CREATE_RECHARGE_TABLE = "CREATE TABLE  IF NOT EXISTS "
+            + RechargeEntry.TABLE_NAME+" ( "
+            + RechargeEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY AUTOINCREMENT , "
+            + RechargeEntry.COLUMN_NAME_DATE+" INTEGER  , "
+            + RechargeEntry.COLUMN_NAME_SLOT+" INTEGER  , "
+            + RechargeEntry.COLUMN_NAME_RECHARGE_AMOUNT+" FLOAT, "
+            + RechargeEntry.COLUMN_NAME_BALANCE+" FLOAT, "
+            + RechargeEntry.COLUMN_NAME_MESSAGE+" TEXT" + " )";
 
     public static abstract class RechargeEntry  {
         public static final String TABLE_NAME = "RECHARGE";

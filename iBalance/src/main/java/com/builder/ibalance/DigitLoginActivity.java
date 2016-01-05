@@ -1,21 +1,12 @@
 package com.builder.ibalance;
 
-import android.app.Activity;
-
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Bundle;
-
-import android.util.Log;
-import android.view.Window;
-import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.builder.ibalance.util.MyApplication;
 import com.digits.sdk.android.AuthCallback;
-import com.digits.sdk.android.Digits;
-import com.digits.sdk.android.DigitsAuthButton;
 import com.digits.sdk.android.DigitsException;
 import com.digits.sdk.android.DigitsSession;
 
@@ -30,8 +21,10 @@ public class DigitLoginActivity extends MyApplication{
             public void success(DigitsSession session, String phoneNumber) {
                 // Do something with the session
                 SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-                mSharedPreferences.edit().putBoolean("USER_VERIFIED",true).commit();
-                boolean IsVerified = mSharedPreferences.getBoolean("USER_VERIFIED",false);
+                SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                mEditor.putBoolean("USER_VERIFIED",true);
+                mEditor.putString("VERIFIED_NUMBER",phoneNumber);
+                mEditor.commit();
                 Intent intent  = new Intent(getApplicationContext(),SplashscreenActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
@@ -41,6 +34,10 @@ public class DigitLoginActivity extends MyApplication{
             @Override
             public void failure(DigitsException exception) {
                 // Do something on failure
+                Toast.makeText(MyApplication.context,"Error: Skipping Login",Toast.LENGTH_LONG);
+                Intent intent  = new Intent(getApplicationContext(),SplashscreenActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
         };
      }

@@ -17,6 +17,9 @@ import com.builder.ibalance.util.MyApplication;
 import com.crashlytics.android.Crashlytics;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Shabaz on 25-Sep-15.
@@ -51,13 +54,28 @@ public class CallLogObserver extends ContentObserver
     public void onChange(boolean selfChange, Uri uri)
     {
         //Log.d(tag, "Change in callLog detected " + uri.toString());
+        final ScheduledExecutorService exec = Executors.newScheduledThreadPool(1);
+
+        exec.schedule(new Runnable(){
+            @Override
+            public void run(){
+                sendEventDetails();
+            }
+        }, 500, TimeUnit.MILLISECONDS);
+
+
+
+    }
+
+    private void sendEventDetails()
+    {
         SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
         long previous_id = mSharedPreferences.getLong("PREV_ID", -1l);
         if(previous_id == -1l)
         {
             previous_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
         }
-       //V10Log.d(tag,"NEW ID = "+previous_id);
+        //V10Log.d(tag,"NEW ID = "+previous_id);
 
         cursor = MyApplication.context.getContentResolver().query(
                 CallLog.Calls.CONTENT_URI,
@@ -154,7 +172,7 @@ public class CallLogObserver extends ContentObserver
                             msg.arg1 = slot_id;
                             msg.what = 1729;
                             long call_id = cursor.getLong(id_idx);
-                            msg.obj = new OutgoingCallMessage(number, duration, call_id);
+                            msg.obj = new OutgoingCallMessage(call_id,slot_id,duration,number);
                             accessibiltyServiceHandler.sendMessage(msg);
                         }
                     }
@@ -168,8 +186,8 @@ public class CallLogObserver extends ContentObserver
         {
             Crashlytics.logException(e);
         }
-
     }
+
     private int getSlotIdforLG(String iccId)
     {
         for (SimModel model: GlobalData.globalSimList)

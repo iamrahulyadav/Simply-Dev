@@ -1,4 +1,4 @@
-package com.builder.ibalance.services;
+package com.builder.ibalance.models.PopupModels;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -7,35 +7,20 @@ import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.models.USSDModels.NormalCall;
 
 /**
- * Created by Shabaz on 28-Sep-15.
+ * Created by Shabaz on 06-Jan-16.
  */
-public class CallDetailsModel implements Parcelable
+public class NormalCallPopup implements Parcelable
 {
-    // Used for both Normal
-    private float call_cost = 0.0f, current_balance = 0.0f, call_rate = 0.0f, total_spent = 0.0f,pack_bal_used = 0.0f,pack_bal_left = 0.0f;
-    String pack_name="N/A",used_metric="secs",left_metric="secs",validity="N/A";
-    int pack_duration_used,pack_duration_left,call_type;
-    private int duration = 0, sim_slot;
+    private float call_cost = 0.0f, current_balance = 0.0f, call_rate = 0.0f, total_spent = 0.0f;
+    private int duration = 0, sim_slot=0;
     private String name = "Unkown";
     private String number = "xxxxxxxxxxx";
     private String carrier_circle = "Unkown/Unkown";
     private String image_uri = null;
     private String message = "";
 
-    public void addUserDetails(ContactDetailModel userDetails)
+    public NormalCallPopup(NormalCall mNormalCall)
     {
-        this.name = userDetails.name;
-        this.image_uri = userDetails.image_uri;
-        this.carrier_circle = userDetails.carrier + "," + userDetails.circle;
-        this.total_spent = userDetails.total_cost;
-    }
-
-
-
-
-    public CallDetailsModel(NormalCall mNormalCall)
-    {
-        this.call_type = mNormalCall.getType();
         this.sim_slot = mNormalCall.sim_slot;
         this.number = mNormalCall.ph_number;
         this.call_cost = mNormalCall.call_cost;
@@ -52,26 +37,21 @@ public class CallDetailsModel implements Parcelable
         this.message = mNormalCall.original_message;
     }
 
-    public String getMessage()
+    public void addUserDetails(ContactDetailModel userDetails)
     {
-        return message;
+        this.name = userDetails.name;
+        this.image_uri = userDetails.image_uri;
+        this.carrier_circle = userDetails.carrier + "," + userDetails.circle;
+        this.total_spent = userDetails.total_cost;
     }
-
-
-
-    public int getSim_slot()
+    protected NormalCallPopup(Parcel in)
     {
-        return sim_slot;
-    }
-
-    protected CallDetailsModel(Parcel in)
-    {
-        sim_slot = in.readInt();
         call_cost = in.readFloat();
         current_balance = in.readFloat();
         call_rate = in.readFloat();
-        duration = in.readInt();
         total_spent = in.readFloat();
+        duration = in.readInt();
+        sim_slot = in.readInt();
         name = in.readString();
         number = in.readString();
         carrier_circle = in.readString();
@@ -79,21 +59,20 @@ public class CallDetailsModel implements Parcelable
         message = in.readString();
     }
 
-    public static final Creator<CallDetailsModel> CREATOR = new Creator<CallDetailsModel>()
+    public static final Creator<NormalCallPopup> CREATOR = new Creator<NormalCallPopup>()
     {
         @Override
-        public CallDetailsModel createFromParcel(Parcel in)
+        public NormalCallPopup createFromParcel(Parcel in)
         {
-            return new CallDetailsModel(in);
+            return new NormalCallPopup(in);
         }
 
         @Override
-        public CallDetailsModel[] newArray(int size)
+        public NormalCallPopup[] newArray(int size)
         {
-            return new CallDetailsModel[size];
+            return new NormalCallPopup[size];
         }
     };
-
 
 
     /**
@@ -119,63 +98,16 @@ public class CallDetailsModel implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-        dest.writeInt(sim_slot);
         dest.writeFloat(call_cost);
         dest.writeFloat(current_balance);
         dest.writeFloat(call_rate);
-        dest.writeInt(duration);
         dest.writeFloat(total_spent);
+        dest.writeInt(duration);
+        dest.writeInt(sim_slot);
         dest.writeString(name);
         dest.writeString(number);
         dest.writeString(carrier_circle);
         dest.writeString(image_uri);
         dest.writeString(message);
     }
-
-    public float getCall_cost()
-    {
-        return call_cost;
-    }
-
-    public float getCurrent_balance()
-    {
-        return current_balance;
-    }
-
-    public float getCall_rate()
-    {
-        return call_rate;
-    }
-
-    public float getTotal_spent()
-    {
-        return total_spent;
-    }
-
-    public int getDuration()
-    {
-        return duration;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public String getNumber()
-    {
-        return number;
-    }
-
-    public String getCarrier_circle()
-    {
-        return carrier_circle;
-    }
-
-    public String getImage_uri()
-    {
-        return image_uri;
-    }
-
-
 }

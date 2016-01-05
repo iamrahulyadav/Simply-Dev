@@ -4,11 +4,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,10 +22,38 @@ import java.util.List;
  */
 public class SortJson
 {
+    File file = new File("G:/SimplyV2/TextMining/ALL_DATA/Processed2/Invalid_USSD.json_all_rem.txt");
+    FileOutputStream fout = new FileOutputStream("G:/SimplyV2/TextMining/ALL_DATA/Processed2/INVALID_USSD_SORTED.json");
     public SortJson() throws IOException, JSONException
     {
-        File file = new File("G:/SimplyV2/TextMining/ALL_DATA/Processed/VALID_USSD.json_all_rem.txt");
-        FileOutputStream fout = new FileOutputStream("G:/SimplyV2/TextMining/ALL_DATA/Processed/VALID_USSD_SORTED.json");
+
+        sortStrings();
+        //sortJson();
+
+
+    }
+
+    private void sortStrings() throws IOException
+    {
+        //new InputStreamReader(System.in));//
+        Charset charset = Charset.forName("UTF-8");
+        BufferedReader br = new BufferedReader(Files.newBufferedReader(Paths.get("G:/SimplyV2/TextMining/ALL_DATA/Processed2/Invalid_USSD.json_all_rem.txt"),charset));
+        String message = null;
+        ArrayList<String> mList = new ArrayList<>();
+        while ((message = br.readLine())!=null)
+        {
+            mList.add(message.trim());
+        }
+        Collections.sort(mList);
+        for (String t:mList)
+        {
+            fout.write((t+"\n").getBytes());
+        }
+        fout.flush();
+        fout.close();
+    }
+    private void sortJson() throws IOException, JSONException
+    {
         FileInputStream fileStram;
         byte[] data = null;
         try
@@ -61,7 +93,7 @@ public class SortJson
             //ptln(tobj.toString());
             jsonValues.add((String) tobj.get("M"));
         }
-            Collections.sort(jsonValues);/*, new Comparator<JSONObject>()
+        Collections.sort(jsonValues);/*, new Comparator<JSONObject>()
             {
                 //You can change "Name" with "ID" if you want to sort by ID
                 private static final String KEY_NAME = "M";
@@ -146,6 +178,6 @@ public class SortJson
             }
 
         }*/
-
     }
+
 }

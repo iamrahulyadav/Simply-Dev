@@ -11,7 +11,7 @@ public class Choice
     static int choice = 1;
 
     static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException, JSONException
     {
         if(args.length>0)
         {
@@ -29,6 +29,7 @@ public class Choice
             ptln("7 --- Sort JSON");
             ptln("8 --- USSDParser");
             ptln("9 --- Scratch Pad");
+            ptln("10 --- TRAI");
             readChoice();
         }
         switch (choice)
@@ -73,6 +74,9 @@ public class Choice
 
             case 9:
                 new ScratchPad();
+                break;
+            case 10:
+                new TRAI();
                 break;
 
             default:

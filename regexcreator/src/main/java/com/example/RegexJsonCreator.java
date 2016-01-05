@@ -22,7 +22,7 @@ public class RegexJsonCreator
     String regex;
     JSONArray allJson = null;
     String TYPE = "SMS_PACK";
-    File regex_json = new File("G:/SimplyV2/TextMining/json/SMS_PACK_PATTERNS.json");
+    File regex_json = new File("G:/SimplyV2/TextMining/json/NORMAL_SMS_PATTERNS.json");
     int costPos = -1, durationSecPos = -1,mainBalPos = -1,durationClockPosHH = -1,durationClockPosMM = -1,durationClockPosSS = -1;
     int usedData = -1, leftData = -1,type = -1,usedDataMetric = -1,leftDataMetric = -1,validity = -1,mainbalance = -1;
     int cont = -1;
@@ -53,7 +53,7 @@ public class RegexJsonCreator
             JSONArray mJsonArray = null;
                 mJsonArray = new JSONArray(str);
             int id = 0,version=1;
-            do
+            while (true)
             {
                 //regex
                 //cost
@@ -62,13 +62,13 @@ public class RegexJsonCreator
                 //d HH
                 //d MM
                 //d SS
-                ptln("Enter the regex for call -1 to Stop OR 0 to Change Carrier");
+                ptln("Enter the regex for call -1 to Stop OR 0 to undo");
                 regex = reader.readLine();
                 if(regex.equals("-1"))
                     break;
                 else if(regex.equals("0"))
                 {
-                    ptln("Enter Carrier");
+                    mJsonArray.remove(--id);
                     continue;
                 }
                 //JSONObject entry = getnewEntryforData(regex);
@@ -77,7 +77,7 @@ public class RegexJsonCreator
                 //entry.put("CARRIER",carrier);
                 entry.put("id",id++);
                 entry.put("version",version);
-                entry.put("type",TYPE);
+                //entry.put("type",TYPE);
                /*
                 Call Entry
                 ptln("Enter the regex for call");
@@ -118,7 +118,7 @@ public class RegexJsonCreator
 
                 mJsonArray.put(entry);
 
-            }while (true);
+            }
 
             mFileWriter = new FileOutputStream(regex_json);
             mFileWriter.write(mJsonArray.toString().getBytes());
