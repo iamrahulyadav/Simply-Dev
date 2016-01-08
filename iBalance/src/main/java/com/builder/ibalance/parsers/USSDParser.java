@@ -170,7 +170,7 @@ public class USSDParser
             try
             {
                 cost = Float.parseFloat(result.group("COST"));
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 cost = -1.0f;
             }
@@ -183,6 +183,8 @@ public class USSDParser
                 try
                 {
                     String clock = result.group("DURC");
+                    if(clock==null)
+                        throw new IndexOutOfBoundsException();
                     String sub[] = clock.split(":");
                     duration = Integer.parseInt(sub[0]) * 60 * 60;
                     duration += Integer.parseInt(sub[1]) * 60;
@@ -693,6 +695,8 @@ public class USSDParser
                 {
                     //Clock Timing
                     String clock = result.group("DURC");
+                    if(clock==null)
+                        throw new IndexOutOfBoundsException();
                     String sub[] = clock.split(":");
                     durSec = Integer.parseInt(sub[0]) * 60 * 60;
                     durSec += Integer.parseInt(sub[1]) * 60;
@@ -1196,7 +1200,6 @@ public class USSDParser
             if (mcc.find())
             {
                 String callDuration = mcc.group();
-
                 //Log.d(TAG +" CALL"+ "call Duration", callDuration);
                 String sub[] = callDuration.split(":");
                 //Log.d(TAG + "call sec 0 ", sub[0]);

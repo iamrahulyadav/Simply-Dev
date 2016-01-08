@@ -61,7 +61,7 @@ public class CallLogObserver extends ContentObserver
             public void run(){
                 sendEventDetails();
             }
-        }, 500, TimeUnit.MILLISECONDS);
+        }, 100, TimeUnit.MILLISECONDS);
 
 
 
@@ -81,7 +81,7 @@ public class CallLogObserver extends ContentObserver
                 CallLog.Calls.CONTENT_URI,
                 null,
                 CallLog.Calls._ID + ">?",
-                new String[]{String.valueOf(previous_id)}, CallLog.Calls._ID + " ASC");
+                new String[]{String.valueOf(previous_id)}, CallLog.Calls._ID + " DESC LIMIT 1");
         try
         {
             if (cursor != null)

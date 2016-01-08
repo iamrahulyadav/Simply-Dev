@@ -128,7 +128,6 @@ public class Loki
                     editor.putString("PACK_DATA", assetJson.getString("PACK_DATA"));
                     editor.putString("NORMAL_SMS", assetJson.getString("NORMAL_SMS"));
                     editor.putString("PACK_SMS", assetJson.getString("PACK_SMS"));
-                    editor.putString("VOICE_DATA", assetJson.getString("VOICE_DATA"));
                 editor.putBoolean("NEW_VERSION_FISRT_TIME",false);
                 editor.commit();
             }

@@ -13,13 +13,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
 import com.appsflyer.AppsFlyerLib;
-import com.builder.ibalance.adapters.RechargesAdapter;
 import com.builder.ibalance.adapters.RecycleRechargesAdapter;
-import com.builder.ibalance.database.RechargeHelper;
-import com.builder.ibalance.database.helpers.BalanceHelper;
+import com.builder.ibalance.database.helpers.RechargeHelper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;

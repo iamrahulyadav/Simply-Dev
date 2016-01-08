@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.builder.ibalance.database.DatabaseManager;
-import com.builder.ibalance.database.MappingHelper;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.util.MyApplication;

@@ -46,7 +46,7 @@ public class Encdec {
     private Cipher cipher;
     private SecretKey key;
     private IvParameterSpec iv;
-    String type = "DATA_PATTERNS";
+    String type = "NORMAL_SMS_PATTERNS";
     File folder = new File("G:/SimplyV2/TextMining/json/Final 05-01-16");
     //File regexFile = new File("G:/SimplyV2/TextMining/json/"+type+".json");
     File encryptedRegexFile = new File("G:/SimplyV2/TextMining/json/"+type+"_ENCRYPTED.json");
@@ -138,6 +138,8 @@ public class Encdec {
     void encryptJSON() {
         for (final File regexFile : folder.listFiles())
         {
+            if(regexFile.isDirectory())
+                return;
             File encryptedRegexFile = new File("G:/SimplyV2/TextMining/json/"+regexFile.getName()+"_ENCRYPTED.json");
             try
             {

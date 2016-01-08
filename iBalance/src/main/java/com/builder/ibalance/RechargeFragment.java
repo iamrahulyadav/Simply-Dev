@@ -33,7 +33,7 @@ import android.widget.Toast;
 
 import com.builder.ibalance.adapters.PlansRecyclerAdapter;
 import com.builder.ibalance.core.SimModel;
-import com.builder.ibalance.database.MappingHelper;
+import com.builder.ibalance.database.helpers.MappingHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;

@@ -17,7 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import com.builder.ibalance.database.MappingHelper;
+import com.builder.ibalance.database.helpers.MappingHelper;
 import com.builder.ibalance.util.AdvertisingIdClient;
 import com.builder.ibalance.util.AdvertisingIdClient.AdInfo;
 import com.builder.ibalance.util.MyApplication;

@@ -237,11 +237,10 @@ int i = 0;
                 return setbal();
             case R.id.privacy:
                 //Log.d(tag, "Prefrences selected");
-
 			USSDParser mParser = new USSDParser();
-            /*    if(i==0)
+                if(i==0)
 			mParser.parseMessage("INTERNETUSAGE:0.00MB MAINBAL:RS.119.68._124=124 TT 15DREPLY WITH 1");
-                if(i==1)*/
+                if(i==1)
             mParser.parseMessage("CALLCOST:RS.0.31 DURATION:00:00:17 BAL:RS.219.01_RS186=1GB 3G/4G,28D,DIAL *121*1# FOR");
                 i++;
 			Log.d(tag,mParser.getDetails().getType()+"");

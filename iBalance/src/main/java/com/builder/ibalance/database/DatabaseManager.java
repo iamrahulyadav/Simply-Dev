@@ -1,7 +1,6 @@
 package com.builder.ibalance.database;
 
 import android.annotation.TargetApi;
-import android.content.ContentProvider;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -57,6 +56,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
             sInstance = new DatabaseManager(MyApplication.context.getApplicationContext());
 
 
+
+
         }
         return sInstance;
     }
@@ -77,6 +78,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
             //V10Log.d(tag,"Failed to Create Databse");
             //V10e.printStackTrace();
         }
+
 
     }
 
@@ -221,25 +223,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     }
 
-    /**
-     * Create and/or open a database that will be used for reading and writing.
-     * The first time this is called, the database will be opened and
-     * {@link #onCreate}, {@link #onUpgrade} and/or {@link #onOpen} will be
-     * called.
-     * <p/>
-     * <p>Once opened successfully, the database is cached, so you can
-     * call this method every time you need to write to the database.
-     * (Make sure to call {@link #close} when you no longer need the database.)
-     * Errors such as bad permissions or a full disk may cause this method
-     * to fail, but future attempts may succeed if the problem is fixed.</p>
-     * <p/>
-     * <p class="caution">Database upgrade may take a long time, you
-     * should not call this method from the application main thread, including
-     * from {@link ContentProvider#onCreate ContentProvider.onCreate()}.
-     *
-     * @return a read/write database object valid until {@link #close} is called
-     * @throws SQLiteException if the database cannot be opened for writing
-     */
+
     @Override
     public synchronized SQLiteDatabase  getWritableDatabase() {
         return super.getWritableDatabase();
@@ -319,11 +303,16 @@ public class DatabaseManager extends SQLiteOpenHelper {
         if(newVersion==4)
         {
 
+            db.execSQL(IbalanceContract.DROP_PACK_CALL_TABLE);
             db.execSQL(IbalanceContract.CREATE_PACK_CALL_TABLE);
             db.execSQL(IbalanceContract.DROP_SMS_TABLE);
+            db.execSQL(IbalanceContract.CREATE_SMS_TABLE);
+            db.execSQL(IbalanceContract.DROP_SMS_PACK_TABLE);
             db.execSQL(IbalanceContract.CREATE_SMS_PACK_TABLE);
             db.execSQL(IbalanceContract.DROP_DATA_TABLE);
             db.execSQL(IbalanceContract.CREATE_DATA_TABLE);
+            db.execSQL(IbalanceContract.DROP_DATA_PACK_TABLE);
+            db.execSQL(IbalanceContract.CREATE_DATA_PACK_TABLE);
         }
 
 

@@ -1,10 +1,12 @@
-package com.builder.ibalance.database;
+package com.builder.ibalance.database.helpers;
 
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
+import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.models.USSDModels.NormalData;
 
 import java.util.LinkedList;
@@ -25,13 +27,15 @@ public class NormalDataHelper {
 					
 		// 2. create ContentValues to add key "column"/value
 		ContentValues values = new ContentValues();
-		values.put("DATE", entry.date); // get date in milliseconds
-		values.put("COST", entry.cost); // get callcost
-		values.put("BALANCE", entry.main_bal); // get balance
-		values.put("DATA_CONSUMED", entry.data_used); // get callduration
-		values.put("MESSAGE", entry.original_message);
+		values.put(IbalanceContract.DataEntry.COLUMN_NAME_DATE, entry.date); // get date in milliseconds
+		values.put(IbalanceContract.DataEntry.COLUMN_NAME_COST, entry.cost); // get callcost
+		values.put(IbalanceContract.DataEntry.COLUMN_NAME_SLOT, entry.sim_slot); // get Sim_slot
+		values.put(IbalanceContract.DataEntry.COLUMN_NAME_BALANCE, entry.main_bal); // get balance
+		values.put(IbalanceContract.DataEntry.COLUMN_NAME_DATA_CONSUMED, entry.data_used); // get callduration
+		values.put(IbalanceContract.DataEntry.COLUMN_NAME_MESSAGE, entry.original_message);
+		Log.d(TAG,"Db Details "+ values.toString());
 		// 3. insert
-		db.insert("DATA", // table
+		db.insert(IbalanceContract.DataEntry.TABLE_NAME, // table
 				null, // nullColumnHack
 				values); // key/value -> keys = column names/ values = column
 							// values
@@ -40,7 +44,7 @@ public class NormalDataHelper {
 
 	public List<NormalData> getAllEntries() {
 		List<NormalData> entries = new LinkedList<NormalData>();
-
+		//TODO Refactor with IbalanceContract and new Changes
 		// 1. build the query
 		String query = "SELECT  * FROM " + "DATA";
 

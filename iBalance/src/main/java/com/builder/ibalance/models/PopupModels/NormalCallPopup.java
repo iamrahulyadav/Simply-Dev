@@ -11,13 +11,15 @@ import com.builder.ibalance.models.USSDModels.NormalCall;
  */
 public class NormalCallPopup implements Parcelable
 {
-    private float call_cost = 0.0f, current_balance = 0.0f, call_rate = 0.0f, total_spent = 0.0f;
+    private float call_cost = 0.0f, current_balance = 0.0f, call_rate = 0.0f;
     private int duration = 0, sim_slot=0;
+    private String message = "";
+    //UserDetails
+    private float total_spent = 0.0f;
     private String name = "Unkown";
     private String number = "xxxxxxxxxxx";
     private String carrier_circle = "Unkown/Unkown";
     private String image_uri = null;
-    private String message = "";
 
     public NormalCallPopup(NormalCall mNormalCall)
     {
@@ -57,6 +59,24 @@ public class NormalCallPopup implements Parcelable
         carrier_circle = in.readString();
         image_uri = in.readString();
         message = in.readString();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "NormalCallPopup{" +
+                "call_cost=" + call_cost +
+                ", current_balance=" + current_balance +
+                ", call_rate=" + call_rate +
+                ", duration=" + duration +
+                ", sim_slot=" + sim_slot +
+                ", message='" + message + '\'' +
+                ", total_spent=" + total_spent +
+                ", name='" + name + '\'' +
+                ", number='" + number + '\'' +
+                ", carrier_circle='" + carrier_circle + '\'' +
+                ", image_uri='" + image_uri + '\'' +
+                '}';
     }
 
     public static final Creator<NormalCallPopup> CREATOR = new Creator<NormalCallPopup>()

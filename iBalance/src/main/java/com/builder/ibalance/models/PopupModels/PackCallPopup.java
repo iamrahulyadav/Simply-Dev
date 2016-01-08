@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.models.USSDModels.PackCall;
 
+
 /**
  * Created by Shabaz on 06-Jan-16.
  */
@@ -13,7 +14,35 @@ public class PackCallPopup implements Parcelable
 {
     private float call_cost = 0.0f, current_balance = 0.0f, call_rate = 0.0f, total_spent = 0.0f,pack_bal_used = 0.0f,pack_bal_left = 0.0f;
     String pack_name="N/A",used_metric="secs",left_metric="secs",validity="N/A";
-    int pack_duration_used=0,pack_duration_left=0;
+    int pack_duration_used=0;
+
+    @Override
+    public String toString()
+    {
+        return "PackCallPopup{" +
+                "call_cost=" + call_cost +
+                ", current_balance=" + current_balance +
+                ", call_rate=" + call_rate +
+                ", total_spent=" + total_spent +
+                ", pack_bal_used=" + pack_bal_used +
+                ", pack_bal_left=" + pack_bal_left +
+                ", pack_name='" + pack_name + '\'' +
+                ", used_metric='" + used_metric + '\'' +
+                ", left_metric='" + left_metric + '\'' +
+                ", validity='" + validity + '\'' +
+                ", pack_duration_used=" + pack_duration_used +
+                ", pack_duration_left=" + pack_duration_left +
+                ", duration=" + duration +
+                ", sim_slot=" + sim_slot +
+                ", name='" + name + '\'' +
+                ", number='" + number + '\'' +
+                ", carrier_circle='" + carrier_circle + '\'' +
+                ", image_uri='" + image_uri + '\'' +
+                ", message='" + message + '\'' +
+                '}';
+    }
+
+    int pack_duration_left=0;
     private int duration = 0, sim_slot;
     private String name = "Unkown";
     private String number = "xxxxxxxxxxx";

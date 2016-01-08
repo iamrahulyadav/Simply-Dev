@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.models.USSDModels.NormalCall;
@@ -38,6 +39,7 @@ public class BalanceHelper {
 		values.put(IbalanceContract.CallEntry.COLUMN_NAME_DURATION, entry.call_duration); // get callduration
 		values.put(IbalanceContract.CallEntry.COLUMN_NAME_NUMBER, phNumber); // last dialled number
 		values.put(IbalanceContract.CallEntry.COLUMN_NAME_MESSAGE, entry.original_message);
+		Log.d(TAG,"Db Details "+ values.toString());
 		// 3. insert
 		db.insert(IbalanceContract.CallEntry.TABLE_NAME, // table
                 null, // nullColumnHack

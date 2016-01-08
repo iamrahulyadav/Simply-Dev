@@ -1,7 +1,9 @@
-package com.builder.ibalance.database;
+package com.builder.ibalance.database.helpers;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.builder.ibalance.database.DatabaseManager;
 
 import java.util.ArrayList;
 

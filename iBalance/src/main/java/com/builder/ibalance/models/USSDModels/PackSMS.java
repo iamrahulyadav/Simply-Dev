@@ -1,14 +1,16 @@
 package com.builder.ibalance.models.USSDModels;
 
+import com.builder.ibalance.messages.OutgoingSmsMessage;
+
 /**
  * Created by Shabaz on 05-Jan-16.
  */
 public class PackSMS extends USSDBase
 {
     //details = new NormalSMS(new Date().getTime(), cost, mainBal, "9972115447", message);
-    long id;
-    int sim_slot,used_sms,rem_sms;
-    String ph_number,validity,pack_type;
+    public long id;
+    public int sim_slot,used_sms,rem_sms;
+    public String ph_number,validity,pack_type;
 
     public void USSDDetails(long date,
                             int USSD_TYPE,
@@ -33,6 +35,13 @@ public class PackSMS extends USSDBase
         this.id = id;
         this.sim_slot = sim_slot;
     }
+    public void eventDetails(OutgoingSmsMessage mDetails)
+    {
+        //This is as of now optional
+        this.ph_number = mDetails.lastNumber;
+        this.id = mDetails.id;
+        this.sim_slot = mDetails.sim_slot;
+    }
     public void eventDetails(String ph_number)
     {
         this.ph_number = ph_number;
@@ -50,5 +59,12 @@ public class PackSMS extends USSDBase
                 ", validity='" + validity + '\'' +
                 ", pack_type='" + pack_type + '\'' +
                 "} " + super.toString();
+    }
+
+    public NormalSMS getBaseDetails()
+    {
+
+
+        return new NormalSMS(this);
     }
 }

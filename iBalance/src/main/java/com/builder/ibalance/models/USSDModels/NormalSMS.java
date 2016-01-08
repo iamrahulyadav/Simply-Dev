@@ -1,5 +1,7 @@
 package com.builder.ibalance.models.USSDModels;
 
+import com.builder.ibalance.messages.OutgoingSmsMessage;
+
 /**
  * Created by Shabaz on 05-Jan-16.
  */
@@ -10,11 +12,29 @@ public class NormalSMS extends USSDBase
     public int sim_slot;
     public String ph_number;
 
+    public NormalSMS() {}
+    public NormalSMS(PackSMS ussdDetails)
+    {
+        baseDetails(ussdDetails.date,ussdDetails.USSD_TYPE, ussdDetails.main_bal,ussdDetails.original_message);
+        this.id = ussdDetails.id;
+        this.cost = 0.0f;
+        this.ph_number = ussdDetails.ph_number;
+        this.sim_slot = ussdDetails.sim_slot;
+    }
+
     public void USSDDetails(long date,int USSD_TYPE,float main_bal, float cost,String original_message)
     {
         baseDetails(date, USSD_TYPE, main_bal,original_message);
         this.cost = cost;
     }
+
+    public void eventDetails(OutgoingSmsMessage mDetails)
+    {
+        this.ph_number = mDetails.lastNumber;
+        this.id = mDetails.id;
+        this.sim_slot = mDetails.sim_slot;
+    }
+
     public void eventDetails(String ph_number,long id,int sim_slot)
     {
         //This is as of now optional

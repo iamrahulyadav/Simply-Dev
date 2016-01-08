@@ -1,10 +1,11 @@
-package com.builder.ibalance.database;
+package com.builder.ibalance.database.helpers;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
+import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.database.models.RechargeEntry;
 
 import java.util.Date;

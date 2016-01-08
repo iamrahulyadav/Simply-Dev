@@ -1,7 +1,6 @@
 package com.builder.ibalance.database.helpers;
 
 
-
 /**
  * Created by Shabaz on 17-Aug-15.
  */
@@ -46,6 +45,7 @@ public class
             CallEntry.COLUMN_NAME_MESSAGE + TEXT_TYPE + COMMA_SEP +
             CallEntry.COLUMN_NAME_NUMBER + TEXT_TYPE +
             " )";
+    public final static String DROP_PACK_CALL_TABLE = "DROP TABLE IF EXISTS "+ PackCallEntry.TABLE_NAME;
     //Call pack will work in junction with Call table (Outer join), they will share id of call logs.
     public final static String CREATE_PACK_CALL_TABLE = "CREATE TABLE IF NOT EXISTS " +
             PackCallEntry.TABLE_NAME +
@@ -76,7 +76,7 @@ public class
     public final static String CREATE_SMS_TABLE = "CREATE TABLE IF NOT EXISTS " +
             SMSEntry.TABLE_NAME +
             "( "
-            + SMSEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY "
+            + SMSEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY ,"
             + SMSEntry.COLUMN_NAME_DATE+" INTEGER  , "
             + SMSEntry.COLUMN_NAME_SLOT+" INTEGER  , "
             + SMSEntry.COLUMN_NAME_COST+" FLOAT, "
@@ -99,12 +99,19 @@ public class
     public final static String CREATE_SMS_PACK_TABLE = "CREATE TABLE IF NOT EXISTS  "
             + SMSPackEntry.TABLE_NAME+" ( "
             + SMSPackEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY , "
+            + SMSPackEntry.COLUMN_NAME_USED_SMS+" INTEGER, "
             + SMSPackEntry.COLUMN_NAME_REMAINING+" INTEGER, "
+            + SMSPackEntry.COLUMN_NAME_PACK_TYPE+" TEXT, "
             + SMSPackEntry.COLUMN_NAME_VALIDITY+" TEXT "+ " )";
-
+/*    public long id;
+    public int ,used_sms,rem_sms;
+    public String validity,pack_type;
+*/
     public static abstract class SMSPackEntry  {
         public static final String TABLE_NAME = "SMS_PACK";
         public static final String COLUMN_NAME_ID = "_id";
+        public static final String COLUMN_NAME_USED_SMS = "USED";
+        public static final String COLUMN_NAME_PACK_TYPE = "PACK_TYPE";
         public static final String COLUMN_NAME_REMAINING = "REMAINING";
         public static final String COLUMN_NAME_VALIDITY = "VALIDITY";
     }
@@ -114,9 +121,9 @@ public class
             + DataEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY AUTOINCREMENT , "
             + DataEntry.COLUMN_NAME_SLOT+" INTEGER  , "
             + DataEntry.COLUMN_NAME_DATE+" INTEGER  , "
-            + DataEntry.COLUMN_NAME_COST+" FLOAT, "
+            + DataEntry.COLUMN_NAME_COST+" FLOAT , "
             + DataEntry.COLUMN_NAME_DATA_CONSUMED+" FLOAT , "
-            + DataEntry.COLUMN_NAME_BALANCE+" FLOAT, "
+            + DataEntry.COLUMN_NAME_BALANCE+" FLOAT , "
             + DataEntry.COLUMN_NAME_MESSAGE+" TEXT" + " )";
     public static abstract class DataEntry  {
         public static final String TABLE_NAME = "DATA";
@@ -136,10 +143,10 @@ public class
             + DataPackEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY AUTOINCREMENT , "
             + DataPackEntry.COLUMN_NAME_DATE+" INTEGER  , "
             + DataPackEntry.COLUMN_NAME_SLOT+" INTEGER  , "
-            + DataPackEntry.COLUMN_NAME_TYPE+" TEXT, "
-            + DataPackEntry.COLUMN_NAME_DATA_CONSUMED+" FLOAT,  "
+            + DataPackEntry.COLUMN_NAME_TYPE+" TEXT , "
+            + DataPackEntry.COLUMN_NAME_DATA_CONSUMED+" FLOAT ,  "
             + DataPackEntry.COLUMN_NAME_DATA_LEFT+" INTEGER, "
-            + DataPackEntry.COLUMN_NAME_VALIDITY+" TEXT, "
+            + DataPackEntry.COLUMN_NAME_VALIDITY+" TEXT , "
             + DataPackEntry.COLUMN_NAME_BALANCE+" FLOAT , "
             + DataPackEntry.COLUMN_NAME_MESSAGE+" TEXT"+ " )";
 
@@ -161,8 +168,8 @@ public class
             + RechargeEntry.COLUMN_NAME_ID+" INTEGER PRIMARY KEY AUTOINCREMENT , "
             + RechargeEntry.COLUMN_NAME_DATE+" INTEGER  , "
             + RechargeEntry.COLUMN_NAME_SLOT+" INTEGER  , "
-            + RechargeEntry.COLUMN_NAME_RECHARGE_AMOUNT+" FLOAT, "
-            + RechargeEntry.COLUMN_NAME_BALANCE+" FLOAT, "
+            + RechargeEntry.COLUMN_NAME_RECHARGE_AMOUNT+" FLOAT , "
+            + RechargeEntry.COLUMN_NAME_BALANCE+" FLOAT , "
             + RechargeEntry.COLUMN_NAME_MESSAGE+" TEXT" + " )";
 
     public static abstract class RechargeEntry  {

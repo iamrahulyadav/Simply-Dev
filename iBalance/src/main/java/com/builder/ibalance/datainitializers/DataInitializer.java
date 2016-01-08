@@ -19,7 +19,7 @@ import android.widget.RemoteViews;
 
 import com.builder.ibalance.BalanceWidget;
 import com.builder.ibalance.R;
-import com.builder.ibalance.database.MappingHelper;
+import com.builder.ibalance.database.helpers.MappingHelper;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.CallLogsHelper;
 import com.builder.ibalance.database.helpers.IbalanceContract;

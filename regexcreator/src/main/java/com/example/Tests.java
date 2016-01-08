@@ -26,7 +26,7 @@ public class Tests
     Tests() throws Exception
     {
         long starTime = System.nanoTime();
-        File regexes = new File("G:/SimplyV2/TextMining/json/ALL.json");
+        File regexes = new File("G:/SimplyV2/TextMining/json/Final 05-01-16/PACK_CALL_PATTERNS.json");
         ArrayList<String> buffer = new ArrayList<>();
         ArrayList<String> mismatchbuffer = new ArrayList<>();
         //File regexes1 = new File("G:/SimplyV2/TextMining/json/SMS_PACK_PATTERNS.json");
@@ -63,7 +63,8 @@ public class Tests
             countArr[i] = 0;
             patterns.add(Pattern.compile(regexArray.getJSONObject(i).getString("REGEX")));
         }
-
+        if(nCall==0)
+            return;
         File fileEntry = new File("G:/SimplyV2/TextMining/ALL_DATA/Invalid_USSD.json");
         ptln("File = " + fileEntry.getName());
         File allRem = new File("G:/SimplyV2/TextMining/ALL_DATA/Processed2/", fileEntry.getName() + "_all_rem" + ".txt");

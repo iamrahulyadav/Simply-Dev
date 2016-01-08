@@ -11,9 +11,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static com.example.Choice.ptln;
 
@@ -32,11 +33,13 @@ public class USSDParser
         {
             Charset charset = Charset.forName("UTF-8");
             //CHRG:0.00 INR,BAL:5.20 INR,VOLUMEUSED:11.421875 MB,FREEBIEAVAILABLE:95.57MB.PLAN EXPIRES FEB 08 2016.. FREE 10 TT LOAN! DIAL *444# TO GET RS. 10 TT LOAN! ---------- FREE 10 TT LOAN! DIAL *444# TO GET RS. 10 TT LOAN! TC APPLY. LAST SMS DEDUCTED 0.00 INR. MAIN BALANCE IS 5.20 INR.
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));//Files.newBufferedReader(Paths.get("G:/SimplyV2/TextMining/unique_pat/Done/Unit_tests/Pack_Call.txt"),charset));
+            //new BufferedReader(new InputStreamReader(System.in));//
+            BufferedReader br = Files.newBufferedReader(Paths.get("G:/SimplyV2/TextMining/unique_pat/Done/Unit_tests/Normal_call.txt"),charset);
             String message = null;
             while((message = br.readLine())!=null)
             {
-                if(!normalData(message))
+                ptln("Working on : "+message);
+                if(!normalCall(message))
                 {
                     ptln("Failed:\n"+message);
                 }
@@ -135,7 +138,7 @@ public class USSDParser
             try
             {
                 cost = Float.parseFloat(result.group("COST"));
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 cost = -1.0f;
             }
@@ -145,9 +148,12 @@ public class USSDParser
                 //ptln("Duration Secs = " + duration);
             } catch (IndexOutOfBoundsException e0)
             {
+
                 try
                 {
                     String clock = result.group("DURC");
+                    if(clock==null)
+                        throw new IndexOutOfBoundsException();
                     String sub[] = clock.split(":");
                     duration = Integer.parseInt(sub[0]) * 60 * 60;
                     duration += Integer.parseInt(sub[1]) * 60;
@@ -838,7 +844,7 @@ public class USSDParser
     }
     private JSONArray getNormalCallRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/CALL_PATTERNS.json");
+        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/NORMAL_CALL_PATTERNS.json");
     }
     private JSONArray getNormalDataRegex()
     {
