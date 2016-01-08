@@ -14,7 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,11 +24,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
-import com.builder.ibalance.parsers.USSDParser;
+import com.builder.ibalance.models.PopupModels.PackDataPopup;
+import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -236,15 +238,24 @@ int i = 0;
                 //Log.d(tag, "Set Bal");
                 return setbal();
             case R.id.privacy:
+                Intent popup_intent = new Intent(this,
+                        UssdPopup.class);
+                popup_intent.putExtra("TYPE", ConstantsAndStatics.USSD_TYPES.PACK_DATA);
+
+                popup_intent.putExtra("DATA", new PackDataPopup());
+                popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                startActivity(popup_intent);
                 //Log.d(tag, "Prefrences selected");
-			USSDParser mParser = new USSDParser();
+			/*USSDParser mParser = new USSDParser();
                 if(i==0)
 			mParser.parseMessage("INTERNETUSAGE:0.00MB MAINBAL:RS.119.68._124=124 TT 15DREPLY WITH 1");
                 if(i==1)
             mParser.parseMessage("CALLCOST:RS.0.31 DURATION:00:00:17 BAL:RS.219.01_RS186=1GB 3G/4G,28D,DIAL *121*1# FOR");
                 i++;
 			Log.d(tag,mParser.getDetails().getType()+"");
-			Log.d(tag,mParser.getDetails().toString());
+			Log.d(tag,mParser.getDetails().toString());*/
                /* String url = "http://ibalanceapp.com/privacy-policy/";
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
@@ -313,6 +324,11 @@ int i = 0;
             public void onClick(View v) {
                 Float setBal;
                 try {
+                    if(TextUtils.isEmpty(input.getText().toString()))
+                    {
+                        Toast.makeText(MainActivity.this, "Plese Enter the Minimum Balance", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
                     setBal = Float.parseFloat(input.getText().toString());
                 } catch (Exception e) {

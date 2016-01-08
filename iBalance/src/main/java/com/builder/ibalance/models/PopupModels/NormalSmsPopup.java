@@ -23,6 +23,68 @@ public class NormalSmsPopup implements Parcelable
     //USSD Details
     float sms_cost=-1.0f,main_bal=-1.0f;
     String message="";
+    public NormalSmsPopup()
+    {
+        //For Mocking
+         total_spent = 15.5f;
+          name = "Shabaz";
+          carrier_circle = "Unkown/Unkown";
+          image_uri = null;
+        //event details
+          number = "9972115447";
+         sim_slot=0;
+        //USSD Details
+         sms_cost=1.0f;
+        main_bal=200.5f;
+         message="How Are you doing";
+    }
+
+    public float getTotal_spent()
+    {
+        return total_spent;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getCarrier_circle()
+    {
+        return carrier_circle;
+    }
+
+    public String getImage_uri()
+    {
+        return image_uri;
+    }
+
+    public String getNumber()
+    {
+        return number;
+    }
+
+    public int getSim_slot()
+    {
+        return sim_slot;
+    }
+
+    public float getSms_cost()
+    {
+        return sms_cost;
+    }
+
+    public float getMain_bal()
+    {
+        return main_bal;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+
     public NormalSmsPopup(NormalSMS mNormalSMS)
     {
         this.sms_cost = mNormalSMS.cost;

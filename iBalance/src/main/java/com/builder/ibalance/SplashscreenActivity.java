@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -155,6 +156,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
         //loginphone = (RelativeLayout)(findViewById(R.id.loginphone));
         findViewById(R.id.loginphone).setOnClickListener(this);
         findViewById(R.id.btnSkipLogin).setOnClickListener(this);
+        findViewById(R.id.termsOfAgreement).setOnClickListener(this);
         ((TextView)findViewById(R.id.termsOfAgreement)).setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
         ((TextView)findViewById(R.id.btnSkipLogin)).setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 
@@ -261,6 +263,14 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             mSharedPreferences.edit().putInt("SKIP_COUNTER",numberOfSkips).commit();
             isSkipped = true;
             new SimChecker().execute();
+
+        }else if(R.id.termsOfAgreement ==v.getId())
+        {
+            String url = "http://ibalanceapp.com/privacy-policy/";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
+
 
         }
 

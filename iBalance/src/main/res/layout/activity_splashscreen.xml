@@ -56,7 +56,6 @@
          android:layout_below="@+id/sim_check_progress"
 
          android:layout_centerInParent="true"
-
          android:clickable="true"
          android:orientation="horizontal">
 
@@ -108,13 +107,15 @@
              android:layout_toRightOf="@+id/phonelogo"
              android:text="Log in with Phone"
              android:textColor="@android:color/white"
-             android:textSize="16sp" />
+             android:textSize="16sp"
+             />
 
      </RelativeLayout>
-     <RelativeLayout
+     <LinearLayout
          android:layout_width="fill_parent"
          android:layout_height="fill_parent"
          android:layout_below="@+id/loginphone"
+         android:orientation="vertical"
          android:layout_centerHorizontal="true"
          android:gravity="center">
      <TextView
@@ -135,8 +136,9 @@
          android:gravity="center"
          android:text="Skip Login "
          android:textColor="@android:color/darker_gray"
-         android:textSize="16sp" />
+         android:textSize="16sp"
+         android:layout_marginBottom="10dp"/>
 
-     </RelativeLayout>
+     </LinearLayout>
  </RelativeLayout>
    

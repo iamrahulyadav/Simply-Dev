@@ -16,7 +16,127 @@ public class PackCallPopup implements Parcelable
     String pack_name="N/A",used_metric="secs",left_metric="secs",validity="N/A";
     int pack_duration_used=0;
 
+    public PackCallPopup()
+    {
+        this.call_cost = 0.5f;
+        this.current_balance = 200.45f;
+        this.call_rate = 1.7f;
+        this.duration = 30;
+        this.sim_slot = 0;
+        this.message = "Lorem Ipsum";
+        this.total_spent = 105.43f;
+        this.name = "Shabaz";
+        this.number = "997211547";
+        this.carrier_circle = "Unkown/Unkown";
+        this.image_uri = null;
+        this.pack_bal_used = -1.0f;
+        this.pack_bal_left = -1.0f;
+        this.pack_name = "ALL Local";
+        this.used_metric = "S";
+        this.left_metric = "S";
+        this.validity = "13/01/2016";
+        this.pack_duration_used =60;
+        this.pack_duration_left = 2140;
+
+    }
+
+    public float getCall_cost()
+    {
+        return call_cost;
+    }
+
+    public float getCurrent_balance()
+    {
+        return current_balance;
+    }
+
+    public float getCall_rate()
+    {
+        return call_rate;
+    }
+
+    public float getTotal_spent()
+    {
+        return total_spent;
+    }
+
+    public float getPack_bal_used()
+    {
+        return pack_bal_used;
+    }
+
+    public float getPack_bal_left()
+    {
+        return pack_bal_left;
+    }
+
+    public String getPack_name()
+    {
+        return pack_name;
+    }
+
+    public String getUsed_metric()
+    {
+        return used_metric;
+    }
+
+    public String getLeft_metric()
+    {
+        return left_metric;
+    }
+
+    public String getValidity()
+    {
+        return validity;
+    }
+
+    public int getPack_duration_used()
+    {
+        return pack_duration_used;
+    }
+
+    public int getPack_duration_left()
+    {
+        return pack_duration_left;
+    }
+
+    public int getDuration()
+    {
+        return duration;
+    }
+
+    public int getSim_slot()
+    {
+        return sim_slot;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getNumber()
+    {
+        return number;
+    }
+
+    public String getCarrier_circle()
+    {
+        return carrier_circle;
+    }
+
+    public String getImage_uri()
+    {
+        return image_uri;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
     @Override
+
     public String toString()
     {
         return "PackCallPopup{" +

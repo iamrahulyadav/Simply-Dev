@@ -19,6 +19,77 @@ public class NormalCallPopup implements Parcelable
     private String name = "Unkown";
     private String number = "xxxxxxxxxxx";
     private String carrier_circle = "Unkown/Unkown";
+
+    public NormalCallPopup()
+    {
+        this.call_cost = 0.5f;
+        this.current_balance = 200.45f;
+        this.call_rate = 1.7f;
+        this.duration = 30;
+        this.sim_slot = 0;
+        this.message = "Lorem Ipsum";
+        this.total_spent = 105.43f;
+        this.name = "Shabaz";
+        this.number = "997211547";
+        this.carrier_circle = "Unkown/Unkown";
+        this.image_uri = null;
+    }
+
+    public float getCall_cost()
+    {
+        return call_cost;
+    }
+
+    public float getCurrent_balance()
+    {
+        return current_balance;
+    }
+
+    public float getCall_rate()
+    {
+        return call_rate;
+    }
+
+    public int getDuration()
+    {
+        return duration;
+    }
+
+    public int getSim_slot()
+    {
+        return sim_slot;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public float getTotal_spent()
+    {
+        return total_spent;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getNumber()
+    {
+        return number;
+    }
+
+    public String getCarrier_circle()
+    {
+        return carrier_circle;
+    }
+
+    public String getImage_uri()
+    {
+        return image_uri;
+    }
+
     private String image_uri = null;
 
     public NormalCallPopup(NormalCall mNormalCall)

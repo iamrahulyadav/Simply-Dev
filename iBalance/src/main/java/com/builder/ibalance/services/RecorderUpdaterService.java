@@ -586,8 +586,7 @@ boolean cancelButtonFound = false;
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        //TODO don't forget to enable this
-        //startActivity(popup_intent);
+        startActivity(popup_intent);
     }
     private void processCallUSSD(USSDBase ussDetails)
     {

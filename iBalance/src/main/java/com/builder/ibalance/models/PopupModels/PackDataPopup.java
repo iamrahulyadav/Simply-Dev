@@ -14,10 +14,23 @@ public class PackDataPopup implements Parcelable
     public int sim_slot;
     String message="",validity=null,pack_type=null;
 
+    public PackDataPopup()
+    {
+        this.cost = 1.2f;
+        this.data_used = 4.5f;
+        this.main_bal = 200.45f;
+        this.data_left = 785.54f;
+        this.sim_slot = 0;
+        this.message = "Data is Data";
+        this.validity = "13/01/2015";
+        this.pack_type = "4G";
+    }
+
     public PackDataPopup(PackData packData)
     {
         this.data_used = packData.data_used;
         this.data_left = packData.data_left;
+
         this.main_bal = packData.main_bal;
         this.validity = packData.validity;
         this.pack_type = packData.pack_type;
@@ -98,5 +111,45 @@ public class PackDataPopup implements Parcelable
         dest.writeString(message);
         dest.writeString(validity);
         dest.writeString(pack_type);
+    }
+
+    public float getCost()
+    {
+        return cost;
+    }
+
+    public float getData_used()
+    {
+        return data_used;
+    }
+
+    public float getMain_bal()
+    {
+        return main_bal;
+    }
+
+    public float getData_left()
+    {
+        return data_left;
+    }
+
+    public int getSim_slot()
+    {
+        return sim_slot;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public String getValidity()
+    {
+        return validity;
+    }
+
+    public String getPack_type()
+    {
+        return pack_type;
     }
 }

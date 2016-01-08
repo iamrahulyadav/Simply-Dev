@@ -3,6 +3,7 @@ package com.builder.ibalance;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -33,10 +34,11 @@ import android.widget.Toast;
 
 import com.builder.ibalance.adapters.PlansRecyclerAdapter;
 import com.builder.ibalance.core.SimModel;
-import com.builder.ibalance.database.helpers.MappingHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
+import com.builder.ibalance.database.helpers.MappingHelper;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
+import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
@@ -100,7 +102,16 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         amountField = (EditText) rootView.findViewById(R.id.amountField);
         carrierSpinner = (Spinner) rootView.findViewById(R.id.recharge_carrier);
         circleSpinner = (Spinner) rootView.findViewById(R.id.recharge_circle);
-        rechargePhoneNumber = ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
+
+        SharedPreferences preferences = this.getActivity().getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+        if(preferences.getBoolean("USER_VERIFIED",false))
+        {
+            rechargePhoneNumber = preferences.getString("VERIFIED_NUMBER",null);
+        }
+        else
+        {
+            rechargePhoneNumber = ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
+        }
         if (rechargePhoneNumber != null)
         {
             rechargePhoneNumber = Helper.normalizeNumber(rechargePhoneNumber);

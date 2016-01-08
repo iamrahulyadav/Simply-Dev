@@ -14,6 +14,15 @@ public class NormalDataPopup implements Parcelable
     public int sim_slot;
     String message="";
 
+    public NormalDataPopup()
+    {
+        this.cost = 1.0f;
+        this.data_used = 0.5f;
+        this.main_bal = 200.54f;
+        this.sim_slot = 0;
+        this.message = "Data Normal";
+    }
+
     @Override
     public String toString()
     {
@@ -88,5 +97,30 @@ public class NormalDataPopup implements Parcelable
         dest.writeFloat(main_bal);
         dest.writeInt(sim_slot);
         dest.writeString(message);
+    }
+
+    public float getCost()
+    {
+        return cost;
+    }
+
+    public float getData_used()
+    {
+        return data_used;
+    }
+
+    public float getMain_bal()
+    {
+        return main_bal;
+    }
+
+    public int getSim_slot()
+    {
+        return sim_slot;
+    }
+
+    public String getMessage()
+    {
+        return message;
     }
 }

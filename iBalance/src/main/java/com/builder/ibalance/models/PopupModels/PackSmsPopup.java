@@ -132,4 +132,69 @@ public class PackSmsPopup implements Parcelable
         dest.writeString(validity);
         dest.writeString(pack_type);
     }
+
+    public float getTotal_spent()
+    {
+        return total_spent;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getCarrier_circle()
+    {
+        return carrier_circle;
+    }
+
+    public String getImage_uri()
+    {
+        return image_uri;
+    }
+
+    public String getNumber()
+    {
+        return number;
+    }
+
+    public int getSim_slot()
+    {
+        return sim_slot;
+    }
+
+    public float getSms_cost()
+    {
+        return sms_cost;
+    }
+
+    public float getMain_bal()
+    {
+        return main_bal;
+    }
+
+    public float getUsed_sms()
+    {
+        return used_sms;
+    }
+
+    public float getLeft_sms()
+    {
+        return left_sms;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public String getValidity()
+    {
+        return validity;
+    }
+
+    public String getPack_type()
+    {
+        return pack_type;
+    }
 }
