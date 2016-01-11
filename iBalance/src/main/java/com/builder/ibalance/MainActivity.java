@@ -29,8 +29,6 @@ import android.widget.Toast;
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
-import com.builder.ibalance.models.PopupModels.PackDataPopup;
-import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -238,7 +236,7 @@ int i = 0;
                 //Log.d(tag, "Set Bal");
                 return setbal();
             case R.id.privacy:
-                Intent popup_intent = new Intent(this,
+                /*Intent popup_intent = new Intent(this,
                         UssdPopup.class);
                 popup_intent.putExtra("TYPE", ConstantsAndStatics.USSD_TYPES.PACK_DATA);
 
@@ -246,7 +244,7 @@ int i = 0;
                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivity(popup_intent);
+                startActivity(popup_intent);*/
                 //Log.d(tag, "Prefrences selected");
 			/*USSDParser mParser = new USSDParser();
                 if(i==0)
@@ -256,10 +254,10 @@ int i = 0;
                 i++;
 			Log.d(tag,mParser.getDetails().getType()+"");
 			Log.d(tag,mParser.getDetails().toString());*/
-               /* String url = "http://ibalanceapp.com/privacy-policy/";
+                String url = "http://ibalanceapp.com/privacy-policy/";
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
-                startActivity(i);*/
+                startActivity(i);
                 break;
             case R.id.contact_us:
                 //Log.d(tag, "contact_us selected");

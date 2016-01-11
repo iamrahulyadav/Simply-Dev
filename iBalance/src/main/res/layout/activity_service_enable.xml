@@ -1,127 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
-              android:layout_height="fill_parent"
+              android:layout_height="match_parent"
               android:orientation="vertical"
               android:weightSum="12"
 
 
     >
-
     <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:text="For the app to work you must\nTURN ON The Simply Recorder"
-        android:layout_weight="1.5"
-        android:id="@+id/textView244"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/almost_there"
+        android:background="@color/primary_green"
         android:gravity="center"
-        android:textSize="18dp"
-        android:background="#1ad3a2"
-        android:textColor="#FFFFFF" />
+        android:textSize="20sp"
+        android:padding="10dp"
+        android:textColor="#FFFFFF"
+        />
 
-
-    <ImageView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="6.5"
-        android:id="@+id/splash_simply_rec_img_id"
-        android:paddingBottom="5dp"
-        android:paddingTop="5dp"
-
-        android:background="#4cdcd3d4" />
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
+        android:paddingLeft="5dp"
         android:layout_weight="3">
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:orientation="vertical">
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="20dp"
-                android:orientation="horizontal">
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Step 1:- "
-
-                    android:id="@+id/textView28"
-                    android:textSize="16dp"
-                    android:paddingLeft="20dp"
-                    />
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Click NEXT Button given below."
-                    android:id="@+id/textView31"
-                    android:textSize="16dp"
-
-                    android:paddingRight="20dp" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingTop="10dp">
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Step 2:- "
-                    android:id="@+id/textView30"
-                    android:textSize="16dp"
-                    android:paddingLeft="20dp"
-                    />
-
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Find Simply Recorder under SERVICES menu(you may have to scroll)."
-                    android:id="@+id/textView27"
-                    android:textSize="16dp"
-                    android:paddingRight="20dp" />
-
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingTop="10dp">
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Step 3:- "
-                    android:id="@+id/textView32"
-                    android:textSize="16dp"
-                    android:paddingLeft="20dp"
-                    android:gravity="center_vertical"
-                    />
-
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="And switch it ON."
-                    android:id="@+id/textView33"
-                    android:textSize="16dp"
-                    android:paddingRight="20dp" />
-
-            </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
-
-    <Button
-        android:layout_width="fill_parent"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:gravity="center_vertical"
+            android:text="1. Download the App"
+            android:layout_toLeftOf="@+id/imageView3"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignBottom="@+id/imageView3"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView3"
+            android:src="@drawable/checked"
+            android:layout_gravity="right"
+            android:paddingRight="10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
+    <View
+        android:layout_width="match_parent"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:layout_height="2dp"
+        android:background="@color/black"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:paddingLeft="5dp"
+        android:layout_weight="3">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:gravity="center_vertical"
+            android:text="2. Turn on Simply Recorder"
+            android:layout_toLeftOf="@+id/recorder_on"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignBottom="@+id/recorder_on"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/recorder_on"
+            android:paddingRight="10dp"
+            android:foregroundGravity="center"
+            android:src="@drawable/waiting"
+            android:layout_gravity="right"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
+    <View
+        android:layout_width="match_parent"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:layout_height="2dp"
+        android:background="@color/black"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingLeft="5dp"
+        android:background="@color/light_grey"
+        android:layout_weight="3">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:gravity="center_vertical"
+            android:text="3. Refresh the Balance"
+            android:layout_toLeftOf="@+id/refresh_bal"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignBottom="@+id/refresh_bal"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/refresh_bal"
+            android:src="@drawable/waiting"
+            android:paddingRight="10dp"
+            android:layout_gravity="right"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
+    <View
+        android:layout_width="match_parent"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:layout_height="2dp"
+        android:background="@color/black"/>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="3"></LinearLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text="NEXT >"
         android:textStyle="bold"
-        android:layout_weight="1"
         android:textSize="20sp"
         style="@style/ussd_popup_button"
         android:textColor="#FFFFFF"
         android:id="@+id/splash_next_button"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="center_horizontal"
+        android:alignParentBottom="true"
         android:paddingBottom="3dp"
         />
 

@@ -126,7 +126,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 			updateWidgetInitially(MyApplication.context);
 			done = true;
             long endTime = System.nanoTime();
-          //V12 Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
+          //V12//V16Log.d(TAG, "DataInitializer Took Totally = " + ((endTime - startTime) / 1000000) + "ms");
 
 			//Log.d("DataInit", "WORKING IN InitializeSmsMap");
 			//InitializeSmsMap(MyApplication.context);
@@ -145,11 +145,11 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME", true);
         /*//for US
         last_indexed_id = Long.MAX_VALUE;*/
-        Log.d(TAG, "INDEXED ID = " + last_indexed_id);
+       //V16Log.d(TAG, "INDEXED ID = " + last_indexed_id);
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
         Cursor callLogCursor = mCallLogsHelper.getAllSystemCallLogs(last_indexed_id);
         int num_rows = callLogCursor.getCount();
-        Log.d(TAG,"Number of Rows = "+num_rows);
+       //V16Log.d(TAG,"Number of Rows = "+num_rows);
         if(num_rows==0)
             return;
         int slot,duration,type;
@@ -335,7 +335,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             }
             mCallLogsHelper.getDatabase().setTransactionSuccessful();
             long endTime = System.nanoTime();
-          //V12 Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
+          //V12//V16Log.d(TAG, "CreateTotalDetails Took  = " + ((endTime - startTime) / 1000000) + "ms");
         }
         catch (SQLException e)
         {

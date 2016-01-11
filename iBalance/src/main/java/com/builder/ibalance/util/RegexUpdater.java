@@ -33,7 +33,7 @@ public class RegexUpdater
             {
                 if (e == null)
                 {
-                    Log.d(tag, "Yay! Config was fetched from the server.");
+                   //V16Log.d(tag, "Yay! Config was fetched from the server.");
                 } else
                 {
                     Log.e(tag, "Failed to fetch. Using Cached Config.");
@@ -42,7 +42,7 @@ public class RegexUpdater
                 if ((config != null))
                 {
                     NEW_PARSER_VERSION = config.getInt("PARSER_VERSION_V2");
-                    Log.d(tag,"NEW_PARSER_VERSION = "+NEW_PARSER_VERSION);
+                   //V16Log.d(tag,"NEW_PARSER_VERSION = "+NEW_PARSER_VERSION);
                     if (NEW_PARSER_VERSION > PARSER_VERSION)
                     {
                         update(NEW_PARSER_VERSION);
@@ -55,7 +55,7 @@ public class RegexUpdater
 
      public void update(final int NEW_PARSER_VERSION)
     {
-        Log.d(tag,"Started Updating the Regexes!!!!");
+       //V16Log.d(tag,"Started Updating the Regexes!!!!");
 
         ParseQuery regexQuery = new ParseQuery("REGEXES");
         regexQuery.whereGreaterThanOrEqualTo("VERSION",NEW_PARSER_VERSION);
@@ -92,15 +92,15 @@ public class RegexUpdater
             public void done(Object object, Throwable throwable)
             {
 
-                Log.d(tag,"Other Done was called");
+               //V16Log.d(tag,"Other Done was called");
                 if(throwable==null)
                 {
-                    Log.d(tag,"Fetched new Regexes");
+                   //V16Log.d(tag,"Fetched new Regexes");
                     if (object== null)
                     {
                         Crashlytics.logException(throwable);
                         //throwable.printStackTrace();
-                        Log.d(tag,"The was an Error in Updating Regexes!!!!");
+                       //V16Log.d(tag,"The was an Error in Updating Regexes!!!!");
                     } else
                     {
                         List objects = (List)object;

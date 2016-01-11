@@ -44,7 +44,7 @@ public class PackCallHelper
         values.put(IbalanceContract.PackCallEntry.COLUMN_NAME_DURATION_LEFT_METRIC, entry.left_metric);
         values.put(IbalanceContract.PackCallEntry.COLUMN_NAME_PACK_BAL_LEFT, entry.pack_bal_left);
         values.put(IbalanceContract.PackCallEntry.COLUMN_NAME_VALIDITY, entry.validity);
-        Log.d(TAG,"Db Details "+ values.toString());
+       //V16Log.d(TAG,"Db Details "+ values.toString());
         // 3. insert
         db.insert(IbalanceContract.PackCallEntry.TABLE_NAME, // table
                 null, // nullColumnHack

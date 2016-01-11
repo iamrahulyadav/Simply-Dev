@@ -41,12 +41,12 @@ public class DateDurationMapHelper
              +" WHERE "+ IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE +">="+startDate
              +" AND "+ IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE +"<="+endDate
              + " GROUP BY " + IbalanceContract.DateDurationEntry.COLUMN_NAME_WEEK_DAY;
-    Log.d(tag,"Query = "+query);
+   //V16Log.d(tag,"Query = "+query);
   Cursor c = mSqlDB.rawQuery(query, null);
 
   DateDurationModel temp;
     //0 - in_count 1 - inDuration secs 2- out_c 3-out_d secs 4-day_of_the_WEEK
-    Log.d(tag,"Columns Returned = "+ c.getCount());
+   //V16Log.d(tag,"Columns Returned = "+ c.getCount());
      StringBuilder builder = new StringBuilder();
 
   while(c.moveToNext())
@@ -65,7 +65,7 @@ public class DateDurationMapHelper
               c.getInt(4));
       avgDateDurationDetail.add(temp);
   }
-    Log.d(tag, builder.toString());
+   //V16Log.d(tag, builder.toString());
      c.close();
   return avgDateDurationDetail;
  }

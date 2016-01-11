@@ -4,6 +4,7 @@ package com.builder.ibalance;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -21,7 +22,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -40,6 +40,7 @@ import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.models.USSDModels.NormalCall;
+import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
@@ -74,7 +75,7 @@ import java.util.Locale;
 import de.greenrobot.event.EventBus;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 
-public class BalanceFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnChartValueSelectedListener
+public class BalanceFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnChartValueSelectedListener,View.OnLongClickListener
 {
     static int sim_slot = 0;
     final String tag = BalanceFragment.class.getSimpleName();
@@ -83,7 +84,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     public List<NormalCall> ussdDataList = null;
     SharedPreferences mSharedPreferences;
     float currBalance = 0, currData = 0;
-    TextView balanceTextView, dataTextView, predictionTextView;
+    TextView balanceTextView, predictionTextView;
     LinearLayout balance_layout;
     ProgressBar balProgress;
     ArrayList<String> xVals;
@@ -92,11 +93,11 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     Button contactUsButton;
     //ParallaxListView mListView;
     RecyclerView mListView;
-
+    Typeface tf;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        Typeface tf = Typeface.createFromAsset(getResources().getAssets(), "Roboto-Regular.ttf");
+        tf = Typeface.createFromAsset(getResources().getAssets(), "Roboto-Regular.ttf");
         rootView = inflater.inflate(R.layout.fragment_balance, container, false);
 
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerview);
@@ -121,8 +122,6 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         balProgress = (ProgressBar) rootView.findViewById(R.id.balscreen_prediction);
         balanceTextView = (TextView) rootView.findViewById(R.id.balanceView);
         balanceTextView.setTypeface(tf);
-        dataTextView = (TextView) rootView.findViewById(R.id.dataView);
-        dataTextView.setTypeface(tf);
         balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
         mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
         if (GlobalData.globalSimList.size() >= 2)
@@ -306,12 +305,12 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             //V12Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
             currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -1.0);
         }
-        currData = mSharedPreferences.getFloat("CURRENT_DATA_" + sim_slot, mSharedPreferences.getFloat("CURRENT_DATA", (float) -1.0));
+
         //Log.d(tag,"Balance  = "+currBalance);
         //Log.d(tag,"DATA  = "+currData);
         if (DataInitializer.done == true)
         {
-            Log.d(tag, "Setting Predicted days");
+           //V16Log.d(tag, "Setting Predicted days");
             setPredictedDays(sim_slot);
         }
 
@@ -328,8 +327,12 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             public void onClick(View v)
             {
                 startActivity(new Intent(MyApplication.context, HistoryActivity.class));
+
             }
         });
+        LinearLayout dataLayout1 = (LinearLayout) rootView.findViewById(R.id.pack_data_layout);
+        dataLayout1.setVisibility(View.VISIBLE);//In case it was deleted
+        dataLayout1.setOnLongClickListener(this);
         //V12Log.d(tag, "Bal Frag currBalance = " + currBalance);
 
         if (currBalance > -1.0)
@@ -435,7 +438,85 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
         }
 
-        if (currData > 0.0)
+        boolean isDatapackActive=false, isSmsPackActive = false, isCallpackActive = false;
+        //If user explicity deleted data pack then it should be hidden
+        isDatapackActive = mSharedPreferences.getBoolean("PACK_DATA_ACTIVE_" + sim_slot,true);
+        if(!isDatapackActive)
+        {
+            rootView.findViewById(R.id.pack_data_layout).setVisibility(View.GONE);
+        }
+        isCallpackActive = mSharedPreferences.getBoolean("PACK_CALL_ACTIVE_" + sim_slot,false);
+        isDatapackActive = mSharedPreferences.getBoolean("PACK_DATA_ACTIVE_" + sim_slot,false);
+        isSmsPackActive = mSharedPreferences.getBoolean("PACK_SMS_ACTIVE_" + sim_slot,false);
+        int activeAcc = 1;//default for balance, data will be ther unless it is deleted
+        if(isDatapackActive || rootView.findViewById(R.id.pack_data_layout).getVisibility() == View.VISIBLE) activeAcc++;
+        if(isCallpackActive) activeAcc++;
+        if(isSmsPackActive) activeAcc++;
+        float layoutWeight = 1.0f/(float)activeAcc;
+        if(layoutWeight>0.5f)
+            layoutWeight = 0.5f;
+        //Resize Main Balance
+        LinearLayout balanceLayout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
+        LinearLayout.LayoutParams params1 = (LinearLayout.LayoutParams) balanceLayout.getLayoutParams();
+        params1.weight = layoutWeight;
+        if(isDatapackActive)
+        {
+            LinearLayout dataLayout = (LinearLayout) rootView.findViewById(R.id.pack_data_layout);
+            dataLayout.setVisibility(View.VISIBLE);//In case it was deleted
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) dataLayout.getLayoutParams();
+            params.weight = layoutWeight;
+            dataLayout.setLayoutParams(params);
+            dataLayout.setOnLongClickListener(this);
+            float data_left = mSharedPreferences.getFloat("PACK_DATA_REMAINING_" + sim_slot,0.0f);
+            String validity = mSharedPreferences.getString("PACK_DATA_VALIDITY_" + sim_slot,"N/A");
+            ((TextView)dataLayout.findViewById(R.id.pack_data_left)).setText(String.format("%.2f",data_left)+" MB");
+            ((TextView)dataLayout.findViewById(R.id.pack_data_validity)).setText(validity!=null?validity:"N/A");
+
+        }
+        if(isCallpackActive)
+        {
+            LinearLayout callPackLayout = (LinearLayout) rootView.findViewById(R.id.pack_call_layout);
+            callPackLayout.setVisibility(View.VISIBLE);//In case it was deleted
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) callPackLayout.getLayoutParams();
+            params.weight = layoutWeight;
+            callPackLayout.setLayoutParams(params);
+            callPackLayout.setOnLongClickListener(this);
+            boolean isMinType = mSharedPreferences.getBoolean("MIN_TYPE_" + sim_slot,false);
+            if(isMinType)
+            {
+                int pack_dur_left = mSharedPreferences.getInt("PACK_CALL_DUR_REMAINING_" + sim_slot, 0);
+                String metric = mSharedPreferences.getString("PACK_CALL_DUR_METRIC_" + sim_slot, "s");
+                metric = metric.toLowerCase();
+                ((TextView) callPackLayout.findViewById(R.id.pack_call_left)).setText(pack_dur_left+" "+metric);
+
+            }
+            else
+            {
+                float pack_bal_left = mSharedPreferences.getFloat("PACK_CALL_BAL_REMAINING_" + sim_slot, 0.0f);
+
+                ((TextView) callPackLayout.findViewById(R.id.pack_call_left)).setText(getResources().getString(R.string.rupee_symbol)+String.format("%.2f", pack_bal_left) );
+
+            }
+            String validity = mSharedPreferences.getString("PACK_CALL_VALIDITY_" + sim_slot, "N/A");
+            ((TextView) callPackLayout.findViewById(R.id.pack_call_validity)).setText(validity != null ? validity : "N/A");
+
+        }
+        if(isSmsPackActive)
+        {
+            LinearLayout smsPackLayout = (LinearLayout) rootView.findViewById(R.id.pack_sms_layout);
+            smsPackLayout.setVisibility(View.VISIBLE);//In case it was deleted
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) smsPackLayout.getLayoutParams();
+            params.weight = layoutWeight;
+            smsPackLayout.setLayoutParams(params);
+            smsPackLayout.setOnLongClickListener(this);
+            int sms_left = mSharedPreferences.getInt("PACK_SMS_REMAINING_" + sim_slot,0);
+            String validity = mSharedPreferences.getString("PACK_SMS_VALIDITY_" + sim_slot,"N/A");
+            ((TextView)smsPackLayout.findViewById(R.id.pack_sms_left)).setText("Rem."+ sms_left);
+            ((TextView)smsPackLayout.findViewById(R.id.pack_sms_validity)).setText(validity!=null?validity:"N/A");
+
+        }
+
+        /*if (currData > 0.0)
         {
             dataTextView.setText(currData + "MB");
         }
@@ -447,7 +528,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             {
                 //Toast.makeText(getActivity(), "This Feature is  in Build!", Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
     }
 
     @Override
@@ -660,6 +741,67 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     public void onNothingSelected()
     {
 
+    }
+
+    /**
+     * Called when a view has been clicked and held.
+     *
+     * @param v The view that was clicked and held.
+     * @return true if the callback consumed the long click, false otherwise.
+     */
+    @Override
+    public boolean onLongClick(final View v)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+
+        builder.setTitle("Confirm");
+
+
+
+
+        switch (v.getId())
+        {
+
+            case R.id.pack_data_layout:
+                builder.setMessage("Delete Data Pack ?");
+                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                                 pref.edit().putBoolean("PACK_DATA_ACTIVE_"+sim_slot,false).apply();
+                                v.setVisibility(View.GONE);
+                                dialog.cancel();
+                            }});
+                break;
+            case R.id.pack_call_layout:
+                builder.setMessage("Delete Call Pack ?");
+                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                        pref.edit().putBoolean("PACK_CALL_ACTIVE_"+sim_slot,false).apply();
+                        v.setVisibility(View.GONE);
+                        dialog.cancel();
+                    }});
+                break;
+            case R.id.pack_sms_layout:
+                builder.setMessage("Delete SMS Pack ?");
+                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                        pref.edit().putBoolean("PACK_SMS_ACTIVE_"+sim_slot,false).apply();
+                        v.setVisibility(View.GONE);
+                        dialog.cancel();
+                    }});
+                break;
+
+            default:return false;
+        }
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+            dialog.cancel();
+        }
+        });
+        builder.show();
+        return true;
     }
 
     class USSDLoader extends AsyncTask<Integer, Void, Void>

@@ -11,12 +11,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Telephony;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
@@ -125,7 +123,7 @@ public class RecorderUpdaterService extends AccessibilityService
 
                 mCallDetailsModel.setCarrier_circle(mDetails.carrier + ',' + mDetails.circle);
                 mCallDetailsModel.setTotal_spent(mDetails.total_cost);
-                Log.d(TAG,"Call detail = "+mCallDetailsModel.toString());
+               //V16//V16Log.d(TAG,"Call detail = "+mCallDetailsModel.toString());
                 popup_intent.putExtra("DATA", mCallDetailsModel);
                 popup_intent
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -135,11 +133,9 @@ public class RecorderUpdaterService extends AccessibilityService
                         .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 noUSSDMsgHandler.removeCallbacks(r);
                 noUSSDMsgHandler = null;
-                if (dismissNode != null)
-                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 dismissNode = null;
                 endTime = System.nanoTime();
-                Log.d(TAG,"Time = "+((endTime-startTime)/1000000)+"ms");
+               //V16//V16Log.d(TAG,"Time = "+((endTime-startTime)/1000000)+"ms");
                 startActivity(popup_intent);
                 NormalCall entry = new NormalCall(_id,
                         new Date().getTime(),
@@ -185,33 +181,34 @@ public class RecorderUpdaterService extends AccessibilityService
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
                 PackCall mPackDetails = (PackCall) entryBase;
+                sim_slot = mPackDetails.sim_slot;
                 BalanceHelper mBalanceHelper2 = new BalanceHelper();
                 mBalanceHelper2.addEntry(mPackDetails.getBaseCallDetails());
                 (new PackCallHelper()).addEntry(mPackDetails);
                 ////V10Log.d(tag + "Current Bal", details.bal + " ");
-                mEditor.putBoolean("PACK_CALL_ACTIVE",true);
+                mEditor.putBoolean("PACK_CALL_ACTIVE_"+sim_slot,true);
                 if(mPackDetails.isMinsType())
                 {
                     //time pack
-                    mEditor.putBoolean("MIN_TYPE",true);
-                    mEditor.putString("PACK_CALL_REMAINING",mPackDetails.pack_duration_left+"");
-                    mEditor.putString("PACK_CALL_TYPE",mPackDetails.pack_name);
-                    mEditor.putString("PACK_CALL_METRIC",mPackDetails.left_metric);
-                    mEditor.putString("PACK_CALL_VALIDITY",mPackDetails.validity);
+                    mEditor.putBoolean("MIN_TYPE_"+sim_slot,true);
+                    mEditor.putInt("PACK_CALL_DUR_REMAINING_"+sim_slot,mPackDetails.pack_duration_left);
+                    mEditor.putString("PACK_CALL_TYPE_"+sim_slot,mPackDetails.pack_name);
+                    mEditor.putString("PACK_CALL_DUR_METRIC_"+sim_slot,mPackDetails.left_metric);
+                    mEditor.putString("PACK_CALL_VALIDITY_"+sim_slot,mPackDetails.validity);
 
                 }
                 else
                 {
                     //Money pack
-                    mEditor.putBoolean("MIN_TYPE",false);
-                    mEditor.putString("PACK_CALL_REMAINING",mPackDetails.pack_bal_left+"");
-                    mEditor.putString("PACK_CALL_TYPE",mPackDetails.pack_name);
-                    mEditor.putString("PACK_CALL_VALIDITY",mPackDetails.validity);
+                    mEditor.putBoolean("MIN_TYPE_"+sim_slot,false);
+                    mEditor.putFloat("PACK_CALL_BAL_REMAINING_"+sim_slot,mPackDetails.pack_bal_left);
+                    mEditor.putString("PACK_CALL_TYPE_"+sim_slot,mPackDetails.pack_name);
+                    mEditor.putString("PACK_CALL_VALIDITY_"+sim_slot,mPackDetails.validity);
                 }
                 mEditor.commit();
                 if(mPackDetails.main_bal>0)
                 {
-                    mEditor.putFloat("CURRENT_BALANCE_"+mPackDetails.sim_slot, (float) mPackDetails.main_bal);
+                    mEditor.putFloat("CURRENT_BALANCE_"+sim_slot, (float) mPackDetails.main_bal);
                 }
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_SMS:
@@ -242,10 +239,10 @@ public class RecorderUpdaterService extends AccessibilityService
                 mNormalSMSHelper2.addEntry(packSMSDetails.getBaseDetails());
                 PackSMSHelper mPackSMSHelper = new PackSMSHelper();
                 mPackSMSHelper.addEntry(packSMSDetails);
-                mEditor.putBoolean("PACK_SMS_ACTIVE",true);
-                mEditor.putString("PACK_SMS_REMAINING",packSMSDetails.rem_sms+"");
-                mEditor.putString("PACK_SMS_TYPE",packSMSDetails.pack_type);
-                mEditor.putString("PACK_SMS_VALIDITY",packSMSDetails.validity);
+                mEditor.putBoolean("PACK_SMS_ACTIVE_"+sim_slot,true);
+                mEditor.putInt("PACK_SMS_REMAINING_"+sim_slot,packSMSDetails.rem_sms);
+                mEditor.putString("PACK_SMS_TYPE_"+sim_slot,packSMSDetails.pack_type);
+                mEditor.putString("PACK_SMS_VALIDITY_"+sim_slot,packSMSDetails.validity);
                 ////V10Log.d(tag + "Current Bal", details.bal + " ");
 
                 break;
@@ -274,10 +271,10 @@ public class RecorderUpdaterService extends AccessibilityService
                 packDataDetails.sim_slot = sim_slot;
                 packDataHelper.addEntry(packDataDetails);
 
-                mEditor.putBoolean("PACK_DATA_ACTIVE",true);
-                mEditor.putString("PACK_DATA_REMAINING",packDataDetails.data_left+"");
-                mEditor.putString("PACK_DATA_TYPE",packDataDetails.pack_type);
-                mEditor.putString("PACK_DATA_VALIDITY",packDataDetails.validity);
+                mEditor.putBoolean("PACK_DATA_ACTIVE_"+sim_slot,true);
+                mEditor.putFloat("PACK_DATA_REMAINING_"+sim_slot,packDataDetails.data_left);
+                mEditor.putString("PACK_DATA_TYPE_"+sim_slot,packDataDetails.pack_type);
+                mEditor.putString("PACK_DATA_VALIDITY_"+sim_slot,packDataDetails.validity);
                 break;
             default:
         }
@@ -397,15 +394,14 @@ boolean cancelButtonFound = false;
         sharedPreferences.edit().putString("PREV_MSG",text).apply();
         if(previousUssdMessage.equals(text))
         {
-            Log.d(TAG,"Duplicate event: "+previousUssdMessage);
+           //V16//V16//V16Log.d(TAG,"Duplicate event: "+previousUssdMessage);
             return;
         }
         String original_message = text;
         text = text.replace("\r", "_").replace("\n", "_").replace("\u0011"," ").replace("ยง"," ").toUpperCase();
-        Log.d(TAG,String
-                .format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
-                        getEventType(event), event.getClassName(),
-                        event.getPackageName(), event.getEventTime(), text));
+       //V16//V16Log.d(TAG,String.format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
+                        //getEventType(event), event.getClassName(),
+                        //event.getPackageName(), event.getEventTime(), text));
         if (event.getClassName().toString().toUpperCase(Locale.US).contains("ALERT"))
         {
         try
@@ -413,14 +409,14 @@ boolean cancelButtonFound = false;
             USSDParser parser = new USSDParser();
             if (parser.parseMessage(text)==true) // if Valid
             {
-                Log.d(TAG,"Successful Parse");
+               //V16//V16Log.d(TAG,"Successful Parse");
                 ///Original Message
                 parser.getDetails().original_message = original_message;
                 processUSSD(parser);
             }
             else
             {
-                Log.d(TAG,"UnSuccessful Parse");
+               //V16//V16Log.d(TAG,"UnSuccessful Parse");
                 logOnParse(text);
             }
 
@@ -444,12 +440,12 @@ boolean cancelButtonFound = false;
                 USSDParser parser = new USSDParser();
                 if (parser.parseMessage(text)==true) // if Valid
                 {
-                    Log.d(TAG,"Successful Parse");
+                   //V16//V16Log.d(TAG,"Successful Parse");
                     processUSSD(parser);
                 }
                 else
                 {
-                    Log.d(TAG,"UnSuccessful Parse");
+                   //V16//V16Log.d(TAG,"UnSuccessful Parse");
                     logOnParse(text);
                 }
 
@@ -465,35 +461,35 @@ boolean cancelButtonFound = false;
     private void processUSSD(USSDParser parser)
     {
         USSDBase ussDetails = parser.getDetails();
-        Log.d(TAG,ussDetails.toString());
+       //V16//V16Log.d(TAG,ussDetails.toString());
         switch (ussDetails.getType())
         {
             case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
-                Log.d(TAG,"Type Normal call");
+               //V16//V16Log.d(TAG,"Type Normal call");
                 //reset callDbUpdate
                 //You have to wait for event details to show the pop up
                 processCallUSSD(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
-                Log.d(TAG,"Type Pack call");
+               //V16//V16Log.d(TAG,"Type Pack call");
                 processCallUSSD(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_SMS:
-                Log.d(TAG,"Type Normal SMS");
+               //V16//V16Log.d(TAG,"Type Normal SMS");
                 ///Need to fetch the number messaged to
                 processSMS(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_SMS:
-                Log.d(TAG,"Type Pack SMS");
+               //V16//V16Log.d(TAG,"Type Pack SMS");
                 processSMS(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_DATA:
-                Log.d(TAG,"Type Normal Data");
+               //V16//V16Log.d(TAG,"Type Normal Data");
                 //Just need to display the pop, no other data as of now
                 processData(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
-                Log.d(TAG,"Type Pack Data");
+               //V16//V16Log.d(TAG,"Type Pack Data");
                 processData(ussDetails);
                 break;
         }
@@ -503,7 +499,7 @@ boolean cancelButtonFound = false;
 
     private void processCallEvent(Message msg)
     {
-        Log.d(TAG,"processCallEvent");
+       //V16//V16Log.d(TAG,"processCallEvent");
         callEventDetailsReady = true;
         tempCallEventDetails = (OutgoingCallMessage) msg.obj;
         processAllCallDetails();
@@ -521,7 +517,7 @@ boolean cancelButtonFound = false;
     private void finalizeCall()
     {
         //TODO Insert incomplete call details
-        Log.d(TAG,"Resetting all Race Condition Variables");
+       //V16//V16Log.d(TAG,"Resetting all Race Condition Variables");
         callussdDetailsReady = false;
         callEventDetailsReady = false;
         tempCallEventDetails = null;
@@ -531,15 +527,15 @@ boolean cancelButtonFound = false;
 
     private void processAllCallDetails()
     {
-        Log.d(TAG,"processAllCallDetails ");
-        Log.d(TAG,"callussdDetailsReady "+callussdDetailsReady);
-        Log.d(TAG,"callEventDetailsReady "+callEventDetailsReady);
+       //V16//V16Log.d(TAG,"processAllCallDetails ");
+       //V16//V16Log.d(TAG,"callussdDetailsReady "+callussdDetailsReady);
+       //V16//V16Log.d(TAG,"callEventDetailsReady "+callEventDetailsReady);
 
         if(callussdDetailsReady && callEventDetailsReady)
         {
-            Log.d(TAG,"Event details = "+ tempCallEventDetails.toString());
+           //V16//V16Log.d(TAG,"Event details = "+ tempCallEventDetails.toString());
             ((NormalCall)tempCallUSSDDetails).eventDetails(tempCallEventDetails);
-            Log.d(TAG,"Call Details = "+tempCallUSSDDetails.toString());
+           //V16//V16Log.d(TAG,"Call Details = "+tempCallUSSDDetails.toString());
             Intent popup_intent = new Intent(getApplicationContext(),
                     UssdPopup.class);
 
@@ -551,12 +547,9 @@ boolean cancelButtonFound = false;
 
                 popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
                 popup_intent.putExtra("DATA", mNormalCallDetails);
-                Log.d(TAG,"Call detail = "+mNormalCallDetails.toString());
+               //V16//V16Log.d(TAG,"Call detail = "+mNormalCallDetails.toString());
 
-                if (dismissNode != null)
-                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-
-                Log.d(TAG,"Displaying pop_up");
+               //V16//V16Log.d(TAG,"Displaying pop_up");
                 showPopup(popup_intent);
             }
             else
@@ -566,23 +559,20 @@ boolean cancelButtonFound = false;
 
                 popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
                 popup_intent.putExtra("DATA", mPackCallPopupDetails);
-                Log.d(TAG,"Call detail = "+mPackCallPopupDetails.toString());
-
-                if (dismissNode != null)
-                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+               //V16//V16Log.d(TAG,"Call detail = "+mPackCallPopupDetails.toString());
 
                 showPopup(popup_intent);
             }
 
-            dismissNode = null;
 
-            Log.d(TAG,"Adding to Db");
+           //V16//V16Log.d(TAG,"Adding to Db");
             addToDatabase(tempCallUSSDDetails);
         }
         //wait till both are filled otherwise reset them after 10 secs
     }
     void showPopup(Intent popup_intent)
     {
+
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -590,7 +580,7 @@ boolean cancelButtonFound = false;
     }
     private void processCallUSSD(USSDBase ussDetails)
     {
-        Log.d(TAG,"processCallUSSD ");
+       //V16//V16Log.d(TAG,"processCallUSSD ");
         callussdDetailsReady  = true;
         if(tempCallUSSDDetails == null)
         {
@@ -622,10 +612,9 @@ boolean cancelButtonFound = false;
                 popup_intent.putExtra("TYPE", ussDetails.getType());
 
                 popup_intent.putExtra("DATA", smsPopupDetails);
-                Log.d(TAG,"Normal SMS detail = "+smsPopupDetails.toString());
+               //V16//V16Log.d(TAG,"Normal SMS detail = "+smsPopupDetails.toString());
 
-                if (dismissNode != null)
-                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+
 
                 showPopup(popup_intent);
             }
@@ -636,9 +625,7 @@ boolean cancelButtonFound = false;
                 smsPopupDetails.addUserDetails(userDetails);
                 popup_intent.putExtra("TYPE", ussDetails.getType());
                 popup_intent.putExtra("DATA", smsPopupDetails);
-                Log.d(TAG,"SMS Pack detail = "+smsPopupDetails.toString());
-                if (dismissNode != null)
-                    dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+               //V16//V16Log.d(TAG,"SMS Pack detail = "+smsPopupDetails.toString());
 
                 showPopup(popup_intent);
             }
@@ -646,11 +633,10 @@ boolean cancelButtonFound = false;
         }
         else
         {
-            Log.d(TAG,"Event Details Null");
+           //V16//V16Log.d(TAG,"Event Details Null");
         }
-        dismissNode = null;
 
-        Log.d(TAG,"Adding SMS to Db");
+       //V16//V16Log.d(TAG,"Adding SMS to Db");
         addToDatabase(ussDetails);
 
     }
@@ -667,7 +653,7 @@ boolean cancelButtonFound = false;
             popup_intent.putExtra("TYPE", ussDetails.getType());
 
             popup_intent.putExtra("DATA", normalDataDetails);
-            Log.d(TAG,"Normal Data detail = "+normalDataDetails.toString());
+           //V16//V16Log.d(TAG,"Normal Data detail = "+normalDataDetails.toString());
 
             if (dismissNode != null)
                 dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
@@ -680,7 +666,7 @@ boolean cancelButtonFound = false;
             popup_intent.putExtra("TYPE", ussDetails.getType());
 
             popup_intent.putExtra("DATA", packDataDetails);
-            Log.d(TAG,"Pack Data detail = "+packDataDetails.toString());
+           //V16//V16Log.d(TAG,"Pack Data detail = "+packDataDetails.toString());
 
             if (dismissNode != null)
                 dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
@@ -689,7 +675,7 @@ boolean cancelButtonFound = false;
         }
         dismissNode = null;
 
-        Log.d(TAG,"Adding Data to Db");
+       //V16//V16Log.d(TAG,"Adding Data to Db");
         addToDatabase(ussDetails);
     }
 
@@ -715,22 +701,22 @@ boolean cancelButtonFound = false;
         long previous_id = mPreferences.getLong("SMS_PREV_ID", -1l);
         Cursor cursor = MyApplication.context.getContentResolver().query(
                 Uri.parse("content://sms/"),
-                new String[]{Telephony.Sms._ID,Telephony.Sms.ADDRESS},
-                Telephony.Sms._ID + ">? AND "+Telephony.Sms.TYPE + " = "+ Telephony.Sms.MESSAGE_TYPE_SENT,
+                new String[]{"_id","address"},
+                "_id" + ">? AND "+ "type" + " = "+ "2",
                 new String[]{String.valueOf(previous_id)},
-                Telephony.Sms._ID + " DESC LIMIT 1");
+                "_id" + " DESC LIMIT 1");
         OutgoingSmsMessage mdetails=null;
         while (cursor.moveToNext())
         {
             long id;
             String number;
-            id = cursor.getLong(cursor.getColumnIndex(Telephony.Sms._ID));
-            number = cursor.getString(cursor.getColumnIndex(Telephony.Sms.ADDRESS));
+            id = cursor.getLong(cursor.getColumnIndex("_id"));
+            number = cursor.getString(cursor.getColumnIndex("address"));
             //TODO Dual Sim Implementation
             mdetails = new OutgoingSmsMessage(id,number,0);
-            mPreferences.edit().putLong("SMS_PREV_ID",id).commit();
+            mPreferences.edit().putLong("SMS_PREV_ID",id).apply();
         }
-        Log.d(TAG,"SMS Details: "+mdetails);
+       //V16//V16Log.d(TAG,"SMS Details: "+mdetails);
         return mdetails;
     }
     /*public void onAccessibilityEvent(AccessibilityEvent event)
@@ -1152,7 +1138,7 @@ boolean cancelButtonFound = false;
     @Override
     public void onInterrupt()
     {
-        Log.d(TAG, "onInterrupt");
+       //V16//V16Log.d(TAG, "onInterrupt");
     }
 
     @Override
@@ -1173,7 +1159,6 @@ boolean cancelButtonFound = false;
                 android.provider.CallLog.Calls.CONTENT_URI, false,
                 mCallLogObserver);
         ////V10Log.d(TAG, "onServiceConnected");
-        // mBalanceHelper.addDemoentries();
         if (ConstantsAndStatics.WAITING_FOR_SERVICE)
         {
             Tracker t = ((MyApplication) this.getApplication()).getTracker(

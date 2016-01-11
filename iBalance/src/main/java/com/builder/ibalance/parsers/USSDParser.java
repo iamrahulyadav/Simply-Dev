@@ -60,7 +60,7 @@ public class USSDParser
 
     public boolean parseMessage(String message)
     {
-        Log.d(TAG, "Recent event = " + ConstantsAndStatics.RECENT_EVENT);
+       //V16Log.d(TAG, "Recent event = " + ConstantsAndStatics.RECENT_EVENT);
         try
         {
             switch (ConstantsAndStatics.RECENT_EVENT)
@@ -69,33 +69,33 @@ public class USSDParser
                     ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
                     if (normalCall(message))
                     {
-                        Log.d(TAG, "Was A Normal Call");
+                       //V16Log.d(TAG, "Was A Normal Call");
                         return true;
                     }
                     if (packCall(message))
                     {
-                        Log.d(TAG, "Was A Normal Call");
+                       //V16Log.d(TAG, "Was A Normal Call");
                         return true;
                     }
                 case Intent.ACTION_DATE_CHANGED:
                     ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
                     if (packData(message))
                     {
-                        Log.d(TAG, "Was A Pack Data");
+                       //V16Log.d(TAG, "Was A Pack Data");
                         return true;
                     }
                     if (normalData(message))
                     {
-                        Log.d(TAG, "Was A Normal Data");
+                       //V16Log.d(TAG, "Was A Normal Data");
                         return true;
                     }
                 case "UNKNOWN":
                     if (tryAllTypes(message))
                     {
-                        Log.d(TAG, "Got from new Version");
+                       //V16Log.d(TAG, "Got from new Version");
                         return true;
                     }
-                    Log.d(TAG, "Trying old school methods");
+                   //V16Log.d(TAG, "Trying old school methods");
                     return tryOldSchoolMethod(message);
             }
         } catch (JSONException e)
@@ -108,37 +108,37 @@ public class USSDParser
 
     private boolean tryAllTypes(String message)
     {
-        Log.d(TAG, "Trying all Types");
+       //V16Log.d(TAG, "Trying all Types");
         try
         {
             if (normalCall(message))
             {
-                Log.d(TAG, "Normal Call");
+               //V16Log.d(TAG, "Normal Call");
                 return true;
             }
             if (normalSMS(message))
             {
-                Log.d(TAG, "Normal SMS");
+               //V16Log.d(TAG, "Normal SMS");
                 return true;
             }
             if (packSMS(message))
             {
-                Log.d(TAG, "Pack SMS");
+               //V16Log.d(TAG, "Pack SMS");
                 return true;
             }
             if (packCall(message))
             {
-                Log.d(TAG, "Pack Call");
+               //V16Log.d(TAG, "Pack Call");
                 return true;
             }
             if (packData(message))
             {
-                Log.d(TAG, "Pack data");
+               //V16Log.d(TAG, "Pack data");
                 return true;
             }
             if (normalData(message))
             {
-                Log.d(TAG, "Normal DATA");
+               //V16Log.d(TAG, "Normal DATA");
                 return true;
             }
         } catch (JSONException e)
@@ -152,11 +152,11 @@ public class USSDParser
 
     private boolean normalCall(String message) throws JSONException
     {
-        Log.d(TAG, "Trying Normal Call");
+       //V16Log.d(TAG, "Trying Normal Call");
         Matcher result = findDetails(mLoki.getNormalCallRegex(), message);
         if (result != null)
         {
-            Log.d(TAG, "Matched!");
+           //V16Log.d(TAG, "Matched!");
             String bal = result.group("MBAL");
             //to take care of number like 1,208.990
             bal = bal.replace(",", "").trim();
@@ -209,16 +209,16 @@ public class USSDParser
                     USSDDetails((new Date()).getTime(), ConstantsAndStatics.USSD_TYPES.NORMAL_CALL, mainBal, cost, duration, message);
             //this.type = USSDMessageType.NORMAL_CALL;
             //details = new NormalCall((new Date()).getTime(), cost, mainBal, duration, message);
-            Log.d(TAG, "details = " + ussdDetails.toString());
+           //V16Log.d(TAG, "details = " + ussdDetails.toString());
             return true;
         }
-        Log.d(TAG, "Normal Call Didn't Match");
+       //V16Log.d(TAG, "Normal Call Didn't Match");
         return false;
     }
 
     private boolean packData(String message) throws JSONException
     {
-        Log.d(TAG, "Trying Pack Data");
+       //V16Log.d(TAG, "Trying Pack Data");
         Matcher result = findDetails(mLoki.getPackDataRegex(), message);
         if (result != null)
         {
@@ -384,7 +384,7 @@ public class USSDParser
 
     private boolean packSMS(String message) throws JSONException
     {
-        Log.d(TAG, "Trying Pack SMS");
+       //V16Log.d(TAG, "Trying Pack SMS");
         //Log.d(TAG, "Trying Pack SMS");
         //TYPE - optional Type (?<TYPE>NAT|LOC|NIGHT|STD|NAT&LCL|L(?:OC)?\+STDSTD|LOCAL\s*AIRTEL|LOCAL|LOCAL&STD\s*AIRTEL|LOC&NAT|L(?:OC)?\+STDN|LOCAL\s*AND\s*NATIONAL|VF\s*2\s*VF\s*LOCAL)\s*
         //DEDT - optional SMS deducted
@@ -447,7 +447,7 @@ public class USSDParser
 
     private boolean normalSMS(String message) throws JSONException
     {
-        Log.d(TAG, "Trying Normal SMS");
+       //V16Log.d(TAG, "Trying Normal SMS");
         //Log.d(TAG, "Trying Normal SMS");
         //Normal SMS has cost and balance left
         //Named Group COST and MBAL
@@ -465,7 +465,7 @@ public class USSDParser
             //ptln("Cost = "+cost+"  Main Bal = "+mainBal);
             /*type = USSDMessageType.NORMAL_SMS;
             details = new NormalSMS(new Date().getTime(), cost, mainBal, "9972115447", message);
-            Log.d(TAG+" SMS", "details = "+details.toString());*/
+           //V16Log.d(TAG+" SMS", "details = "+details.toString());*/
             ussdDetails = new com.builder.ibalance.models.USSDModels.NormalSMS();
             ((com.builder.ibalance.models.USSDModels.NormalSMS) ussdDetails).
                     USSDDetails(new Date().getTime(), ConstantsAndStatics.USSD_TYPES.NORMAL_SMS, mainBal, cost, message);
@@ -477,7 +477,7 @@ public class USSDParser
 
     private boolean normalData(String message) throws JSONException
     {
-        Log.d(TAG, "Trying Normal Data");
+       //V16Log.d(TAG, "Trying Normal Data");
         //Log.d(TAG, "Trying Normal Data");
         //MBAL - Main Balance
         //DCOST - optional cost
@@ -576,7 +576,7 @@ public class USSDParser
 
     private boolean packCall(String message) throws JSONException
     {
-        Log.d(TAG, "Trying Pack Call");
+       //V16Log.d(TAG, "Trying Pack Call");
         Matcher result = findDetails(mLoki.getPackCallRegex(), message);
         if (result != null)
         {
@@ -829,7 +829,7 @@ public class USSDParser
 
     boolean tryOldSchoolMethod(String message)
     {
-        Log.d(TAG, "Trying Old School Method");
+       //V16Log.d(TAG, "Trying Old School Method");
         if (parseForNormalCall(message))
         {
             return true;
@@ -921,7 +921,7 @@ public class USSDParser
                             balance,
                             cost,
                             message);
-            Log.d(TAG + " SMS", "details = " + ussdDetails.toString());
+           //V16Log.d(TAG + " SMS", "details = " + ussdDetails.toString());
             return true;
         }
         return false;
@@ -1084,24 +1084,24 @@ public class USSDParser
     private Matcher findDetails(JSONArray regexArray, String message) throws JSONException
     {
         int length = regexArray.length();
-        Log.d(TAG, "Trying with " + length + "Regexes");
+       //V16Log.d(TAG, "Trying with " + length + "Regexes");
         Pattern mPattern;
         Matcher mMatcher;
         String regex;
         for (int i = 0; i < length; i++)
         {
             regex = regexArray.getJSONObject(i).getString("REGEX");
-            Log.d(TAG, "Trying with : " + regex);
+           //V16Log.d(TAG, "Trying with : " + regex);
             mPattern = Pattern.compile(regex);
             mMatcher = mPattern.matcher(message);
             if (mMatcher.find())
             {
-                Log.d(TAG, "Found a Match");
+               //V16Log.d(TAG, "Found a Match");
                 return mMatcher;
 
             }
         }
-        Log.d(TAG, "No Match Found");
+       //V16Log.d(TAG, "No Match Found");
         return null;
     }
 
@@ -1111,9 +1111,9 @@ public class USSDParser
         int secs = 0, count = 0;
         Float bal = (float) 0.0, callCost = (float) 0.0;
         Long time = (new Date()).getTime() + 19800l;//to ist
-        Log.d(TAG+" CALL", "parseForNormalCall");
-        Log.d(TAG+" CALL" + "from service", message);
-        Log.d(TAG+" CALL" + "time from service", time.toString());
+       //V16Log.d(TAG+" CALL", "parseForNormalCall");
+       //V16Log.d(TAG+" CALL" + "from service", message);
+       //V16Log.d(TAG+" CALL" + "time from service", time.toString());
 
         Pattern pcc;
         Matcher mcc;

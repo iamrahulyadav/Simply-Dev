@@ -25,6 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:weightSum="1"
             android:divider="@color/list_divider">
 
             <LinearLayout
@@ -53,6 +54,14 @@
                     android:text="--.--"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@android:color/background_dark" />
+                <TextView
+                    android:id="@+id/balance_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Details"
+                    android:textSize="12sp"
+                    android:textColor="@android:color/darker_gray" />
             </LinearLayout>
 
 
@@ -61,10 +70,12 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:layout_weight="0.5"
+                android:id="@+id/pack_data_layout"
+                android:background="@drawable/bal_view_selector"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/dataHead"
+                    android:id="@+id/pack_data_head"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
@@ -73,13 +84,92 @@
                     android:textColor="@android:color/darker_gray" />
 
                 <TextView
-                    android:id="@+id/dataView"
+                    android:id="@+id/pack_data_left"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="--.-- MB"
+                    android:text="--.--"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@android:color/background_dark" />
+                <TextView
+                    android:id="@+id/pack_data_validity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="N/A"
+                    android:textSize="12sp"
+                    android:textColor="@android:color/darker_gray" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/pack_call_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:background="@drawable/bal_view_selector"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/pack_call_head"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Call Pack"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@android:color/darker_gray" />
+
+                <TextView
+                    android:id="@+id/pack_call_left"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="--.--"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@android:color/background_dark" />
+                <TextView
+                    android:id="@+id/pack_call_validity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="N/A"
+                    android:textSize="12sp"
+                    android:textColor="@android:color/darker_gray" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/pack_sms_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:background="@drawable/bal_view_selector"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/pack_sms_head"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="SMS Pack"
+
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@android:color/darker_gray" />
+
+                <TextView
+                    android:id="@+id/pack_sms_left"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="--.--"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@android:color/background_dark" />
+                <TextView
+                    android:id="@+id/pack_sms_validity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="N/A"
+                    android:textSize="12sp"
+                    android:textColor="@android:color/darker_gray" />
             </LinearLayout>
         </LinearLayout>
 

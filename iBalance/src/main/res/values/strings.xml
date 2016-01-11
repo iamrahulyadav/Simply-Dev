@@ -15,7 +15,7 @@
     <string name="title_activity_splashscreen">SplashscreenActivity</string>
     <string name="rupee_symbol">₹</string>
     <!-- flurry_key  = AES IV for decryption -->
-    <string name ="flurry_key" >0x000102030405060708090A0B0C0D0E0F</string>
+    <string name="flurry_key">0x000102030405060708090A0B0C0D0E0F</string>
     <string-array name="analytics_period">
 
         <!-- <item>Today</item> -->
@@ -86,5 +86,6 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <!-- analytics key = AES key for decryption -->
     <string name="analytics_key">0x000102030405060708090A0B0C0D0E0F</string>
+    <string name="almost_there">Almost There !!!</string>
 
 </resources>

@@ -2,7 +2,6 @@ package com.builder.ibalance.database.helpers;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.models.USSDModels.PackSMS;
@@ -39,7 +38,7 @@ public class PackSMSHelper
         values.put(IbalanceContract.SMSPackEntry.COLUMN_NAME_USED_SMS,entry.used_sms);
         values.put(IbalanceContract.SMSPackEntry.COLUMN_NAME_REMAINING, entry.rem_sms);
         values.put(IbalanceContract.SMSPackEntry.COLUMN_NAME_VALIDITY, entry.validity);
-        Log.d(TAG,"Db Details "+ values.toString());
+       //V16Log.d(TAG,"Db Details "+ values.toString());
         // 3. insert
         db.insert(IbalanceContract.SMSPackEntry.TABLE_NAME, // table
                 null, // nullColumnHack

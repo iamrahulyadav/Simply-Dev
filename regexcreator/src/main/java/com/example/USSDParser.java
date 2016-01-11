@@ -11,10 +11,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static com.example.Choice.ptln;
 
@@ -33,13 +32,14 @@ public class USSDParser
         {
             Charset charset = Charset.forName("UTF-8");
             //CHRG:0.00 INR,BAL:5.20 INR,VOLUMEUSED:11.421875 MB,FREEBIEAVAILABLE:95.57MB.PLAN EXPIRES FEB 08 2016.. FREE 10 TT LOAN! DIAL *444# TO GET RS. 10 TT LOAN! ---------- FREE 10 TT LOAN! DIAL *444# TO GET RS. 10 TT LOAN! TC APPLY. LAST SMS DEDUCTED 0.00 INR. MAIN BALANCE IS 5.20 INR.
-            //new BufferedReader(new InputStreamReader(System.in));//
-            BufferedReader br = Files.newBufferedReader(Paths.get("G:/SimplyV2/TextMining/unique_pat/Done/Unit_tests/Normal_call.txt"),charset);
+            //SMS COST:RS.0.00 BAL:RS. 178.37
+            //
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));//Files.newBufferedReader(Paths.get("G:/SimplyV2/TextMining/unique_pat/Done/Unit_tests/Normal_call.txt"),charset);
             String message = null;
             while((message = br.readLine())!=null)
             {
                 ptln("Working on : "+message);
-                if(!normalCall(message))
+                if(!tryAllTypes(message.toUpperCase()))
                 {
                     ptln("Failed:\n"+message);
                 }
@@ -97,21 +97,16 @@ public class USSDParser
 
     }
 
-    private boolean tryAllTypes(String message)
+    private boolean tryAllTypes(String message) throws JSONException
     {
         //Log.d(TAG, "Trying all Types");
-        try
-        {
+
             if (normalCall(message)) return true;
             if (normalSMS(message)) return true;
             if (packSMS(message)) return true;
             if (packCall(message)) return true;
             if (packData(message)) return true;
             if (normalData(message)) return true;
-        } catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
         return false;
 
     }
@@ -840,7 +835,7 @@ public class USSDParser
     }
     private JSONArray getPackCallRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/CALL_PACK_PATTERNS.json");
+        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/PACK_CALL_PATTERNS.json");
     }
     private JSONArray getNormalCallRegex()
     {
@@ -848,19 +843,19 @@ public class USSDParser
     }
     private JSONArray getNormalDataRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/DATA_PATTERNS.json");
+        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/NORMAL_DATA_PATTERNS.json");
     }
     private JSONArray getPackSMSRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/SMS_PACK_PATTERNS.json");
+        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/PACK_SMS_PATTERNS.json");
     }
     private JSONArray getNormalSMSRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/SMS_PATTERNS.json");
+        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/NORMAL_SMS_PATTERNS.json");
     }
     private JSONArray getPackDataRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/DATA_PACK_PATTERNS.json");
+        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/PACK_DATA_PATTERNS.json");
     }
     JSONArray getJSONArray(String fileName)
     {

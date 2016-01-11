@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
+         android:layout_height="80dp"
     android:layout_marginTop="2dp"
     android:background="@color/white"
     android:orientation="horizontal"
@@ -12,12 +12,15 @@
     <!-- contact_picture -->
     <ImageView
         android:id="@+id/recents_picture"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_alignParentLeft="true"
-        android:layout_marginRight="8dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="6dp"
         android:contentDescription="contact"
-        android:src="@drawable/default_contact_picture" />
+        android:src="@drawable/default_contact_picture"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
 
     <!-- contact_name -->
 
@@ -26,7 +29,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Place Holder"
-        android:layout_alignTop="@+id/recents_picture"
+        android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/recents_picture"
         android:textColor="@android:color/black"
         android:textSize="@dimen/contact_name" />
@@ -37,13 +40,11 @@
         android:id="@+id/recents_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/recents_name"
-        android:layout_marginTop="5dip"
-        android:layout_toRightOf="@+id/recents_picture"
         android:textSize="13sp"
         android:text="+919999999999"
-        android:layout_marginRight="3dp"
-        android:textColor="@android:color/darker_gray"/>
+        android:textColor="@android:color/darker_gray"
+        android:layout_below="@+id/recents_name"
+        android:layout_toRightOf="@+id/recents_picture"/>
 
     <!-- Circleand state -->
 
@@ -56,9 +57,8 @@
         android:text="TATA-DOCOMO,Maharashtra-Goa"
         android:textColor="@android:color/darker_gray"
         android:textSize="13sp"
-        android:layout_toRightOf="@+id/recents_picture"
         android:layout_below="@+id/recents_number"
-        />
+        android:layout_toRightOf="@+id/recents_picture"/>
 
     <!-- Duration in HH::MM::SS format -->
 
@@ -68,6 +68,7 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
         android:text="Rs --.--"
+        android:layout_marginRight="2dp"
         android:layout_alignBaseline="@+id/recents_carrier_circle"
         android:layout_alignRight="@+id/recents_duration"
         android:layout_alignEnd="@+id/recents_duration"/>
@@ -78,7 +79,7 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/darker_gray"
         android:text="00:00:00"
-
+        android:layout_marginRight="2dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"/>
 
@@ -109,6 +110,7 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Sim : 1"
         android:id="@+id/recent_sim"
+        android:layout_marginRight="2dp"
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/recents_duration"
         android:layout_alignEnd="@+id/recents_duration"

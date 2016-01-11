@@ -16,6 +16,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -112,6 +113,8 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         {
             rechargePhoneNumber = ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
         }
+        if(TextUtils.isEmpty(rechargePhoneNumber))
+            rechargePhoneNumber = ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
         if (rechargePhoneNumber != null)
         {
             rechargePhoneNumber = Helper.normalizeNumber(rechargePhoneNumber);

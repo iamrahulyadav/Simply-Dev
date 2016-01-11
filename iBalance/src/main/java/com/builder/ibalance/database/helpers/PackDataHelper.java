@@ -33,7 +33,7 @@ public class PackDataHelper
         values.put(IbalanceContract.DataPackEntry.COLUMN_NAME_VALIDITY, entry.validity);
         values.put(IbalanceContract.DataPackEntry.COLUMN_NAME_SLOT, entry.sim_slot);
         values.put(IbalanceContract.DataPackEntry.COLUMN_NAME_MESSAGE, entry.original_message);
-        Log.d(TAG,"Db Details "+ values.toString());
+       //V16Log.d(TAG,"Db Details "+ values.toString());
         // 3. insert
         db.insert(IbalanceContract.DataPackEntry.TABLE_NAME, // table
                 null, // nullColumnHack

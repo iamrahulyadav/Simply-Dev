@@ -73,27 +73,27 @@ public class UssdPopup extends AppCompatActivity
         switch (mIntent.getIntExtra("TYPE", -1))
         {
             case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
-                Log.d(TAG,"Type Normal call");
+               //V16Log.d(TAG,"Type Normal call");
                 displayNormalCallPopUp((NormalCallPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
-                Log.d(TAG,"Type Pack call");
+               //V16Log.d(TAG,"Type Pack call");
                 displayCallPackPopup((PackCallPopup) mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_SMS:
-                Log.d(TAG,"Type Normal SMS");
+               //V16Log.d(TAG,"Type Normal SMS");
                 displayNormalSMSPopup((NormalSmsPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_SMS:
-                Log.d(TAG,"Type Pack SMS");
+               //V16Log.d(TAG,"Type Pack SMS");
                 displaySMSPackPopup((PackSmsPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_DATA:
-                Log.d(TAG,"Type Normal Data");
+               //V16Log.d(TAG,"Type Normal Data");
                 displayNormalDataPopup((NormalDataPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
-                Log.d(TAG,"Type Pack Data");
+               //V16Log.d(TAG,"Type Pack Data");
                 displayDataPackPopup((PackDataPopup)mIntent.getParcelableExtra("DATA"));
                 break;
         }

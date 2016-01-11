@@ -193,7 +193,6 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             findViewById(R.id.loginphone).setVisibility(View.INVISIBLE);
             findViewById(R.id.btnSkipLogin).setVisibility(View.INVISIBLE);
             findViewById(R.id.check_box_and_text).setVisibility(View.INVISIBLE);
-            findViewById(R.id.or).setVisibility(View.INVISIBLE);
             findViewById(R.id.sim_check_progress).setVisibility(View.VISIBLE);
             isSkipped = true;
             new SimChecker().execute();

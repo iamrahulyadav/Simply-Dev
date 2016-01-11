@@ -20,11 +20,11 @@ public class SimplyListener extends BroadcastReceiver
         switch (intent.getAction())
         {
             case Intent.ACTION_NEW_OUTGOING_CALL:
-                Log.d(TAG,"Outgoing Call");
+               //V16Log.d(TAG,"Outgoing Call");
                 ConstantsAndStatics.RECENT_EVENT = Intent.ACTION_NEW_OUTGOING_CALL;
                 break;
             case Intent.ACTION_DATE_CHANGED:
-                Log.d(TAG,"Data State Changed");
+               //V16Log.d(TAG,"Data State Changed");
                 ConstantsAndStatics.RECENT_EVENT = Intent.ACTION_DATE_CHANGED;
                 break;
         }

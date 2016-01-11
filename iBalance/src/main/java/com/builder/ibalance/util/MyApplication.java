@@ -92,7 +92,7 @@ public class MyApplication extends Application
 		if (files != null) for (String filename : files) {
             if(filename.equals("DEVICE_DETAILS.xml") || filename.equals("GOOGLE_PREFS.xml") || filename.equals("USER_DATA.xml"))
             {
-                Log.d(tag,"Writing  = "+filename);
+               //V16Log.d(tag,"Writing  = "+filename);
                 InputStream in = null;
                 OutputStream out = null;
                 try
@@ -100,7 +100,7 @@ public class MyApplication extends Application
 
                     in = assetManager.open(filename);
                     String shared_pref_path = "/data/data/com.builder.ibalance/shared_prefs/";
-                    Log.d(tag,"shared_pref_path = "+shared_pref_path);
+                   //V16Log.d(tag,"shared_pref_path = "+shared_pref_path);
                         File outFile = new File( shared_pref_path, filename);
                     out = new FileOutputStream(outFile);
                     copyFile(in, out);

@@ -7,7 +7,6 @@ import android.graphics.drawable.AnimationDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -137,7 +136,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
 			LayoutInflater inflater = getLayoutInflater();
 	          
 	        // Call toast.xml file for toast layout 
-	        View toastRoot = inflater.inflate(R.layout.custom_toast_layout, null);
+	       /* View toastRoot = inflater.inflate(R.layout.custom_toast_layout, null);
 	          
 	        Toast toast = new Toast(getApplicationContext());
 	         
@@ -146,10 +145,14 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
 	        toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL,
 	                0, 0);
 	        toast.setDuration(Toast.LENGTH_LONG);
-	        toast.show();
+	        toast.show();*/
 			Intent intent = new Intent(
 					android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+
             startActivityForResult(intent, 0);
+			intent  = new Intent(this,
+				ServiceEnableTranslucent.class);
+			startActivity(intent);
 			break;
 		default:
 			break;

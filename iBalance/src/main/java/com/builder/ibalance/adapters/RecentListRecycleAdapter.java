@@ -44,7 +44,7 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
     BalanceHelper mBalanceHelper;
     CircleTransform mCircleTransform = new CircleTransform();
     ContactDetailHelper mContactDetailHelper;
-    float call_rate = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE).getFloat("CALL_RATE", 1.7f);
+    //float call_rate = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE).getFloat("CALL_RATE", 1.7f);
     ContactDetailModel contactDetails;
     Cursor cursor;
     Context context;
@@ -53,6 +53,7 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
     public RecentListRecycleAdapter(Context context, Cursor c, boolean autoRequery) {
         this.cursor = c;
         this.context = context;
+        ruppee_symbol = context.getResources().getString(R.string.rupee_symbol);
 
     }
 
@@ -107,11 +108,11 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
                     mBalanceHelper = new BalanceHelper();
                 }
                 Float fcost = mBalanceHelper.getCostForId(id);
-                if (fcost == null) {
-                    fcost = (call_rate * duration) / 100;
-                    mHolder.call_cost.setText(ruppee_symbol + String.format("%.2f", fcost));
+                if (fcost == null) {/*
+                    fcost = (call_rate * duration) / 100;*/
+                    mHolder.call_cost.setText(ruppee_symbol + " --.--");
                 } else {
-                    mHolder.call_cost.setText(ruppee_symbol + String.format("%.2f", fcost));
+                    mHolder.call_cost.setText(ruppee_symbol +" "+ String.format("%.2f", fcost));
                 }
                 break;
         }
