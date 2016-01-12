@@ -16,8 +16,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.RelativeSizeSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -67,7 +70,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     private static final int CONTACT_PICKER_RESULT = 1001;
     final String TAG = RechargeFragment.class.getSimpleName();
     View rootView;
-    TextView local_carrier, std_carrier;
+    TextView local_carrier, std_carrier,plans_headiing;
     FloatingActionButton sim_switch;
     //ListView plansListView;
     RecyclerView plansListView;
@@ -91,6 +94,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         sim_slot = BalanceFragment.sim_slot;
         local_carrier = (TextView) rootView.findViewById(R.id.local_same_carrier);
         std_carrier = (TextView) rootView.findViewById(R.id.std_same_carrier);
+        plans_headiing = (TextView) rootView.findViewById(R.id.plans_head);
         sim_switch = (FloatingActionButton) rootView.findViewById(R.id.sim_switch);
         contactsPicker = (ImageButton) rootView.findViewById(R.id.conatact_select);
         contactsPicker.setOnClickListener(this);
@@ -325,6 +329,10 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
        //V12Log.d(TAG,"Querying Parse with carrier = "+currentCarrier);
        //V12Log.d(TAG,"Querying Parse with Circle = "+currentCircle);
         List<ParseObject> plansList = cachedPlans.get(currentCarrier+currentCircle);
+        Spannable span = new SpannableString("Popular Plans ("+currentCarrier+", "+currentCircle+")");
+        span.setSpan(new RelativeSizeSpan(0.6f), "Popular Plans ".length()  , span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        plans_headiing.setText(span);
         if(plansList!=null)
         {
             populatePlans(plansList);
@@ -388,12 +396,11 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         // mProgress.setSecondaryProgress(b); // Secondary Progress
         mProgress.setProgressDrawable(drawable);
 
-        Drawable drawable1 = res.getDrawable(R.drawable.bar_style);
         ProgressBar mProgress1 = (ProgressBar) rootView.findViewById(R.id.STD_progress_bar);
         mProgress1.setMax(same_std + others_std); // Maximum Progress
         mProgress1.setProgress(same_std);   // Main Progress
 
-        mProgress1.setProgressDrawable(drawable1);
+        mProgress1.setProgressDrawable(drawable);
     }
 
     @Override

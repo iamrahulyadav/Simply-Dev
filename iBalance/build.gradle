@@ -12,10 +12,14 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.0.0-alpha3'
+        classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+
     }
 }
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
+apply plugin: 'com.android.application'
+apply plugin: 'com.jakewharton.hugo'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
@@ -81,6 +85,7 @@ dependencies {
     compile 'com.android.support:support-v13:23.1.1'
     compile 'com.google.code.gson:gson:2.4'
     compile 'de.greenrobot:eventbus:2.4.0'
+
     compile('com.digits.sdk.android:digits:1.9.1@aar') {
         transitive = true;
     }

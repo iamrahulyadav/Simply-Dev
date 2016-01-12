@@ -2,29 +2,53 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_margin="0dp"
+    android:padding="0sp"
     android:background="#00ffffff"
     tools:context="com.builder.ibalance.ServiceEnableTranslucent">
-
-    <Button
-        android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Got It"
-        android:id="@+id/got_it"
-        android:layout_marginBottom="115dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
-
+        android:background="#00334d"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:id="@+id/heading"
+        android:textColor="@color/white"
+        android:padding="5dp"
+        android:textSize="20sp"
+        android:layout_marginTop="50dp"
+        android:text="@string/service_name"/>
     <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:id="@+id/recorder_on_img"
+        android:layout_below="@+id/heading"
+        android:src="@drawable/service_enable_white"/>
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/recorder_on"
-        android:src="@drawable/service_white_1"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@+id/got_it"/>
+
+        android:background="#00334d"
+        android:layout_below="@+id/recorder_on_img">
+    <Button
+        android:layout_marginTop="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/ussd_popup_button"
+        android:text="     Got It     "
+        android:textStyle="bold"
+        android:id="@+id/got_it"
+        android:layout_centerHorizontal="true"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/got_it"
+        android:layout_marginTop="15dp"
+        android:textColor="#FFFFFFFF"
+        android:gravity="center"
+        android:text="Note: You may have to Scroll Down to find it."/>
+    </RelativeLayout>
+
 </RelativeLayout>

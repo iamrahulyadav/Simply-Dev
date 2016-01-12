@@ -13,6 +13,7 @@
         android:protectionLevel="signature"/>
 
     <uses-permission android:name="com.builder.ibalance.permission.C2D_MESSAGE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.READ_CALL_LOG"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
@@ -191,8 +192,12 @@
             android:name=".RechargePopup"
             android:theme="@style/PopupTheme">
         </activity>
-        <activity android:name=".ServiceEnableTranslucent"
-                  android:theme="@style/Theme.Transparent" >
+        <activity
+            android:name=".ServiceEnableTranslucent"
+            android:theme="@style/Theme.Transparent">
+        </activity>
+        <activity android:name=".BalanceRefreshActivity"
+            android:theme="@style/ussd_popup_button">
         </activity>
     </application>
 

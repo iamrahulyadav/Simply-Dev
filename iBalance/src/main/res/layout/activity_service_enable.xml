@@ -18,9 +18,42 @@
         android:textColor="#FFFFFF"
         />
 
+
+
+    <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <ProgressBar
+        style="?android:attr/progressBarStyleHorizontal"
+        android:paddingRight="5dp"
+        android:paddingLeft="5dp"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
+        android:progressDrawable="@drawable/onboarding_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/onboarding_progress_bar"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:text="33%"
+            android:id="@+id/progress_percentage"
+            android:layout_gravity="center"/>
+    </FrameLayout>
+    <View
+        android:layout_width="match_parent"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:layout_height="2dp"
+        android:background="@color/black"/>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:paddingLeft="5dp"
         android:layout_weight="3">
         <TextView
@@ -29,6 +62,7 @@
             android:textSize="19sp"
             android:textStyle="bold"
             android:gravity="center_vertical"
+            android:id="@+id/download_text"
             android:text="1. Download the App"
             android:layout_toLeftOf="@+id/imageView3"
             android:layout_alignParentLeft="true"
@@ -53,6 +87,8 @@
         android:background="@color/black"/>
     <RelativeLayout
         android:layout_width="match_parent"
+        android:id="@+id/recorder_on_layout"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:layout_height="0dp"
         android:paddingLeft="5dp"
         android:layout_weight="3">
@@ -62,6 +98,7 @@
             android:textSize="19sp"
             android:textStyle="bold"
             android:gravity="center_vertical"
+            android:id="@+id/recorder_text"
             android:text="2. Turn on Simply Recorder"
             android:layout_toLeftOf="@+id/recorder_on"
             android:layout_alignParentLeft="true"
@@ -88,8 +125,9 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:id="@+id/refresh_bal_layout"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:paddingLeft="5dp"
-        android:background="@color/light_grey"
         android:layout_weight="3">
         <TextView
             android:layout_width="wrap_content"
@@ -97,6 +135,7 @@
             android:textSize="19sp"
             android:textStyle="bold"
             android:gravity="center_vertical"
+            android:id="@+id/refresh_text"
             android:text="3. Refresh the Balance"
             android:layout_toLeftOf="@+id/refresh_bal"
             android:layout_alignParentLeft="true"
@@ -119,21 +158,43 @@
         android:paddingBottom="2dp"
         android:layout_height="2dp"
         android:background="@color/black"/>
-<LinearLayout
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="0dp"
-    android:layout_weight="3"></LinearLayout>
+    android:layout_weight="3"
+    android:layout_gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Having Trouble? "
+        android:id="@+id/textView3"
+        android:layout_above="@+id/onboarding_contact"
+        android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Contact Us"
+        android:textColor="@android:color/holo_blue_dark"
+        android:id="@+id/onboarding_contact"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="11dp"/>
+</RelativeLayout>
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="NEXT >"
+        android:text="Turn ON Recorder >"
         android:textStyle="bold"
         android:textSize="20sp"
         style="@style/ussd_popup_button"
         android:textColor="#FFFFFF"
         android:id="@+id/splash_next_button"
-        android:alignParentBottom="true"
         android:paddingBottom="3dp"
+        android:layout_marginBottom="1dp"
         />
 
 

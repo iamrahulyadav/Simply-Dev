@@ -1,5 +1,6 @@
 package com.builder.ibalance.util;
 
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +11,8 @@ import android.net.Uri;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
 import com.builder.ibalance.core.SimModel;
@@ -25,6 +28,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -93,6 +97,23 @@ public  class Helper {
             if (cur != null)
                 cur.close();
         }
+        return false;
+    }
+    public static Boolean isAccessibilityEnabled(String id)
+    {
+        AccessibilityManager mAccessibilityManager = (AccessibilityManager) MyApplication.context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        //Log.d(TAG,"Checking for: "+id);
+        List<AccessibilityServiceInfo> runningServices = mAccessibilityManager.getEnabledAccessibilityServiceList(AccessibilityEvent.TYPES_ALL_MASK);
+        //V10Log.d(TAG, "size of ruuning services : " + runningServices.size());
+        for (AccessibilityServiceInfo service : runningServices)
+        {
+            //V10Log.d(TAG, service.getId());
+            if (id.equals(service.getId()))
+            {
+                return true;
+            }
+        }
+
         return false;
     }
     public static Intent openWhatsApp( String number,String deviceID) {

@@ -1,7 +1,6 @@
 package com.builder.ibalance;
 
 
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,8 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -43,7 +40,6 @@ import com.google.android.gms.analytics.Tracker;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -224,23 +220,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
         return details.toString();
     }
 
-    private Boolean isAccessibilityEnabled(String id)
-    {
-        AccessibilityManager mAccessibilityManager = (AccessibilityManager) this.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        //Log.d(TAG,"Checking for: "+id);
-        List<AccessibilityServiceInfo> runningServices = mAccessibilityManager.getEnabledAccessibilityServiceList(AccessibilityEvent.TYPES_ALL_MASK);
-       //V10Log.d(TAG, "size of ruuning services : " + runningServices.size());
-        for (AccessibilityServiceInfo service : runningServices)
-        {
-           //V10Log.d(TAG, service.getId());
-            if (id.equals(service.getId()))
-            {
-                return true;
-            }
-        }
 
-        return false;
-    }
 
     @Override
     public void onClick(View v) {
@@ -352,7 +332,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
         {
 
             super.onPostExecute(sim_list);
-            SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+            SharedPreferences userDataPref = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
             //chnage it to == for Sim
             (new RegexUpdater()).check();
             if (sim_list == null)
@@ -380,7 +360,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                 }
                //V10Log.d(TAG, "Debug info :" + SimModel.debugInfo);
                // SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-                boolean first_app_launch = mSharedPreferences.getBoolean("FIRST_APP_LAUNCH", true);
+                boolean first_app_launch = userDataPref.getBoolean("FIRST_APP_LAUNCH", true);
                 if (first_app_launch)
                 {
                     TelephonyManager manager = (TelephonyManager) (MyApplication.context.getSystemService(TELEPHONY_SERVICE));
@@ -410,7 +390,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                         pObj.put("LOCATION", loc.toString());
                     }
                     pObj.put("APP_VERSION", BuildConfig.VERSION_CODE);
-                    SharedPreferences.Editor editor = mSharedPreferences.edit();
+                    SharedPreferences.Editor editor = userDataPref.edit();
                     editor.putInt("APP_VERSION", BuildConfig.VERSION_CODE);
                     editor.putBoolean("FIRST_APP_LAUNCH", false);
                     editor.commit();
@@ -419,8 +399,9 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                 }
                 //Send SMS Data to the Server But don't slow down Data initializer so start it in onPostExecute of DataInitializer
 
-                Boolean isEnabledAccess = isAccessibilityEnabled(accessibiltyID);
-                if (!isEnabledAccess)
+                Boolean isEnabledAccess = Helper.isAccessibilityEnabled(accessibiltyID);
+                boolean hasRefreshedBalance = userDataPref.getBoolean("REFRESHED_BAL",false);
+                if (!isEnabledAccess || !hasRefreshedBalance)
                 {
                     //Log.d(TAG, "Accesibilty  Not Enabled");
                     ConstantsAndStatics.WAITING_FOR_SERVICE = true;
