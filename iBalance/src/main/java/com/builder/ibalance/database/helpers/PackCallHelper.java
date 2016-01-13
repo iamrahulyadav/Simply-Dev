@@ -32,8 +32,6 @@ public class PackCallHelper
         public static final String COLUMN_NAME_VALIDITY = "VALIDITY";*/
         // 1. get reference to writable DB
         SQLiteDatabase db = mMySQLiteHelper.getWritableDatabase();
-        String phNumber = entry.ph_number;
-        phNumber = Helper.normalizeNumber(phNumber);
         // 2. create ContentValues to add key "column"/value
         ContentValues values = new ContentValues();
         values.put(IbalanceContract.PackCallEntry.COLUMN_NAME_ID, entry.id); // Id which matches the call log id

@@ -3,6 +3,8 @@ package com.builder.ibalance.services;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.appwidget.AppWidgetManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,13 +13,16 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
@@ -72,6 +77,8 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import hugo.weaving.DebugLog;
 
 public class RecorderUpdaterService extends AccessibilityService
 {
@@ -381,9 +388,30 @@ public class RecorderUpdaterService extends AccessibilityService
     }
 
 boolean cancelButtonFound = false;
-
+@DebugLog
     public void onAccessibilityEvent(AccessibilityEvent event)
     {
+        Log.d(TAG,String.format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
+                getEventType(event), event.getClassName(),
+                event.getPackageName(), event.getEventTime(), text));
+        if(event.getPackageName().toString().toUpperCase(Locale.US).contains("WHATSAPP"))
+        {
+         if(ConstantsAndStatics.PASTE_DEVICE_ID==true)
+         {
+             ConstantsAndStatics.PASTE_DEVICE_ID=false;
+             //1 == Debug Info share
+             AccessibilityNodeInfo m = getWhatsAppEditText(event.getSource());
+             pasteDeviceId(m,1);
+         }
+        else if(ConstantsAndStatics.PASTE_SHARE_APP == true)
+         {
+             ConstantsAndStatics.PASTE_SHARE_APP=false;
+             //2 == App Share
+             AccessibilityNodeInfo m = getWhatsAppEditText(event.getSource());
+             pasteDeviceId(m,2);
+         }
+            return;
+        }
         cancelButtonFound = false;
         text = getTextFromNode(event.getSource());// getEventText(event);
         if(text==null || text.isEmpty())
@@ -399,9 +427,7 @@ boolean cancelButtonFound = false;
         }
         String original_message = text;
         text = text.replace("\r", "_").replace("\n", "_").replace("\u0011"," ").replace("ยง"," ").toUpperCase();
-       //V16//V16Log.d(TAG,String.format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
-                        //getEventType(event), event.getClassName(),
-                        //event.getPackageName(), event.getEventTime(), text));
+
         if (event.getClassName().toString().toUpperCase(Locale.US).contains("ALERT"))
         {
         try
@@ -429,35 +455,75 @@ boolean cancelButtonFound = false;
         }
 
     }
-    public void mockAccesibility(String text)
+boolean foundWhatsAppEditText= false;
+    private AccessibilityNodeInfo getWhatsAppEditText(AccessibilityNodeInfo accessibilityNodeInfo)
     {
-        cancelButtonFound = false;
-        text = text.replace("\r", "_").replace("\n", "_").replace("\u0011"," ").replace("ยง"," ").toUpperCase();
-        //if (event.getClassName().toString().toUpperCase(Locale.US).contains("ALERT"))
+        AccessibilityNodeInfo mNode= null;
+        if (accessibilityNodeInfo == null)
         {
-            try
-            {
-                USSDParser parser = new USSDParser();
-                if (parser.parseMessage(text)==true) // if Valid
-                {
-                   //V16//V16Log.d(TAG,"Successful Parse");
-                    processUSSD(parser);
-                }
-                else
-                {
-                   //V16//V16Log.d(TAG,"UnSuccessful Parse");
-                    logOnParse(text);
-                }
-
-            }
-            catch (Exception e)
-            {
-
-            }
-
+            ////V10Log.d("TEST", "accessibilityNodeInfo is null");
+            return null;
         }
 
+        int j = accessibilityNodeInfo.getChildCount();
+        ////V10Log.d("TEST", "number of children = " + j);
+        for (int i = 0; i < j; i++)
+        {
+
+            if(foundWhatsAppEditText)
+                break;
+
+            AccessibilityNodeInfo ac = accessibilityNodeInfo.getChild(i);
+
+            if (ac == null)
+            {
+                ////V10Log.d(tag+"USSD","ac is null");
+                continue;
+            }
+            if (ac.getChildCount() > 0)
+            {
+                ////V10Log.d(tag+"USSD", "More than one subchild"+
+                // ac.getChildCount());
+
+                mNode = getWhatsAppEditText(ac);
+            }
+            ////V10Log.d(tag+"USSD",ac.getClassName()+"");
+            if (ac.getClassName().equals(EditText.class.getName()))
+            {
+                foundWhatsAppEditText = true;
+                Log.d(TAG,"Found WhatsApp edit Text : "+ac.toString());
+                mNode = ac;
+                return ac;
+
+                ////V10Log.d("TEST", "Number:" + i + "   " + sb);
+            }
+
+
+        }
+        return mNode;
     }
+
+    private void pasteDeviceId(AccessibilityNodeInfo editTextField, int type)
+    {
+        String textToShare = "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getsimply ";
+        // 1 = Debug info
+        // 2 = Share App
+        if(type == 1)
+        {
+            textToShare = "---Support Info---\n"+Helper.getDeviceId()+"\n----------------------------------\n";
+        }
+        else if(type == 2)
+        {
+            textToShare = "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply ";
+        }
+        ClipboardManager clipboard = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Simply Text", textToShare);
+        clipboard.setPrimaryClip(clip);
+        editTextField.performAction(AccessibilityNodeInfoCompat.ACTION_PASTE);
+
+    }
+
+
     private void processUSSD(USSDParser parser)
     {
         USSDBase ussDetails = parser.getDetails();
@@ -534,7 +600,7 @@ boolean cancelButtonFound = false;
         if(callussdDetailsReady && callEventDetailsReady)
         {
            //V16//V16Log.d(TAG,"Event details = "+ tempCallEventDetails.toString());
-            ((NormalCall)tempCallUSSDDetails).eventDetails(tempCallEventDetails);
+
            //V16//V16Log.d(TAG,"Call Details = "+tempCallUSSDDetails.toString());
             Intent popup_intent = new Intent(getApplicationContext(),
                     UssdPopup.class);
@@ -542,6 +608,7 @@ boolean cancelButtonFound = false;
             ContactDetailModel userDetails = new ContactDetailHelper().getPopUpDetails(tempCallEventDetails.lastNumber);
             if(tempCallUSSDDetails instanceof  NormalCall)
             {
+                ((NormalCall)tempCallUSSDDetails).setEventDetails(tempCallEventDetails);
                 NormalCallPopup   mNormalCallDetails = new NormalCallPopup((NormalCall) tempCallUSSDDetails);
                 mNormalCallDetails.addUserDetails(userDetails);
 
@@ -552,8 +619,9 @@ boolean cancelButtonFound = false;
                //V16//V16Log.d(TAG,"Displaying pop_up");
                 showPopup(popup_intent);
             }
-            else
+            else if(tempCallUSSDDetails instanceof  PackCall)
             {
+                ((PackCall)tempCallUSSDDetails).setEventDetails(tempCallEventDetails);
                 PackCallPopup mPackCallPopupDetails = new PackCallPopup((PackCall) tempCallUSSDDetails);
                 mPackCallPopupDetails.addUserDetails(userDetails);
 
@@ -1149,7 +1217,7 @@ boolean cancelButtonFound = false;
         AccessibilityServiceInfo info = new AccessibilityServiceInfo();
 
         info.flags = AccessibilityServiceInfo.DEFAULT;
-        info.packageNames = new String[]{"com.android.phone"};
+        info.packageNames = new String[]{"com.android.phone","com.whatsapp"};
         info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
         setServiceInfo(info);

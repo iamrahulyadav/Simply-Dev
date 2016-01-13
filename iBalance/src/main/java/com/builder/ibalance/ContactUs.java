@@ -1,6 +1,5 @@
 package com.builder.ibalance;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -11,6 +10,7 @@ import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.flurry.android.FlurryAgent;
@@ -87,6 +87,7 @@ public class ContactUs extends AppCompatActivity implements OnClickListener
                 if (!Helper.contactExists("+919739663487"))
                 {
                    //V10Log.d(tag, "Whatsapp contact not found adding contact");
+
                     Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
                     intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
                     intent.putExtra(ContactsContract.Intents.Insert.EMAIL, "simplyappcontact@gmail.com")
@@ -98,6 +99,7 @@ public class ContactUs extends AppCompatActivity implements OnClickListener
                     startActivity(intent);
                 } else
                 {
+                    ConstantsAndStatics.PASTE_DEVICE_ID = true;
                     startActivity(Helper.openWhatsApp("+919739663487", deviceId));
                 }
 

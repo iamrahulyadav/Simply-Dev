@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
+import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
@@ -155,6 +156,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
 
         //V10Log.d(tag, "Stopping Main Activity");
+
+        ConstantsAndStatics.PASTE_DEVICE_ID = false;
         Kahuna.getInstance().stop();
         FlurryAgent.endTimedEvent("MainScreen");
         //Stop the analytics tracking
@@ -205,7 +208,7 @@ int i = 0;
                 boolean isWhatsappInstalled = Helper.whatsappInstalledOrNot();
                 Intent sendIntent = new Intent();
                 sendIntent.setAction(Intent.ACTION_SEND);
-                sendIntent.putExtra(Intent.EXTRA_TEXT, "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": https://goo.gl/v3YMrN ");
+                sendIntent.putExtra(Intent.EXTRA_TEXT, "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/SimplyApp ");
                 sendIntent.setType("text/plain");
                 if (isWhatsappInstalled) {
 

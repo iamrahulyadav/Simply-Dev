@@ -423,6 +423,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
                     } else
                     {
                         //Sending Device Id doesn't work
+                        ConstantsAndStatics.PASTE_DEVICE_ID=true;
                         startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
                     }
                 }

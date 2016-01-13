@@ -5,8 +5,10 @@ import android.graphics.Typeface;
 import com.builder.ibalance.R;
 
 public  class ConstantsAndStatics {
+	public static volatile boolean PASTE_SHARE_APP = false;
 	public static String RUPEE_SYMBOL = MyApplication.context.getResources().getString(
 			R.string.rupee_symbol);
+	public static volatile boolean PASTE_DEVICE_ID = false;
 	public static Typeface ROBOTO_REGULAR = Typeface.createFromAsset(MyApplication.context.getAssets(), "Roboto-Regular.ttf");
 	public static boolean WAITING_FOR_SERVICE = false;
 	public static String RECENT_EVENT = "UNKNOWN";

@@ -46,13 +46,13 @@ public class NormalCall extends USSDBase
         if(call_duration<=0)
             call_duration = packCallDetails.call_duration;
     }
-    public void eventDetails(long id,String ph_number,int sim_slot)
+    public void setEventDetails(long id,String ph_number,int sim_slot)
     {
         this.id = id;
         this.ph_number = ph_number;
         this.sim_slot=sim_slot;
     }
-    public void eventDetails(OutgoingCallMessage tempCallEventDetails)
+    public void setEventDetails(OutgoingCallMessage tempCallEventDetails)
     {
         this.id = tempCallEventDetails.id;
         this.ph_number = tempCallEventDetails.lastNumber;

@@ -1,5 +1,7 @@
 package com.builder.ibalance.models.USSDModels;
 
+import com.builder.ibalance.messages.OutgoingCallMessage;
+
 /**
  * Created by Shabaz on 05-Jan-16.
  */
@@ -37,13 +39,21 @@ public class PackCall extends USSDBase
         this.pack_bal_left = pack_bal_left;
     }
 
-    public void eventDetails(long id, String ph_number, int sim_slot)
+    public void setEventDetails(long id, String ph_number, int sim_slot)
     {
         this.id = id;
         this.ph_number = ph_number;
         this.sim_slot = sim_slot;
     }
-
+    public void setEventDetails(OutgoingCallMessage tempCallEventDetails)
+    {
+        this.id = tempCallEventDetails.id;
+        this.ph_number = tempCallEventDetails.lastNumber;
+        this.sim_slot= tempCallEventDetails.sim_slot;
+        //If duration not available then use
+        if(call_duration<=0)
+            call_duration = tempCallEventDetails.duration;
+    }
     public boolean isMinsType()
     {
         //its minutes type or it is pack balance type

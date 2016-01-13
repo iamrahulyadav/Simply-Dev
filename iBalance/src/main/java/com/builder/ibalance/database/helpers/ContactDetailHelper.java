@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 
 import java.sql.SQLException;
@@ -65,16 +66,7 @@ public class ContactDetailHelper
 
     public ContactDetailModel getPopUpDetails(String phNumber)
     {
-        if (phNumber.startsWith("+91"))
-        {
-            phNumber = phNumber.substring(3);
-        }
-        if(phNumber.startsWith("0"))
-        {
-            phNumber = phNumber.substring(1);
-        }
-        phNumber = phNumber.replaceAll(" ","");
-        phNumber = phNumber.replaceAll("-", "");
+        phNumber = Helper.normalizeNumber(phNumber);
         float call_rate = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE).getFloat("CALL_RATE",1.7f);
         Cursor c = mSqlDB.rawQuery("SELECT "+IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME+","+
                 IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI+","+

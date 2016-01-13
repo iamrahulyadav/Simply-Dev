@@ -673,8 +673,6 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 
 
 
-
-
 	private void updateWidgetInitially(Context ctx) {
         //Todo make widget dependant on Sim
 		//Log.d("DataInit","Came to update  widget inittially "+ "iin Data initializer");
@@ -899,10 +897,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
 		ArrayList<String> name_photo = new ArrayList<String>();
 		Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
 		Cursor contactLookup;
-        if(number.contains("135514"))
-        {
-         int i = 0;
-        }
+
 		try{
 	     contactLookup = MyApplication.context.getContentResolver().query(uri, new String[] {ContactsContract.PhoneLookup._ID,
 	                                            ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup.PHOTO_THUMBNAIL_URI }, null, null, null);

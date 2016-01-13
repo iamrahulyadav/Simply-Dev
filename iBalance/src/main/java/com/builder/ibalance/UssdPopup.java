@@ -9,12 +9,19 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
+import android.text.style.UnderlineSpan;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +49,7 @@ public class UssdPopup extends AppCompatActivity
      ImageButton expand ;
     String rupee_symbol;
     boolean recharge = false;
+    boolean rate = false;
     boolean share = false;
 	String from = "CALL"; //what type of popup
 	 @Override
@@ -60,6 +68,7 @@ public class UssdPopup extends AppCompatActivity
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
         recharge = false;
+        rate = false;
         share = false;
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(savedInstanceState);
@@ -163,7 +172,7 @@ public class UssdPopup extends AppCompatActivity
 			mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
 			if(popUpCount%10==0)
 			{
-				share = true;
+				rate = true;
 			}
 			if(details.getCurrent_balance() <= minimum_bal)
 			{
@@ -318,6 +327,9 @@ public class UssdPopup extends AppCompatActivity
 		}*/
 		if(recharge)
 		{
+            TextView infoText = ((TextView)findViewById(R.id.ussd_share_info));
+            infoText.setVisibility(View.VISIBLE);
+            infoText.setText("Please take a few seconds to Rate the App, it means a lot :)");
 			findViewById(R.id.ussd_normal_layout).setVisibility(View.GONE);
 			View v = findViewById(R.id.ussd_recharge_layout);
                     v.setVisibility(View.VISIBLE);
@@ -339,13 +351,14 @@ public class UssdPopup extends AppCompatActivity
             });
 
 		}
-        else if(share)
+        else if(rate)
         {
             Button rateButton = (Button) findViewById(R.id.ussd_dismiss);
             rateButton.setText("Rate App");
-            Button shareButton = (Button) findViewById(R.id.ussd_open_app);
+            findViewById(R.id.ussd_open_app).setVisibility(View.GONE);
+            LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1);
+            ((LinearLayout) rateButton.getParent()).setLayoutParams(mLayout);
 
-            shareButton.setText("Share App");
             rateButton.setOnClickListener(new View.OnClickListener()
             {
 
@@ -371,47 +384,12 @@ public class UssdPopup extends AppCompatActivity
 
                 }
             });
-            shareButton.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    boolean isWhatsappInstalled = Helper.whatsappInstalledOrNot();
-                    Tracker t = ((MyApplication) getApplication()).getTracker(
-                            MyApplication.TrackerName.APP_TRACKER);
-                    Intent sendIntent = new Intent();
-                    sendIntent.setAction(Intent.ACTION_SEND);
-                    sendIntent.putExtra(Intent.EXTRA_TEXT, "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": https://goo.gl/v3YMrN ");
-                    sendIntent.setType("text/plain");
-                    if(isWhatsappInstalled)
-                    {
 
-                        // Build and send an Event.
-                        t.send(new HitBuilders.EventBuilder()
-                                .setCategory("SHARE")
-                                .setAction("WhatsApp")
-                                .setLabel("POPUP")
-                                .build());
+        }
+        else if(share)
+        {
+            //Will Be handled in normal call popup
 
-                        FlurryAgent.logEvent("WhatsApp_Share");
-                        //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"WhatsApp_Share","");
-                        sendIntent.setPackage("com.whatsapp");
-                        startActivity(sendIntent);
-                    }
-                    else
-                    {
-                        // Build and send an Event.
-                        t.send(new HitBuilders.EventBuilder()
-                                .setCategory("SHARE")
-                                .setAction("OTHER_SHARE")
-                                .setLabel("POPUP")
-                                .build());
-                        //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"OTHER_SHARE","");
-                        FlurryAgent.logEvent("Other_Share");
-                        startActivity(sendIntent);
-                    }
-                }
-            });
         }
 		else
 		{
@@ -481,9 +459,53 @@ public class UssdPopup extends AppCompatActivity
         float minimum_bal = mSharedPreferences.getFloat("MINIMUM_BALANCE",10.0f);
         int popUpCount = mSharedPreferences.getInt("POP_UP_COUNT",1);
         mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
-        if(popUpCount%10==0)
+        if(popUpCount>=10)
         {
+            rate = true;
+        }
+        else if(!details.getName().matches("[0-9]+"))
+        {
+            //To stop inflating the normmal one
             share = true;
+            TextView infoText = ((TextView)findViewById(R.id.ussd_share_info));
+            infoText.setVisibility(View.VISIBLE);
+            infoText.setVisibility(View.GONE);
+            SpannableStringBuilder mBuilder = new SpannableStringBuilder();
+            mBuilder.append("Like Simply ?\nLet ");
+
+            Spannable span = new SpannableString(details.getName());
+            span.setSpan(new RelativeSizeSpan(1.1f), 0 , details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0 , details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new UnderlineSpan(), 0 , details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mBuilder.append(span);
+            mBuilder.append(" know about it!");
+            infoText.setText(mBuilder.toString());
+            Button shareButton = (Button) findViewById(R.id.ussd_open_app);
+            shareButton.setText("Share Now");
+            LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1);
+            ((LinearLayout) shareButton.getParent()).setLayoutParams(mLayout);
+            shareButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+
+                    if(Helper.whatsappInstalledOrNot())
+                    {
+                        //TODO Add Tracking info
+                        startActivity(Helper.openWhatsApp(details.getNumber(), "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply "));
+                    }
+                    else
+                    {
+                        Uri uri = Uri.parse("smsto:"+details.getNumber());
+                        Intent it = new Intent(Intent.ACTION_SENDTO, uri);
+                        it.putExtra("sms_body","To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply ");
+
+                        startActivity(it);
+                    }
+                }
+            });
+
         }
         if(details.getCurrent_balance() <= minimum_bal)
         {
@@ -585,7 +607,7 @@ public class UssdPopup extends AppCompatActivity
             mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
             if(popUpCount%10==0)
             {
-                share = true;
+                rate = true;
             }
             if(details.getMain_bal() <= minimum_bal)
             {
@@ -743,7 +765,7 @@ public class UssdPopup extends AppCompatActivity
             mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
             if(popUpCount%10==0)
             {
-                share = true;
+                rate = true;
             }
             if(details.getMain_bal() <= minimum_bal)
             {
@@ -820,7 +842,7 @@ public class UssdPopup extends AppCompatActivity
             mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
             if(popUpCount%10==0)
             {
-                share = true;
+                rate = true;
             }
             if(details.getMain_bal() <= minimum_bal)
             {
