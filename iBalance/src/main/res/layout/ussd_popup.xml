@@ -428,8 +428,9 @@
         android:gravity="center"
         android:visibility="gone"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Like Simply ?\nLet Shabaz know about it!"
+        android:text="Like Simply ?\nLet Mr Awesome know about it!"
         android:id="@+id/ussd_share_info"
+        android:textColor="@color/black"
         android:layout_gravity="center_horizontal"
         android:paddingBottom="4dp"
         android:layout_weight="1"/>

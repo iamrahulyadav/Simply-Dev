@@ -30,7 +30,7 @@ public class NormalCallPopup implements Parcelable
         this.message = "Lorem Ipsum";
         this.total_spent = 105.43f;
         this.name = "Shabaz";
-        this.number = "997211547";
+        this.number = "9686034642";
         this.carrier_circle = "Unkown/Unkown";
         this.image_uri = null;
     }

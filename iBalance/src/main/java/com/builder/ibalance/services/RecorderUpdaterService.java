@@ -41,6 +41,7 @@ import com.builder.ibalance.database.helpers.PackSMSHelper;
 import com.builder.ibalance.database.helpers.RechargeHelper;
 import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.database.models.RechargeEntry;
+import com.builder.ibalance.messages.BalanceRefreshMessage;
 import com.builder.ibalance.messages.OutgoingCallMessage;
 import com.builder.ibalance.messages.OutgoingSmsMessage;
 import com.builder.ibalance.models.PopupModels.NormalCallPopup;
@@ -62,6 +63,7 @@ import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -78,6 +80,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import de.greenrobot.event.EventBus;
 import hugo.weaving.DebugLog;
 
 public class RecorderUpdaterService extends AccessibilityService
@@ -94,81 +97,7 @@ public class RecorderUpdaterService extends AccessibilityService
     CallLogObserver mCallLogObserver;
     AccessibilityNodeInfo dismissNode = null;
     String text;
-   /* private void displayPopUp()
-    {
 
-        if (lastNumber != null)
-        {
-            if (noUSSDMsgHandler == null)
-                noUSSDMsgHandler = new Handler();
-            Runnable r = new Runnable()
-            {
-                public void run()
-                {
-                    mCallDetailsModel = null;
-                    lastNumber = null;
-                    sim_slot = 0;
-                  //  Toast.makeText(MyApplication.context, "USSD Message was not Received", Toast.LENGTH_LONG).show();
-                }
-            };
-           //V10Log.d(tag + "  displayPopUp", " Last Number =" + lastNumber);
-            if (mCallDetailsModel != null)
-            {
-
-                Intent popup_intent = new Intent(getApplicationContext(),
-                        UssdPopup.class);
-                popup_intent.putExtra("TYPE", 1);
-                String number = lastNumber;
-
-
-
-                ContactDetailModel mDetails = new ContactDetailHelper().getPopUpDetails(number);
-                mCallDetailsModel.setSim_slot(sim_slot);
-                mCallDetailsModel.setName(mDetails.name);
-                mCallDetailsModel.setImage_uri(mDetails.image_uri);
-                mCallDetailsModel.setNumber(number);
-
-                mCallDetailsModel.setCarrier_circle(mDetails.carrier + ',' + mDetails.circle);
-                mCallDetailsModel.setTotal_spent(mDetails.total_cost);
-               //V16//V16Log.d(TAG,"Call detail = "+mCallDetailsModel.toString());
-                popup_intent.putExtra("DATA", mCallDetailsModel);
-                popup_intent
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                popup_intent
-                        .addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                popup_intent
-                        .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                noUSSDMsgHandler.removeCallbacks(r);
-                noUSSDMsgHandler = null;
-                dismissNode = null;
-                endTime = System.nanoTime();
-               //V16//V16Log.d(TAG,"Time = "+((endTime-startTime)/1000000)+"ms");
-                startActivity(popup_intent);
-                NormalCall entry = new NormalCall(_id,
-                        new Date().getTime(),
-                        sim_slot,
-                        mCallDetailsModel.getCall_cost(),
-                        mCallDetailsModel.getCurrent_balance(),
-                        mCallDetailsModel.getDuration(),
-                        lastNumber,
-                        mCallDetailsModel.getMessage());
-                mCallDetailsModel = null;
-                lastNumber = null;
-                addToDatabase(entry);
-            } else
-            {
-               //V10Log.d(tag, "USSD Message Not Received");
-
-                noUSSDMsgHandler.postDelayed(r, 15000);
-                //wait for 30 seconds and show that USSD message was not received
-            }
-        } else
-        {
-           //V10Log.d(tag, "CallLog Not Updated");
-            //wait for callLog to update
-        }
-    }
-*/
     void addToDatabase(USSDBase entryBase)
     {
         SharedPreferences sharedPreferences = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,
@@ -184,7 +113,7 @@ public class RecorderUpdaterService extends AccessibilityService
                 checkForRecharge(entryBase);
                 mBalanceHelper.addEntry(callDetails);
                 ////V10Log.d(tag + "Current Bal", details.bal + " ");
-                sharedPreferences.edit().putFloat("CURRENT_BALANCE_"+callDetails.sim_slot, (float) callDetails.main_bal).commit();
+                sharedPreferences.edit().putFloat("CURRENT_BALANCE_"+callDetails.sim_slot, (float) callDetails.main_bal).apply();
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
                 PackCall mPackDetails = (PackCall) entryBase;
@@ -401,14 +330,22 @@ boolean cancelButtonFound = false;
              ConstantsAndStatics.PASTE_DEVICE_ID=false;
              //1 == Debug Info share
              AccessibilityNodeInfo m = getWhatsAppEditText(event.getSource());
-             pasteDeviceId(m,1);
+             try {
+                 pasteDeviceId(m,1);
+             } catch (Exception e) {
+                 Crashlytics.logException(e);
+             }
          }
         else if(ConstantsAndStatics.PASTE_SHARE_APP == true)
          {
              ConstantsAndStatics.PASTE_SHARE_APP=false;
              //2 == App Share
              AccessibilityNodeInfo m = getWhatsAppEditText(event.getSource());
-             pasteDeviceId(m,2);
+             try {
+                 pasteDeviceId(m,2);
+             } catch (Exception e) {
+                 Crashlytics.logException(e);
+             }
          }
             return;
         }
@@ -438,18 +375,25 @@ boolean cancelButtonFound = false;
                //V16//V16Log.d(TAG,"Successful Parse");
                 ///Original Message
                 parser.getDetails().original_message = original_message;
+                ConstantsAndStatics.WAITING_FOR_REFRESH = false;
                 processUSSD(parser);
             }
             else
             {
                //V16//V16Log.d(TAG,"UnSuccessful Parse");
+                if(ConstantsAndStatics.WAITING_FOR_REFRESH ==true)
+                {
+                    ConstantsAndStatics.WAITING_FOR_REFRESH = false;
+                    EventBus.getDefault().post(new BalanceRefreshMessage(-2.0f,original_message));
+                }
                 logOnParse(text);
             }
 
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Crashlytics.logException(e);
+            //e.printStackTrace();
         }
 
         }
@@ -503,28 +447,10 @@ boolean foundWhatsAppEditText= false;
         return mNode;
     }
 
-    private void pasteDeviceId(AccessibilityNodeInfo editTextField, int type)
-    {
-        String textToShare = "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getsimply ";
-        // 1 = Debug info
-        // 2 = Share App
-        if(type == 1)
-        {
-            textToShare = "---Support Info---\n"+Helper.getDeviceId()+"\n----------------------------------\n";
-        }
-        else if(type == 2)
-        {
-            textToShare = "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply ";
-        }
-        ClipboardManager clipboard = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("Simply Text", textToShare);
-        clipboard.setPrimaryClip(clip);
-        editTextField.performAction(AccessibilityNodeInfoCompat.ACTION_PASTE);
-
-    }
 
 
-    private void processUSSD(USSDParser parser)
+    @DebugLog
+    private void processUSSD(USSDParser parser) throws Exception
     {
         USSDBase ussDetails = parser.getDetails();
        //V16//V16Log.d(TAG,ussDetails.toString());
@@ -557,13 +483,29 @@ boolean foundWhatsAppEditText= false;
             case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
                //V16//V16Log.d(TAG,"Type Pack Data");
                 processData(ussDetails);
+            case ConstantsAndStatics.USSD_TYPES.MAIN_BALANCE:
+                Log.d(TAG,"Type Main Balance Check");
+                processMainBal(ussDetails);
+                break;
+            case ConstantsAndStatics.USSD_TYPES.PACK_SMS_CHECK:
+                Log.d(TAG,"Type SMS Pack Check");
+
+                break;
+            case ConstantsAndStatics.USSD_TYPES.PACK_DATA_CHECK:
+                Log.d(TAG,"Type Data Pack Check");
+
                 break;
         }
 
     }
 
+    private void processMainBal(USSDBase ussDetails)
+    {
+        EventBus.getDefault().post(new BalanceRefreshMessage(999.999f,"Ahmed Sends his Regards"));
+    }
 
-    private void processCallEvent(Message msg)
+
+    private void processCallEvent(Message msg) throws Exception
     {
        //V16//V16Log.d(TAG,"processCallEvent");
         callEventDetailsReady = true;
@@ -591,7 +533,7 @@ boolean foundWhatsAppEditText= false;
 
     }
 
-    private void processAllCallDetails()
+    private void processAllCallDetails() throws Exception
     {
        //V16//V16Log.d(TAG,"processAllCallDetails ");
        //V16//V16Log.d(TAG,"callussdDetailsReady "+callussdDetailsReady);
@@ -638,7 +580,7 @@ boolean foundWhatsAppEditText= false;
         }
         //wait till both are filled otherwise reset them after 10 secs
     }
-    void showPopup(Intent popup_intent)
+    void showPopup(Intent popup_intent) throws Exception
     {
 
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -646,7 +588,7 @@ boolean foundWhatsAppEditText= false;
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(popup_intent);
     }
-    private void processCallUSSD(USSDBase ussDetails)
+    private void processCallUSSD(USSDBase ussDetails) throws Exception
     {
        //V16//V16Log.d(TAG,"processCallUSSD ");
         callussdDetailsReady  = true;
@@ -664,7 +606,7 @@ boolean foundWhatsAppEditText= false;
 
     }
 
-    private void processSMS(USSDBase ussDetails)
+    private void processSMS(USSDBase ussDetails) throws Exception
     {
         OutgoingSmsMessage eventDetails = getSmsEventDetails();
         Intent popup_intent = new Intent(getApplicationContext(),
@@ -711,7 +653,7 @@ boolean foundWhatsAppEditText= false;
 
 
 
-    private void processData(USSDBase ussDetails)
+    private void processData(USSDBase ussDetails) throws Exception
     {
         Intent popup_intent = new Intent(getApplicationContext(),
                 UssdPopup.class);
@@ -747,7 +689,7 @@ boolean foundWhatsAppEditText= false;
         addToDatabase(ussDetails);
     }
 
-    private void logOnParse(String text)
+    private void logOnParse(String text)  throws Exception
     {
         if(text==null)
             return;
@@ -763,7 +705,27 @@ boolean foundWhatsAppEditText= false;
                 sharedPreferences.getString("CIRCLE_0", sharedPreferences.getString("CIRCLE","Unknown")));
         pObj.saveEventually();
     }
-    private OutgoingSmsMessage getSmsEventDetails()
+
+    private void pasteDeviceId(AccessibilityNodeInfo editTextField, int type) throws Exception
+    {
+        String textToShare = "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getsimply ";
+        // 1 = Debug info
+        // 2 = Share App
+        if(type == 1)
+        {
+            textToShare = "---Support Info---\n"+Helper.getDeviceId()+"\n----------------------------------\n";
+        }
+        else if(type == 2)
+        {
+            textToShare = "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply ";
+        }
+        ClipboardManager clipboard = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Simply Text", textToShare);
+        clipboard.setPrimaryClip(clip);
+        editTextField.performAction(AccessibilityNodeInfoCompat.ACTION_PASTE);
+
+    }
+    private OutgoingSmsMessage getSmsEventDetails() throws Exception
     {
         SharedPreferences mPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
         long previous_id = mPreferences.getLong("SMS_PREV_ID", -1l);
@@ -1294,7 +1256,11 @@ boolean foundWhatsAppEditText= false;
            //V10Log.d(tag + " handleMessage", "What = " + msg.what + "  Contents" + msg.obj.toString());
             if (msg.what == 1729)
             {
-                processCallEvent(msg);
+                try {
+                    processCallEvent(msg);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 //displayPopUp();
             }
 

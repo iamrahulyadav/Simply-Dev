@@ -353,9 +353,9 @@ public class UssdPopup extends AppCompatActivity
 		}
         else if(rate)
         {
-            Button rateButton = (Button) findViewById(R.id.ussd_dismiss);
+            Button rateButton = (Button) findViewById(R.id.ussd_open_app);
             rateButton.setText("Rate App");
-            findViewById(R.id.ussd_open_app).setVisibility(View.GONE);
+            ((LinearLayout)findViewById(R.id.ussd_dismiss).getParent()).setVisibility(View.GONE);
             LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1);
             ((LinearLayout) rateButton.getParent()).setLayoutParams(mLayout);
 
@@ -461,6 +461,7 @@ public class UssdPopup extends AppCompatActivity
         mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
         if(popUpCount>=10)
         {
+            //TODO this is not a good structure, half here and half in onCreate fix it later
             rate = true;
         }
         else if(!details.getName().matches("[0-9]+"))
@@ -469,7 +470,7 @@ public class UssdPopup extends AppCompatActivity
             share = true;
             TextView infoText = ((TextView)findViewById(R.id.ussd_share_info));
             infoText.setVisibility(View.VISIBLE);
-            infoText.setVisibility(View.GONE);
+
             SpannableStringBuilder mBuilder = new SpannableStringBuilder();
             mBuilder.append("Like Simply ?\nLet ");
 
@@ -479,9 +480,10 @@ public class UssdPopup extends AppCompatActivity
             span.setSpan(new UnderlineSpan(), 0 , details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             mBuilder.append(span);
             mBuilder.append(" know about it!");
-            infoText.setText(mBuilder.toString());
+            infoText.setText(mBuilder);
             Button shareButton = (Button) findViewById(R.id.ussd_open_app);
             shareButton.setText("Share Now");
+            ((LinearLayout)findViewById(R.id.ussd_dismiss).getParent()).setVisibility(View.GONE);
             LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1);
             ((LinearLayout) shareButton.getParent()).setLayoutParams(mLayout);
             shareButton.setOnClickListener(new View.OnClickListener()
@@ -493,6 +495,7 @@ public class UssdPopup extends AppCompatActivity
                     if(Helper.whatsappInstalledOrNot())
                     {
                         //TODO Add Tracking info
+                        ConstantsAndStatics.PASTE_SHARE_APP = true;
                         startActivity(Helper.openWhatsApp(details.getNumber(), "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply "));
                     }
                     else

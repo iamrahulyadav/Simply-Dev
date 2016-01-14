@@ -5,23 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.builder.ibalance.core.DualSim;
 import com.builder.ibalance.core.SimModel;
@@ -33,13 +28,15 @@ import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.builder.ibalance.util.RegexUpdater;
-import com.digits.sdk.android.Digits;
+import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -88,80 +85,77 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);*/
         setContentView(R.layout.activity_splashscreen);
 
-
+        Tracker t = ((MyApplication) this.getApplication()).getTracker(
+                TrackerName.APP_TRACKER);
+        HitBuilders.EventBuilder mEvent = new HitBuilders.EventBuilder().setCategory("APP_OPEN");
+        mEvent.setCustomDimension(1, Calendar.getInstance(TimeZone.getDefault()).getTime().toString());
         dual_sim_bar = (ProgressBar) findViewById(R.id.sim_check_progress);
         String app_open_from = this.getIntent().getStringExtra("FROM");
         try
         {
-            if ((app_open_from != null) && app_open_from.equals("WIDGET"))
+            if(app_open_from==null)
             {
-                Helper.logUserEngageMent("WIDGET");
-                Tracker t = ((MyApplication) this.getApplication()).getTracker(
-                        TrackerName.APP_TRACKER);
-                t.send(new HitBuilders.EventBuilder()
-                        .setCategory("APP_OPEN")
-                        .setAction("WIDGET")
-                        .setLabel("WIDGET")
-                        .build());
-                FlurryAgent.logEvent("WIDGET_APP_OPEN");
-               //V10AppsFlyerLib.sendTrackingWithEvent(getApplicationContext(), "WIDGET_APP_OPEN", "");
-            }
-            if ((app_open_from != null) && app_open_from.equals("POPUP"))
-            {
-                if(this.getIntent().getBooleanExtra("RECHARGE",false))
-                {
-                    recharge = true;
-                    Tracker t = ((MyApplication) this.getApplication()).getTracker(
-                            TrackerName.APP_TRACKER);
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("APP_OPEN")
-                            .setAction("POPUP")
-                            .setLabel("RECHARGE")
-                            .build());
-                    FlurryAgent.logEvent("POPUP_APP_OPEN_RECHARGE");
-                }
-                else
-                {
-                    Tracker t = ((MyApplication) this.getApplication()).getTracker(
-                            TrackerName.APP_TRACKER);
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("APP_OPEN")
-                            .setAction("POPUP")
-                            .setLabel("POPUP")
-                            .build());
-                    FlurryAgent.logEvent("POPUP_APP_OPEN");
-                }
-               //V10AppsFlyerLib.sendTrackingWithEvent(getApplicationContext(), "POPUP_APP_OPEN", "");
+                mEvent.setAction("DIRECT");
+                mEvent.setLabel("DIRECT");
+                FlurryAgent.logEvent("DIRECT_APP_OPEN");
+                Helper.logUserEngageMent("NORMAL");
             }
             else
             {
-                Helper.logUserEngageMent("NORMAL");
+                if (app_open_from.equals("WIDGET"))
+                {
+                    Helper.logUserEngageMent("WIDGET");
+                    mEvent.setAction("WIDGET");
+                    mEvent.setLabel("WIDGET");
+                    FlurryAgent.logEvent("WIDGET_APP_OPEN");
+                    //V10AppsFlyerLib.sendTrackingWithEvent(getApplicationContext(), "WIDGET_APP_OPEN", "");
+                }
+                else if (app_open_from.equals("POPUP"))
+                {
+                    if(this.getIntent().getBooleanExtra("RECHARGE",false))
+                    {
+                        recharge = true;
+                        mEvent.setAction("POPUP")
+                                .setLabel("RECHARGE");
+                        FlurryAgent.logEvent("POPUP_APP_OPEN_RECHARGE");
+                    }
+                    else
+                    {
+
+                        mEvent.setAction("POPUP")
+                                .setLabel("POPUP");
+                        FlurryAgent.logEvent("POPUP_APP_OPEN");
+                    }
+                }
+
             }
-        } catch (Exception e)
-        {
-            //Log.d(TAG, "Failed to  get the intent");
-           //V10e.printStackTrace();
         }
+        catch (Exception e)
+        {
+            Crashlytics.logException(e);
+            //Log.d(TAG, "Failed to  get the intent");
+            //V10e.printStackTrace();
+        }
+        t.send(mEvent.build());
         //Log.d(TAG, "Splash Screen in");
 
        //V10AppsFlyerLib.sendTracking(getApplicationContext());
         Typeface tf = Typeface.createFromAsset(getResources().getAssets(), "Roboto-Regular.ttf");
-        TextView tv = (TextView) findViewById(R.id.fullscreen_content);
-        tv.setTypeface(tf);
-        final SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+        ((TextView) findViewById(R.id.fullscreen_content)).setTypeface(tf);
+        final SharedPreferences userPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
         //loginphone = (RelativeLayout)(findViewById(R.id.loginphone));
-        findViewById(R.id.loginphone).setOnClickListener(this);
+        /*findViewById(R.id.loginphone).setOnClickListener(this);
         findViewById(R.id.btnSkipLogin).setOnClickListener(this);
         findViewById(R.id.termsOfAgreement).setOnClickListener(this);
         ((TextView)findViewById(R.id.termsOfAgreement)).setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
-        ((TextView)findViewById(R.id.btnSkipLogin)).setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+        ((TextView)findViewById(R.id.btnSkipLogin)).setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);*/
 
-        int prevVersion = mSharedPreferences.getInt("APP_VERSION", -1);
+        int prevVersion = userPreferences.getInt("APP_VERSION", -1);
         if (prevVersion < BuildConfig.VERSION_CODE)
         {
             //For the pilot version us
             // ers
-            if (mSharedPreferences.getBoolean("WIZARD", false))
+            if (userPreferences.getBoolean("WIZARD", false))
             {
                 prevVersion = 9;
             }
@@ -172,13 +166,14 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             parseObject.put("TO_VERSION", BuildConfig.VERSION_CODE);
             parseObject.saveEventually();
         }
-        if (mSharedPreferences.getBoolean("OLD_PREFS", true))
+        if (userPreferences.getBoolean("OLD_PREFS", true))
         {
-            mSharedPreferences.edit().clear().commit();
-            mSharedPreferences.edit().putBoolean("OLD_PREFS",false).commit();
+            userPreferences.edit().clear().commit();
+            userPreferences.edit().putBoolean("OLD_PREFS",false).commit();
         }
-        //new SimChecker().execute();
-        isVerified = mSharedPreferences.getBoolean("USER_VERIFIED",false);
+        new SimChecker().execute();
+        //LOGIN Code
+        /*isVerified = mSharedPreferences.getBoolean("USER_VERIFIED",false);
         numberOfSkips = mSharedPreferences.getInt("SKIP_COUNTER", 1);
         if(getIntent().getExtras()!=null && !TextUtils.isEmpty(getIntent().getExtras().getString("isSkipped"))){
             isSkipped = false;
@@ -193,10 +188,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             isSkipped = true;
             new SimChecker().execute();
 
-        }
-
-
-
+        }*/
 
     }
 
@@ -225,7 +217,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
     @Override
     public void onClick(View v) {
 
-        if(R.id.loginphone == v.getId()){
+        /*if(R.id.loginphone == v.getId()){
             //Log.e("Login","phone");
             //isSkipped = true;
             if(!((CheckBox) findViewById(R.id.chkTerms)).isChecked()){
@@ -251,7 +243,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             startActivity(i);
 
 
-        }
+        }*/
 
     }
 
@@ -339,14 +331,16 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             {
                 startActivity(new Intent(SplashscreenActivity.this, NoSimActivity.class));
                 finish();
-            }else if((!isVerified && !isSkipped)){
-               //Add Phpne number for default prefix
-                Digits.authenticate(((DigitLoginActivity)getApplication()).getAuthCallback(),R.style.CustomDigitsTheme);
-                finish();
+            }
+            else
+            {
 
-                }
-                else
-                {
+                /*if((!isVerified && !isSkipped)){
+                    //Add Phpne number for default prefix
+                    Digits.authenticate(((DigitLoginActivity)getApplication()).getAuthCallback(),R.style.CustomDigitsTheme);
+                    finish();
+
+                }*/
                 DataInitializer mDataInitializer = new DataInitializer();
                 mDataInitializer.execute();
                 dual_sim_bar.setVisibility(View.GONE);
@@ -401,7 +395,8 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
 
                 Boolean isEnabledAccess = Helper.isAccessibilityEnabled(accessibiltyID);
                 boolean hasRefreshedBalance = userDataPref.getBoolean("REFRESHED_BAL",false);
-                if (!isEnabledAccess || !hasRefreshedBalance)
+                //|| !hasRefreshedBalance
+                if (!isEnabledAccess )
                 {
                     //Log.d(TAG, "Accesibilty  Not Enabled");
                     ConstantsAndStatics.WAITING_FOR_SERVICE = true;

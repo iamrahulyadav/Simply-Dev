@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Log;
 
 import com.builder.ibalance.models.USSDModels.NormalCall;
 import com.builder.ibalance.models.USSDModels.NormalData;
@@ -63,40 +62,49 @@ public class USSDParser
        //V16Log.d(TAG, "Recent event = " + ConstantsAndStatics.RECENT_EVENT);
         try
         {
-            switch (ConstantsAndStatics.RECENT_EVENT)
+            if(ConstantsAndStatics.WAITING_FOR_REFRESH)
             {
-                case Intent.ACTION_NEW_OUTGOING_CALL:
-                    ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
-                    if (normalCall(message))
-                    {
-                       //V16Log.d(TAG, "Was A Normal Call");
-                        return true;
-                    }
-                    if (packCall(message))
-                    {
-                       //V16Log.d(TAG, "Was A Normal Call");
-                        return true;
-                    }
-                case Intent.ACTION_DATE_CHANGED:
-                    ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
-                    if (packData(message))
-                    {
-                       //V16Log.d(TAG, "Was A Pack Data");
-                        return true;
-                    }
-                    if (normalData(message))
-                    {
-                       //V16Log.d(TAG, "Was A Normal Data");
-                        return true;
-                    }
-                case "UNKNOWN":
-                    if (tryAllTypes(message))
-                    {
-                       //V16Log.d(TAG, "Got from new Version");
-                        return true;
-                    }
-                   //V16Log.d(TAG, "Trying old school methods");
-                    return tryOldSchoolMethod(message);
+                switch (ConstantsAndStatics.REFRESH_TYPE)
+                {
+                    case ConstantsAndStatics.USSD_TYPES.MAIN_BALANCE:
+                        break;
+                    case ConstantsAndStatics.USSD_TYPES.PACK_SMS_CHECK:
+                        break;
+                    case ConstantsAndStatics.USSD_TYPES.PACK_DATA_CHECK:
+                        break;
+                }
+
+            }
+            else {
+                switch (ConstantsAndStatics.RECENT_EVENT) {
+                    case Intent.ACTION_NEW_OUTGOING_CALL:
+                        ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
+                        if (normalCall(message)) {
+                            //V16Log.d(TAG, "Was A Normal Call");
+                            return true;
+                        }
+                        if (packCall(message)) {
+                            //V16Log.d(TAG, "Was A Normal Call");
+                            return true;
+                        }
+                    case Intent.ACTION_DATE_CHANGED:
+                        ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
+                        if (packData(message)) {
+                            //V16Log.d(TAG, "Was A Pack Data");
+                            return true;
+                        }
+                        if (normalData(message)) {
+                            //V16Log.d(TAG, "Was A Normal Data");
+                            return true;
+                        }
+                    case "UNKNOWN":
+                        if (tryAllTypes(message)) {
+                            //V16Log.d(TAG, "Got from new Version");
+                            return true;
+                        }
+                        //V16Log.d(TAG, "Trying old school methods");
+                        return tryOldSchoolMethod(message);
+                }
             }
         } catch (JSONException e)
         {
