@@ -9,13 +9,47 @@ public class BalanceRefreshMessage {
     float balance;
     String originalMessage;
 
-    public BalanceRefreshMessage(float balance, String originalMessage) {
+    public String getValidity()
+    {
+        return validity;
+    }
+
+    String validity;
+
+    public float getBalance()
+    {
+        return balance;
+    }
+
+    public String getOriginalMessage()
+    {
+        return originalMessage;
+    }
+
+    public void setOriginalMessage(String originalMessage)
+    {
+        this.originalMessage = originalMessage;
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return "BalanceRefreshMessage{" +
+                "balance=" + balance +
+                ", originalMessage='" + originalMessage + '\'' +
+                ", validity='" + validity + '\'' +
+                '}';
+    }
+
+    public BalanceRefreshMessage(float balance, String validity, String originalMessage) {
 
         this.balance = balance;
+        this.validity = validity;
         this.originalMessage = originalMessage;
     }
     public boolean isSuccessful()
     {
-        return balance > -1.0f;
+        return Float.compare(balance,Float.MIN_VALUE)!=0;
     }
 }

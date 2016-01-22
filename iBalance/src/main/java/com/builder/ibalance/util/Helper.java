@@ -116,6 +116,10 @@ public  class Helper {
 
         return false;
     }
+    public static boolean isExists(List paramList, int paramInt)
+    {
+        return (paramList != null) && (paramList.size() > paramInt) && (paramList.get(paramInt) != null);
+    }
     public static Intent openWhatsApp( String number,String deviceID) {
 /// number is the phone number
 

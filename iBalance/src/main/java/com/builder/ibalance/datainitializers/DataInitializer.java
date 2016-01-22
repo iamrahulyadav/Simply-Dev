@@ -27,6 +27,7 @@ import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.database.models.DateDurationModel;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.models.USSDModels.NormalCall;
+import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.crashlytics.android.Crashlytics;
@@ -143,8 +144,10 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         long startTime = System.nanoTime();
         long last_indexed_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
         boolean firstTime = mSharedPreferences.getBoolean("FIRST_TIME", true);
-        /*//for US
-        last_indexed_id = Long.MAX_VALUE;*/
+        //TODO for US
+        if(ConstantsAndStatics.DEMO)
+        last_indexed_id = Long.MAX_VALUE;
+
        //V16Log.d(TAG, "INDEXED ID = " + last_indexed_id);
         CallLogsHelper mCallLogsHelper = new CallLogsHelper();
         Cursor callLogCursor = mCallLogsHelper.getAllSystemCallLogs(last_indexed_id);
@@ -315,7 +318,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
             total_duration += mSharedPreferences.getInt("TOTAL_OUT_DURATION",0);
             mEditor.putInt("TOTAL_OUT_DURATION", total_duration);
             mEditor.commit();
-            callLogCursor.close();
+
             //Write All ContactDetails to Database
             if (firstTime)
             {
@@ -345,6 +348,7 @@ public class DataInitializer extends AsyncTask<Void, Integer, Integer> {
         finally
         {
             mCallLogsHelper.getDatabase().endTransaction();
+            callLogCursor.close();
         }
     }
 

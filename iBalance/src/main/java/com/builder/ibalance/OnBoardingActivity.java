@@ -8,13 +8,14 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,24 +34,28 @@ import com.parse.ParseQuery;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServiceEnableActivity extends Activity implements OnClickListener{
+public class OnBoardingActivity extends Activity implements OnClickListener{
 
-    final static String tag = ServiceEnableActivity.class.getSimpleName();
+    final static String tag = OnBoardingActivity.class.getSimpleName();
     static int num_of_toggle = 0;
     ImageView recorderOn, refreshBal;
     String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";
-    TextView downloadText,recorderText,refreshText,percentageText,contactUs;
-    Button nextButton;
+    TextView downloadText,recorderText,refreshText,percentageText,contactUs,doItLater;
+    //Button nextButton;
     ProgressBar mProgressBar;
     View recorderOnView,refreshBalView;
     SharedPreferences userDataPref;
     boolean isEnabledAccess =false;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int screenWidth = (int) (metrics.widthPixels * 0.90);
 
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.activity_service_enable);
+		setContentView(R.layout.activity_onboarding);
+
+        getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT); //set below the setContentview
 
         int progress = 33;
         recorderOnView = findViewById(R.id.recorder_on_layout);
@@ -63,20 +68,26 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
         percentageText = (TextView) findViewById(R.id.progress_percentage);
         contactUs = (TextView) findViewById(R.id.onboarding_contact);
         contactUs.setOnClickListener(this);
+        doItLater = (TextView) findViewById(R.id.do_it_later);
+        doItLater.setOnClickListener(this);/*
         nextButton = (Button) findViewById(R.id.splash_next_button);
-        nextButton.setOnClickListener(this);
+        nextButton.setOnClickListener(this);*/
         mProgressBar = (ProgressBar) findViewById(R.id.onboarding_progress_bar);
 
         recorderOn = (ImageView) findViewById(R.id.recorder_on);
         refreshBal = (ImageView) findViewById(R.id.refresh_bal);
         downloadText.setPaintFlags(downloadText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         contactUs.setPaintFlags(contactUs.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        doItLater.setPaintFlags(doItLater.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
 
         userDataPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
         boolean hasRefreshedBAl = userDataPref.getBoolean("REFRESHED_BAL",false);
+
         float currentBal = userDataPref.getFloat("CURRENT_BALANCE_0",userDataPref.getFloat("CURRENT_BALANCE_1",-20.0f));
         if(currentBal>0.0f)
             hasRefreshedBAl = true;
+        //Todo remove
+        hasRefreshedBAl = false;
         if(hasRefreshedBAl)
         {
             refreshBal.setImageResource(R.drawable.checked);
@@ -88,8 +99,8 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
         {
             recorderOn.setImageResource(R.drawable.checked);
             recorderText.setPaintFlags(recorderText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            nextButton.setText("Turn ON Recorder >");
-            progress +=33;
+            //nextButton.setText("Turn ON Recorder >");
+            progress +=34;
         }
         else
         {
@@ -97,7 +108,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
         }
         if(isEnabledAccess && hasRefreshedBAl==false)
         {
-            nextButton.setText( "Refresh Balance >");
+           // nextButton.setText( "Refresh Balance >");
         }
         percentageText.setText(progress+"%");
         mProgressBar.setProgress(progress);
@@ -136,7 +147,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
                 simply_service_status.put("SERVICE_STATUS", "OFF");
                 simply_service_status.increment("SERVICE_TOGGLE_COUNT");
                 simply_service_status.saveEventually();
-                Tracker t = ((MyApplication) ServiceEnableActivity.this.getApplication()).getTracker(
+                Tracker t = ((MyApplication) OnBoardingActivity.this.getApplication()).getTracker(
                         MyApplication.TrackerName.APP_TRACKER);
                 t.send(new HitBuilders.EventBuilder()
                         .setCategory("SERVICE_STATUS")
@@ -210,7 +221,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
             }
 
             break;
-		case R.id.splash_next_button:
+		/*case R.id.splash_next_button:
             if(!isEnabledAccess)
             {
                 num_of_toggle++;
@@ -225,7 +236,7 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
                 refreshBalance();
                 //userDataPref.edit().putBoolean("REFRESHED_BAL",true).apply();
             }
-			break;
+			break;*/
         case R.id.onboarding_contact:
             if (!Helper.contactExists("+919739663487"))
             {
@@ -238,9 +249,13 @@ public class ServiceEnableActivity extends Activity implements OnClickListener{
                 startActivity(contactIntent);
             } else
             {
-                //Sending Device Id doesn't work
+                //Sending Device Id does work B-)
+                ConstantsAndStatics.PASTE_DEVICE_ID = true;
                 startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
             }
+                break;
+            case R.id.do_it_later:
+                finish();
                 break;
 		default:
 			break;

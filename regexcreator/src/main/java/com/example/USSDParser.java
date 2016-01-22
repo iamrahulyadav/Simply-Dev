@@ -24,6 +24,7 @@ import static com.example.Choice.ptln;
 public class USSDParser
 {
     final String TAG = USSDParser.class.getSimpleName();
+    final String DIR = "G:/SimplyV2/TextMining/json/V1/";
 
     public USSDParser()
     {
@@ -168,6 +169,44 @@ public class USSDParser
                     }
                 }
             }
+            ptln("Cost = "+cost+" Main Bal = "+mainBal+" Duration = "+duration);
+            //this.type = USSDMessageType.NORMAL_CALL;
+            //details = new NormalCall((new Date()).getTime(), cost, mainBal, duration, message);
+            //Log.d(TAG, "details = " + details.toString());
+            return true;
+        }
+        //Log.d(TAG, "Normal Call Didn't Match");
+        return false;
+    }
+    private boolean mainBalance(String message) throws JSONException
+    {
+       // Log.d(TAG, "Trying Normal Call");
+        Matcher result = findDetails(getMainBalRegex(), message);
+        if (result != null)
+        {
+           // Log.d(TAG, "Matched!");
+            String bal = result.group("MBAL");
+            //to take care of number like 1,208.990
+            bal = bal.replace(",","").trim();
+            //to take care of number like "20."
+            if(bal.charAt(bal.length()-1)=='.')
+                bal = bal.substring(0,bal.length()-2);
+            float mainBal = Float.parseFloat(bal);
+            String validity = null;
+            try{
+                validity = result.group("VAL");
+                    ptln("Correcting validity:"+validity);
+                    //Index to index substring
+                    if(validity.matches("\\d{4}\\W\\d{1,2}\\W\\d{4}"))
+                    {
+                        validity = validity.substring(0,validity.length()-2);
+                    }
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                validity = "N/A";
+            }
+            ptln("Main Bal = "+mainBal+" Validity = "+validity);
             //this.type = USSDMessageType.NORMAL_CALL;
             //details = new NormalCall((new Date()).getTime(), cost, mainBal, duration, message);
             //Log.d(TAG, "details = " + details.toString());
@@ -835,27 +874,27 @@ public class USSDParser
     }
     private JSONArray getPackCallRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/PACK_CALL_PATTERNS.json");
+        return getJSONArray(DIR+"PACK_CALL_PATTERNS.json");
     }
     private JSONArray getNormalCallRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/NORMAL_CALL_PATTERNS.json");
+        return getJSONArray(DIR+"NORMAL_CALL_PATTERNS.json");
     }
     private JSONArray getNormalDataRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/NORMAL_DATA_PATTERNS.json");
+        return getJSONArray(DIR+"NORMAL_DATA_PATTERNS.json");
     }
     private JSONArray getPackSMSRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/PACK_SMS_PATTERNS.json");
+        return getJSONArray(DIR+"PACK_SMS_PATTERNS.json");
     }
     private JSONArray getNormalSMSRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/NORMAL_SMS_PATTERNS.json");
+        return getJSONArray(DIR+"NORMAL_SMS_PATTERNS.json");
     }
     private JSONArray getPackDataRegex()
     {
-        return getJSONArray("G:/SimplyV2/TextMining/json/Final 05-01-16/PACK_DATA_PATTERNS.json");
+        return getJSONArray(DIR+"PACK_DATA_PATTERNS.json");
     }
     JSONArray getJSONArray(String fileName)
     {
@@ -923,6 +962,11 @@ public class USSDParser
         }
         //Log.d(TAG, "No Match Found");
         return null;
+    }
+
+    public JSONArray getMainBalRegex()
+    {
+        return getJSONArray(DIR+"MAIN_BALANCE_PATTERNS.json");
     }
     /*private boolean parseForNomalSMS(String message)
     {

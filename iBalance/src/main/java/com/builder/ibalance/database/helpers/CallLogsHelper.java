@@ -106,6 +106,8 @@ public class CallLogsHelper
     {
         Cursor c = mSqlDB.getReadableDatabase().rawQuery("SELECT * FROM " + IbalanceContract.DateDurationEntry.TABLE_NAME + " WHERE " + IbalanceContract.DateDurationEntry.COLUMN_NAME_DATE + " =" + date, null);
         DateDurationModel m;
+        try
+        {
         if(c.moveToFirst())
         {
             m = new
@@ -123,7 +125,16 @@ public class CallLogsHelper
         {
             m = new DateDurationModel(date,0,0,0,0,0,0);
         }
-
+    }
+    catch (Exception e)
+    {
+        Crashlytics.logException(e);
+        m = new DateDurationModel(date,0,0,0,0,0,0);
+    }
+    finally
+    {
+        c.close();
+    }
         return m;
     }
     //This a exception to Update a days details, must have not done this
@@ -131,22 +142,22 @@ public class CallLogsHelper
     {
 
         Cursor c = mSqlDB.getReadableDatabase().rawQuery("SELECT * FROM " + IbalanceContract.ContactDetailEntry.TABLE_NAME + " WHERE " + IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER + " = \"" + phNumber + "\"", null);
-        if(c.moveToFirst())
+        try
         {
-            ContactDetailModel m = new ContactDetailModel(
-                    c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER)),
-                    c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME)),
-                    c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER)),
-                    c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE)),
-                    c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI)),
-                    c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_COUNT)),
-                    c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_DURATION)),
-                    c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_COUNT)),
-                    c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION)),
-                    c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT))
-            );
-            return m;
+            if (c.moveToFirst())
+            {
+                ContactDetailModel m = new ContactDetailModel(c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NUMBER)), c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_NAME)), c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CARRIER)), c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_CIRCLE)), c.getString(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IMAGE_URI)), c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_COUNT)), c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_IN_DURATION)), c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_COUNT)), c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_OUT_DURATION)), c.getInt(c.getColumnIndex(IbalanceContract.ContactDetailEntry.COLUMN_NAME_MISS_COUNT)));
+                return m;
+            }
         }
+    catch (Exception e)
+    {
+        Crashlytics.logException(e);
+    }
+    finally
+    {
+        c.close();
+    }
         return null;
     }
 

@@ -27,7 +27,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -75,7 +74,7 @@ import java.util.Locale;
 import de.greenrobot.event.EventBus;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 
-public class BalanceFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnChartValueSelectedListener,View.OnLongClickListener
+public class BalanceFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnChartValueSelectedListener,View.OnLongClickListener,View.OnClickListener
 {
     static int sim_slot = 0;
     final String tag = BalanceFragment.class.getSimpleName();
@@ -294,7 +293,6 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
     void intializeScreen(int sim_slot)
     {
-        ImageView chartImage = null;
         //V12Log.d(tag,"Bal Frag intializeScreen");
         if (sim_slot == 0)
         {
@@ -320,7 +318,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         else
             balanceTextView.setText(getResources().getString(R.string.rupee_symbol) + " " + currBalance);
 
-        balance_layout.setOnClickListener(new OnClickListener()
+        balance_layout.setOnClickListener(this);/*new OnClickListener()
         {
 
             @Override
@@ -329,9 +327,10 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
                 startActivity(new Intent(MyApplication.context, HistoryActivity.class));
 
             }
-        });
+        })*/;
         LinearLayout dataLayout1 = (LinearLayout) rootView.findViewById(R.id.pack_data_layout);
         dataLayout1.setVisibility(View.VISIBLE);//In case it was deleted
+        dataLayout1.setOnClickListener(this);
         dataLayout1.setOnLongClickListener(this);
         //V12Log.d(tag, "Bal Frag currBalance = " + currBalance);
 
@@ -468,6 +467,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             params.weight = layoutWeight;
             dataLayout.setLayoutParams(params);
             dataLayout.setOnLongClickListener(this);
+            dataLayout.setOnClickListener(this);
             float data_left = mSharedPreferences.getFloat("PACK_DATA_REMAINING_" + sim_slot,0.0f);
             String validity = mSharedPreferences.getString("PACK_DATA_VALIDITY_" + sim_slot,"N/A");
             ((TextView)dataLayout.findViewById(R.id.pack_data_left)).setText(String.format("%.2f",data_left)+" MB");
@@ -482,6 +482,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             params.weight = layoutWeight;
             callPackLayout.setLayoutParams(params);
             callPackLayout.setOnLongClickListener(this);
+            callPackLayout.setOnClickListener(this);
             boolean isMinType = mSharedPreferences.getBoolean("MIN_TYPE_" + sim_slot,false);
             if(isMinType)
             {
@@ -510,6 +511,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             params.weight = layoutWeight;
             smsPackLayout.setLayoutParams(params);
             smsPackLayout.setOnLongClickListener(this);
+            smsPackLayout.setOnClickListener(this);
             int sms_left = mSharedPreferences.getInt("PACK_SMS_REMAINING_" + sim_slot,0);
             String validity = mSharedPreferences.getString("PACK_SMS_VALIDITY_" + sim_slot,"N/A");
             ((TextView)smsPackLayout.findViewById(R.id.pack_sms_left)).setText("Rem."+ sms_left);
@@ -517,19 +519,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
         }
 
-        /*if (currData > 0.0)
-        {
-            dataTextView.setText(currData + "MB");
-        }
-        dataTextView.setOnClickListener(new OnClickListener()
-        {
 
-            @Override
-            public void onClick(View v)
-            {
-                //Toast.makeText(getActivity(), "This Feature is  in Build!", Toast.LENGTH_SHORT).show();
-            }
-        });*/
     }
 
     @Override
@@ -803,6 +793,37 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         });
         builder.show();
         return true;
+    }
+
+    /**
+     * Called when a view has been clicked.
+     *
+     * @param v The view that was clicked.
+     */
+    @Override
+    public void onClick(View v)
+    {
+        Intent refreshIntent = new Intent(getActivity(),BalanceRefreshActivity.class);
+        switch (v.getId())
+        {
+            case R.id.bal_layout:
+                refreshIntent.putExtra("SIM_SLOT",sim_slot).putExtra("TYPE","MAIN_BAL");
+                startActivity(refreshIntent);
+                break;
+            case R.id.pack_data_layout:
+                Toast.makeText(this.getActivity(),"Data Refresh is coming soon",Toast.LENGTH_LONG).show();
+                //refreshIntent.putExtra("SIM_SLOT",sim_slot).putExtra("TYPE","MAIN_BAL");
+                break;
+            case R.id.pack_call_layout:
+                Toast.makeText(this.getActivity(),"Call Pack Refresh is coming soon",Toast.LENGTH_LONG).show();
+                //refreshIntent.putExtra("SIM_SLOT",sim_slot).putExtra("TYPE","MAIN_BAL");
+                break;
+            case R.id.pack_sms_layout:
+                Toast.makeText(this.getActivity(),"SMS Refresh is coming soon",Toast.LENGTH_LONG).show();
+                //refreshIntent.putExtra("SIM_SLOT",sim_slot).putExtra("TYPE","MAIN_BAL");
+                break;
+        }
+
     }
 
     class USSDLoader extends AsyncTask<Integer, Void, Void>

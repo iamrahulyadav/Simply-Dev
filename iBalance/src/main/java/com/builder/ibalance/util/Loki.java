@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.builder.ibalance.R;
+import com.crashlytics.android.Crashlytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,6 +36,7 @@ public class Loki
     private static Charset PLAIN_TEXT_ENCODING = Charset.forName("UTF-8");
     private static String CIPHER_TRANSFORMATION = "AES/CTR/NoPadding";
     private static String KEY_TYPE = "AES";
+    private static final int VERSION = 2;
     // 192 and 256 bits may not be available
     private static int KEY_SIZE_BITS = 128;
     private SharedPreferences parserPreferences;
@@ -79,7 +81,7 @@ public class Loki
         //GOOGLE PREFS are the Pasrser Prefs
         parserPreferences = MyApplication.context.getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE);
         boolean fisrtTime = parserPreferences.getBoolean("FISRT_TIME",true);
-        boolean newFisrtTime = parserPreferences.getBoolean("NEW_VERSION_FISRT_TIME",true);
+        int existingVersion = parserPreferences.getInt("EXISTING_VERSION",0);
         if(fisrtTime)
         {
             SharedPreferences.Editor editor = parserPreferences.edit();
@@ -111,7 +113,7 @@ public class Loki
             editor.putBoolean("FISRT_TIME",false);
             editor.commit();
         }
-        if(newFisrtTime)
+        if(existingVersion<VERSION)
         {
 
             try
@@ -128,7 +130,11 @@ public class Loki
                     editor.putString("PACK_DATA", assetJson.getString("PACK_DATA"));
                     editor.putString("NORMAL_SMS", assetJson.getString("NORMAL_SMS"));
                     editor.putString("PACK_SMS", assetJson.getString("PACK_SMS"));
-                editor.putBoolean("NEW_VERSION_FISRT_TIME",false);
+                    editor.putString("MAIN_BALANCE", assetJson.getString("MAIN_BALANCE"));
+                    editor.putString("DATA_BALANCE", assetJson.getString("DATA_BALANCE"));
+                    editor.putString("SMS_BALANCE", assetJson.getString("SMS_BALANCE"));
+                    editor.putString("CALL_PACK_BALANCE", assetJson.getString("CALL_PACK_BALANCE"));
+                editor.putInt("EXISTING_VERSION",VERSION);
                 editor.commit();
             }
             } catch (JSONException e)
@@ -137,50 +143,116 @@ public class Loki
             }
         }
     }
+    public JSONArray getMainBalRegex() throws JSONException
+    {
+        JSONArray mJsonArray = null;
+        //New object is just for fall back, it should not happen
+        //Dont mess up the upgardes, of you do it at some time then the ones in the Assets folder will be used
+        try
+        {
+            mJsonArray = new JSONArray(parserPreferences.getString("MAIN_BALANCE",(new JSONObject(loadJSONFromAsset())).getString("MAIN_BALANCE")));
+            mJsonArray = decryptJsonArray(mJsonArray);
+        } catch (JSONException e)
+        {
+            mJsonArray = new JSONArray((new JSONObject(loadJSONFromAsset())).getString("MAIN_BALANCE"));
+            mJsonArray = decryptJsonArray(mJsonArray);
+            Crashlytics.logException(e);
+        }
+
+        return mJsonArray;
+    }
     public JSONArray getNormalCallRegex() throws JSONException
     {
         JSONArray mJsonArray = null;
         //New object is just for fall back, it should not happen
+        try{
         mJsonArray = new JSONArray(parserPreferences.getString("NORMAL_CALL",(new JSONObject(loadJSONFromAsset())).getString("NORMAL_CALL")));
         mJsonArray = decryptJsonArray(mJsonArray);
+        } catch (JSONException e)
+        {
+            mJsonArray = new JSONArray((new JSONObject(loadJSONFromAsset())).getString("NORMAL_CALL"));
+            mJsonArray = decryptJsonArray(mJsonArray);
+            Crashlytics.logException(e);
+        }
         return mJsonArray;
     }
     public JSONArray getPackCallRegex() throws JSONException
     {
         JSONArray mJsonArray = null;
         //New object is just for fall back, it should not happen
+        try
+        {
         mJsonArray = new JSONArray(parserPreferences.getString("PACK_CALL",(new JSONObject(loadJSONFromAsset())).getString("PACK_CALL")));
         mJsonArray = decryptJsonArray(mJsonArray);
+        } catch (JSONException e)
+        {
+            mJsonArray = new JSONArray((new JSONObject(loadJSONFromAsset())).getString("PACK_CALL"));
+            mJsonArray = decryptJsonArray(mJsonArray);
+            Crashlytics.logException(e);
+        }
         return mJsonArray;
     }
     public JSONArray getNormalSMSRegex() throws JSONException
     {
         JSONArray mJsonArray = null;
         //New object is just for fall back, it should not happen
+        try
+        {
         mJsonArray = new JSONArray(parserPreferences.getString("NORMAL_SMS",(new JSONObject(loadJSONFromAsset())).getString("NORMAL_SMS")));
         mJsonArray = decryptJsonArray(mJsonArray);
+        } catch (JSONException e)
+        {
+            mJsonArray = new JSONArray((new JSONObject(loadJSONFromAsset())).getString("NORMAL_SMS"));
+            mJsonArray = decryptJsonArray(mJsonArray);
+            Crashlytics.logException(e);
+        }
         return mJsonArray;
     }
     public JSONArray getPackSMSRegex() throws JSONException
     {
         JSONArray mJsonArray = null;
         //New object is just for fall back, it should not happen
+        try
+        {
         mJsonArray = new JSONArray(parserPreferences.getString("PACK_SMS",(new JSONObject(loadJSONFromAsset())).getString("PACK_SMS")));
         mJsonArray = decryptJsonArray(mJsonArray);
+        } catch (JSONException e)
+        {
+            mJsonArray = new JSONArray((new JSONObject(loadJSONFromAsset())).getString("PACK_SMS"));
+            mJsonArray = decryptJsonArray(mJsonArray);
+            Crashlytics.logException(e);
+        }
         return mJsonArray;
     }
     public JSONArray getNormalDataRegex() throws JSONException
     {
         JSONArray mJsonArray = null;
         //New object is just for fall back, it should not happen
+        try
+        {
         mJsonArray = new JSONArray(parserPreferences.getString("NORMAL_DATA",(new JSONObject(loadJSONFromAsset())).getString("NORMAL_DATA")));
         mJsonArray = decryptJsonArray(mJsonArray);
+        } catch (JSONException e)
+        {
+            mJsonArray = new JSONArray((new JSONObject(loadJSONFromAsset())).getString("NORMAL_DATA"));
+            mJsonArray = decryptJsonArray(mJsonArray);
+            Crashlytics.logException(e);
+        }
         return mJsonArray;
     }
     public JSONArray getPackDataRegex() throws JSONException
     {
-        JSONArray mJsonArray = new JSONArray(parserPreferences.getString("PACK_DATA",(new JSONObject(loadJSONFromAsset())).getString("PACK_DATA")));
+        JSONArray mJsonArray = null;
+        try
+        {
+        mJsonArray = new JSONArray(parserPreferences.getString("PACK_DATA",(new JSONObject(loadJSONFromAsset())).getString("PACK_DATA")));
         mJsonArray = decryptJsonArray(mJsonArray);
+        } catch (JSONException e)
+        {
+            mJsonArray = new JSONArray((new JSONObject(loadJSONFromAsset())).getString("PACK_DATA"));
+            mJsonArray = decryptJsonArray(mJsonArray);
+            Crashlytics.logException(e);
+        }
         return mJsonArray;
     }
 
@@ -465,6 +537,7 @@ public class Loki
         }
         return decryptedRegexArray;
     }
+
 
 
 }

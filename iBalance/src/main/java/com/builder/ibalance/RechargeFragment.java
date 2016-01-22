@@ -596,10 +596,11 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                 }
                     else
                 {
-                    if(amountField.getText()==null ||amountField.getText().toString().equals("") )
+                    if(amountField.getText()==null ||amountField.getText().toString().equals("") ||amountField.getText().toString().length()>4 )
                     {
-                        Helper.toastHelper("Please Enter the Recharge Amount");
+                        Helper.toastHelper("Please Enter the valid Recharge Amount");
                         amountField.requestFocus();
+                        amountField.selectAll();
                         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.showSoftInput(amountField, InputMethodManager.SHOW_IMPLICIT);
                     }
@@ -753,33 +754,6 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
      * @param id       The row id of the item that was clicked.
      */
 
-    /*
-    final ScrollView sl = (ScrollView) findViewById(R.id.scroll_view);
-        final RelativeLayout newactionBar = (RelativeLayout) findViewById(R.id.actionbar);
-        newactionBar.setVisibility(View.VISIBLE);
-        newactionBar.setVisibility(View.GONE);
-        sl.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
-
-            @Override
-            public void onScrollChanged() {
-
-                int scrollX = sl.getScrollX(); //for horizontalScrollView
-                int scrollY = sl.getScrollY(); //for verticalScrollView
-                if (scrollY > 100) {
-                    newactionBar.bringToFront();
-                    newactionBar.animate().alpha(1.0f);
-                    newactionBar.setVisibility(View.GONE);
-                } else {
-                    newactionBar.animate().alpha(0.0f);
-                    newactionBar.setVisibility(View.GONE);
-
-                }
-
-                //DO SOMETHING WITH THE SCROLL COORDINATES
-
-            }
-        });
-     */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
     {

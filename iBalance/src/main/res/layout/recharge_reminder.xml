@@ -17,8 +17,8 @@
             android:id="@+id/imageView10"
             android:gravity="right"
             android:layout_alignParentTop="true"
-            android:layout_toLeftOf="@+id/textView48"
-            android:layout_toStartOf="@+id/textView48"
+            android:layout_toLeftOf="@+id/refresh_heading"
+            android:layout_toStartOf="@+id/refresh_heading"
             android:layout_weight="1"
             android:src="@drawable/alert_gray"/>
         !--TODO  CHENGE BLACL COLOR-->
@@ -30,7 +30,7 @@
             android:textSize="20dp"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:id="@+id/textView48"
+            android:id="@+id/refresh_heading"
             android:layout_weight="1"
             android:textColor="@color/black" />
 

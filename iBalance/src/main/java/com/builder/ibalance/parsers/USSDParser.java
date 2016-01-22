@@ -4,7 +4,9 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 
+import com.builder.ibalance.messages.BalanceRefreshMessage;
 import com.builder.ibalance.models.USSDModels.NormalCall;
 import com.builder.ibalance.models.USSDModels.NormalData;
 import com.builder.ibalance.models.USSDModels.NormalSMS;
@@ -27,11 +29,15 @@ import java.util.Date;
 
 import javax.crypto.NoSuchPaddingException;
 
+import hugo.weaving.DebugLog;
+
 public class USSDParser
 {
 
     final String TAG = USSDParser.class.getSimpleName();
     USSDBase ussdDetails;
+    BalanceRefreshMessage refreshMessage;
+
     Loki mLoki;
 
     public USSDParser()
@@ -56,26 +62,36 @@ public class USSDParser
         return ussdDetails;
     }
 
-
+    public BalanceRefreshMessage getRefreshMessage()
+    {
+        return refreshMessage;
+    }
     public boolean parseMessage(String message)
     {
        //V16Log.d(TAG, "Recent event = " + ConstantsAndStatics.RECENT_EVENT);
         try
         {
+            //Disabling of flag will be handled in com.builder.ibalance.services.RecorderUpdaterService
             if(ConstantsAndStatics.WAITING_FOR_REFRESH)
             {
                 switch (ConstantsAndStatics.REFRESH_TYPE)
                 {
                     case ConstantsAndStatics.USSD_TYPES.MAIN_BALANCE:
-                        break;
+                            return mainBalance(message);
+
                     case ConstantsAndStatics.USSD_TYPES.PACK_SMS_CHECK:
-                        break;
+                            return smsBalance(message);
+
                     case ConstantsAndStatics.USSD_TYPES.PACK_DATA_CHECK:
-                        break;
+                            return dataBalance(message);
+
+                    case ConstantsAndStatics.USSD_TYPES.PACK_CALL_CHECK:
+                            return callPackBalance(message);
                 }
 
             }
-            else {
+            else
+            {
                 switch (ConstantsAndStatics.RECENT_EVENT) {
                     case Intent.ACTION_NEW_OUTGOING_CALL:
                         ConstantsAndStatics.RECENT_EVENT = "UNKNOWN";
@@ -109,10 +125,77 @@ public class USSDParser
         } catch (JSONException e)
         {
             e.printStackTrace();
-            return tryOldSchoolMethod(message);
+            //Disabling of flag will be handled in com.builder.ibalance.services.RecorderUpdaterService
+            if(!ConstantsAndStatics.WAITING_FOR_REFRESH)
+            {
+                return tryOldSchoolMethod(message);
+            }
         }
         return false;
     }
+
+
+@DebugLog
+    private boolean mainBalance(String message) throws JSONException
+    {
+        // Log.d(TAG, "Trying Normal Call");
+        Matcher result = findDetails(mLoki.getMainBalRegex(), message);
+        float mainBal = Float.MIN_VALUE;
+        String validity = null;
+        if (result != null)
+        {
+            // Log.d(TAG, "Matched!");
+            String bal = result.group("MBAL");
+            //to take care of number like 1,208.990
+            bal = bal.replace(",","").trim();
+            //to take care of number like "20."
+            if(bal.charAt(bal.length()-1)=='.')
+                bal = bal.substring(0,bal.length()-2);
+            mainBal = Float.parseFloat(bal);
+
+            try{
+                validity = result.group("VAL");
+                //Index to index substring
+                if(validity!=null)
+                {
+                    if (validity.matches("\\d{4}\\W\\d{1,2}\\W\\d{4}"))
+                    {
+                        validity = validity.substring(0, validity.length() - 2);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                validity = "N/A";
+            }
+
+            //TODO In future pass a hash map of the matches indexes
+
+            //Original message will be filled in RecorderUpdater,
+            this.refreshMessage = new BalanceRefreshMessage(mainBal,validity,"");
+            Log.d(TAG,this.refreshMessage.toString());
+            return true;
+        }
+        Log.d(TAG, "Balance refresh Didn't Match");
+        return false;
+    }
+    private boolean smsBalance(String message)
+    {
+        //TODO
+        return false;
+    }
+
+    private boolean dataBalance(String message)
+    {
+        //TODO
+        return false;
+    }
+    private boolean callPackBalance(String message)
+    {
+        //TODO
+        return false;
+    }
+
 
     private boolean tryAllTypes(String message)
     {
@@ -838,16 +921,16 @@ public class USSDParser
     boolean tryOldSchoolMethod(String message)
     {
        //V16Log.d(TAG, "Trying Old School Method");
-        if (parseForNormalCall(message))
+        if (olsSchoolNormalCall(message))
         {
             return true;
-        } else if (parseForNormalData(message))
+        } else if (oldSchoolNormalData(message))
         {
             return true;
-        } else if (parseForDataPack(message))
+        } else if (oldSchoolDataPack(message))
         {
             return true;
-        } else if (parseForNormalSMS(message))
+        } else if (oldSchoolNormalSMS(message))
         {
             return true;
         }
@@ -857,7 +940,7 @@ public class USSDParser
     }
 
 
-    private boolean parseForNormalSMS(String message)
+    private boolean oldSchoolNormalSMS(String message)
     {
         Float balance = (float) 0.0, cost = (float) 0.0;
         Long time = (new Date()).getTime();
@@ -935,7 +1018,7 @@ public class USSDParser
         return false;
     }
 
-    private boolean parseForDataPack(String message)
+    private boolean oldSchoolDataPack(String message)
     {
         Float data_consumed = (float) 0.0, bal = (float) 0.0, data_left = (float) 0.0;
         int count = 0;
@@ -1114,12 +1197,12 @@ public class USSDParser
     }
 
 
-    private boolean parseForNormalCall(String message)
+    private boolean olsSchoolNormalCall(String message)
     {
         int secs = 0, count = 0;
         Float bal = (float) 0.0, callCost = (float) 0.0;
         Long time = (new Date()).getTime() + 19800l;//to ist
-       //V16Log.d(TAG+" CALL", "parseForNormalCall");
+       //V16Log.d(TAG+" CALL", "olsSchoolNormalCall");
        //V16Log.d(TAG+" CALL" + "from service", message);
        //V16Log.d(TAG+" CALL" + "time from service", time.toString());
 
@@ -1270,9 +1353,9 @@ public class USSDParser
         return false;
     }
 
-    private boolean parseForNormalData(String message)
+    private boolean oldSchoolNormalData(String message)
     {
-        //Log.d(TAG+" DATA", "parseForNormalData");
+        //Log.d(TAG+" DATA", "oldSchoolNormalData");
         int count = 0;
         Float bal = (float) 0.0, cost = (float) 0.0, data_consumed = (float) 0.0;
         Long time = (new Date()).getTime();

@@ -2,7 +2,6 @@ package com.builder.ibalance.database.helpers;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.database.models.DateDurationModel;
@@ -17,7 +16,6 @@ public class DateDurationMapHelper
    //Day, InCount-0 Indur-1 OutCount-2 OutDur-3 misscall
    final String tag = DateDurationMapHelper.class.getSimpleName();
     SQLiteDatabase mSqlDB;
-    Cursor mCursor;
     String[] projection = {
     };
     String selection = "";
@@ -48,7 +46,8 @@ public class DateDurationMapHelper
     //0 - in_count 1 - inDuration secs 2- out_c 3-out_d secs 4-day_of_the_WEEK
    //V16Log.d(tag,"Columns Returned = "+ c.getCount());
      StringBuilder builder = new StringBuilder();
-
+try
+{
   while(c.moveToNext())
   {
       builder.append(getDay(c.getInt(4))+": ");
@@ -66,7 +65,14 @@ public class DateDurationMapHelper
       avgDateDurationDetail.add(temp);
   }
    //V16Log.d(tag, builder.toString());
-     c.close();
+ } catch (Exception e)
+    {
+        //V10e.printStackTrace();
+    }
+    finally
+    {
+        c.close();
+    }
   return avgDateDurationDetail;
  }
     String getDay(int i)

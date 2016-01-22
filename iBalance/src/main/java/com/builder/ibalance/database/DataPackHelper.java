@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.builder.ibalance.models.USSDModels.PackData;
+import com.crashlytics.android.Crashlytics;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -55,21 +56,32 @@ public class DataPackHelper {
 		// 3. go over each row, build entry and add it to list
 		PackData entry = null;
 		// 1-Date 2-TYPE 3-DATA_CONSUMED 4-REMAINING 5-VALIDITY 6-BALANCE 7-MESSAGE
-		if (cursor.moveToFirst()) {
-			do {
-				entry = new PackData();
-				entry.date = (Long.parseLong(cursor.getString(1)));
-				//skip type as of now
-				entry.data_used = (Float.parseFloat(cursor.getString(3)));
-				entry.data_left = (Float.parseFloat(cursor.getString(4)));
-				entry.validity = (cursor.getString(5));
-				entry.main_bal = Float.parseFloat(cursor.getString(6));
-				entry.original_message = cursor.getString(7);
-				// Add book to entry
-				entries.add(entry);
-			} while (cursor.moveToNext());
+		try
+		{
+			if (cursor.moveToFirst())
+			{
+				do
+				{
+					entry = new PackData();
+					entry.date = (Long.parseLong(cursor.getString(1)));
+					//skip type as of now
+					entry.data_used = (Float.parseFloat(cursor.getString(3)));
+					entry.data_left = (Float.parseFloat(cursor.getString(4)));
+					entry.validity = (cursor.getString(5));
+					entry.main_bal = Float.parseFloat(cursor.getString(6));
+					entry.original_message = cursor.getString(7);
+					// Add book to entry
+					entries.add(entry);
+				} while (cursor.moveToNext());
+			}
+		}catch (Exception e)
+		{
+			Crashlytics.logException(e);
 		}
-		cursor.close();
+		finally
+		{
+			cursor.close();
+		}
 
 		// //Log.d("getAllUSSD Entries()", entries.toString());
 		// return entries

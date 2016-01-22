@@ -46,7 +46,7 @@ import de.greenrobot.event.EventBus;
 
 public class MainActivity extends AppCompatActivity {
     final String tag = MainActivity.class.getSimpleName();
-    SharedPreferences mSharedPreferences;
+    SharedPreferences userDataPrefs;
     protected RecyclerView mRecyclerView;
     public static boolean sim1BalanceReminderShown = false, sim2BalanceReminderShown = false;
     EditText input;
@@ -64,18 +64,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        userDataPrefs = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY, Context.MODE_PRIVATE);
 
         final TabLayout tabLayout = (TabLayout) findViewById(R.id.tablayout);
         ImageView view = (ImageView) findViewById(android.R.id.home);
 
         ab = getSupportActionBar();
         ab.setHomeAsUpIndicator(null);
-        ab.setLogo(R.drawable.ic_launcher);
+        ab.setLogo(R.mipmap.app_logo);
 
 
         // Create the adapter that will return a fragment for each of the three
@@ -114,9 +113,25 @@ public class MainActivity extends AppCompatActivity {
 					.setTabListener(this));*/
         }
         tabLayout.setupWithViewPager(mViewPager);
-        //If Recharge was called
-        if (this.getIntent().getBooleanExtra("RECHARGE", false)) {
-            goToRechargepage();
+        Boolean isEnabledAccess = Helper.isAccessibilityEnabled(ConstantsAndStatics.accessibiltyID);
+        boolean hasRefreshedBalance = userDataPrefs.getBoolean("REFRESHED_BAL",false);
+        //|| !hasRefreshedBalance
+        //TODO revert
+        if (!isEnabledAccess )
+        {
+            //Log.d(TAG, "Accesibilty  Not Enabled");
+            ConstantsAndStatics.WAITING_FOR_SERVICE = true;
+            startActivity(new Intent(getApplicationContext(), OnBoardingActivity.class));
+
+        }
+        else
+        {
+            //Won't happen but a precaution
+            //If Recharge was called
+            if (this.getIntent().getBooleanExtra("RECHARGE", false))
+            {
+                goToRechargepage();
+            }
         }
 
 
@@ -158,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
         //V10Log.d(tag, "Stopping Main Activity");
 
-        ConstantsAndStatics.PASTE_DEVICE_ID = false;
+
         Kahuna.getInstance().stop();
         FlurryAgent.endTimedEvent("MainScreen");
         //Stop the analytics tracking
@@ -309,7 +324,7 @@ int i = 0;
 
         // Set an EditText view to get user input
         input = (EditText) mView.findViewById(R.id.balance_value);
-        Float previousSetBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
+        Float previousSetBal = userDataPrefs.getFloat("MINIMUM_BALANCE", (float) 10.0);
         input.setText(previousSetBal + "");
         input.setFocusable(true);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -335,10 +350,10 @@ int i = 0;
 
                     setBal = Float.parseFloat(input.getText().toString());
                 } catch (Exception e) {
-                    setBal = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
+                    setBal = userDataPrefs.getFloat("MINIMUM_BALANCE", (float) 10.0);
                 }
                 //Log.d("CHART", setBal + " ");
-                mSharedPreferences.edit().putFloat("MINIMUM_BALANCE", setBal).commit();
+                userDataPrefs.edit().putFloat("MINIMUM_BALANCE", setBal).commit();
                 EventBus.getDefault().post(new MinimumBalanceMessage(setBal));
                 alert.dismiss();
 
@@ -378,7 +393,7 @@ int i = 0;
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mSharedPreferences.edit().putInt("FILTER", 0).commit();
+        userDataPrefs.edit().putInt("FILTER", 0).commit();
         sim1BalanceReminderShown = false;
         sim2BalanceReminderShown = false;
 		/*if(mInterstitial!=null)

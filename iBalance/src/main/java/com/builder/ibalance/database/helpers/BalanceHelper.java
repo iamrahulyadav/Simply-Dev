@@ -12,6 +12,7 @@ import com.builder.ibalance.database.DatabaseManager;
 import com.builder.ibalance.models.USSDModels.NormalCall;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
+import com.crashlytics.android.Crashlytics;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -55,14 +56,23 @@ public class BalanceHelper {
              new String[]{IbalanceContract.CallEntry.COLUMN_NAME_COST},
              IbalanceContract.CallEntry.COLUMN_NAME_ID + " = ?",
              new String[]{id+""},null,null,null);
-     if(c.moveToFirst())
-     {
-        //DB is 0 indexed
-         Float cost = c.getFloat(0);
-         c.close();
-         return cost;
-     }
-     c.close();
+    try{
+		if(c.moveToFirst())
+		{
+			//DB is 0 indexed
+			Float cost = c.getFloat(0);
+			c.close();
+			return cost;
+		}
+	}
+	 catch (Exception e)
+	 {
+		 Crashlytics.logException(e);
+	 }
+	 finally
+	 {
+		 c.close();
+	 }
 	 return null;
  }
 	public List<NormalCall> getAllEntries() {
@@ -86,12 +96,15 @@ public class BalanceHelper {
                 num_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_NUMBER),
                 bal_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_BALANCE),
                 msg_idx =cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_MESSAGE);
+    try
+    {
+
 
         while (cursor.moveToNext())
         {
             entry = new NormalCall();
             entry.date = cursor.getLong(date_idx);
-            entry.sim_slot =  cursor.getInt(slot_idx);
+            entry.sim_slot = cursor.getInt(slot_idx);
             entry.call_cost = cursor.getFloat(cost_idx);
 
             entry.call_duration = cursor.getInt(dur_idx);
@@ -100,8 +113,16 @@ public class BalanceHelper {
             entry.original_message = cursor.getString(msg_idx);
             // Add book to entry
             entries.add(entry);
-		}
-		cursor.close();
+        }
+    }
+        catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
+        finally
+        {
+            cursor.close();
+        }
 
 		// //Log.d("getAllUSSD Entries()", entries.toString());
 		// return entries
@@ -156,44 +177,55 @@ public class BalanceHelper {
                 num_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_NUMBER),
                 bal_idx = cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_BALANCE),
                 msg_idx =cursor.getColumnIndex(IbalanceContract.CallEntry.COLUMN_NAME_MESSAGE);
-		if (cursor.moveToFirst()) {
-			do {
-				entry = new NormalCall();
-				entry.date = (Long.parseLong(cursor.getString(date_idx)));
-				entry.call_cost = Float.parseFloat(cursor.getString(cost_idx));
-				total_call_cost += entry.call_cost;
-
-				entry.call_duration = (Integer.parseInt(cursor.getString(dur_idx)));
-				entry.ph_number = cursor.getString(num_idx);
-				entry.main_bal = Float.parseFloat(cursor.getString(bal_idx));
-				total_call_duration += entry.call_duration;
-				
-
-				// Add book to entry
-				entries.add(entry);
-			} while (cursor.moveToNext());
-
-			try {
-				//Log.d(TAG, "Total total_call_cost = " + total_call_cost);
-				//Log.d(TAG, "Total Call Duration = " + total_call_duration);
-				editor.putFloat("CALL_RATE", (float) total_call_cost * 100
-						/ total_call_duration);
-				//Log.d(TAG, "Normally CALL_RATE =" + (float) total_call_cost* 100 / total_call_duration);
-				editor.commit();
-			} catch (Exception e) {
-				editor.putFloat("CALL_RATE", (float) 1.7);
-				//Log.d(TAG, "Exception CALL_RATE = 1.7");
-				editor.commit();
-			}
-            finally
+        try
+        {
+            if (cursor.moveToFirst())
             {
-                cursor.close();
+                do
+                {
+                    entry = new NormalCall();
+                    entry.date = (Long.parseLong(cursor.getString(date_idx)));
+                    entry.call_cost = Float.parseFloat(cursor.getString(cost_idx));
+                    total_call_cost += entry.call_cost;
+
+                    entry.call_duration = (Integer.parseInt(cursor.getString(dur_idx)));
+                    entry.ph_number = cursor.getString(num_idx);
+                    entry.main_bal = Float.parseFloat(cursor.getString(bal_idx));
+                    total_call_duration += entry.call_duration;
+
+
+                    // Add book to entry
+                    entries.add(entry);
+                } while (cursor.moveToNext());
+
+                try
+                {
+                    //Log.d(TAG, "Total total_call_cost = " + total_call_cost);
+                    //Log.d(TAG, "Total Call Duration = " + total_call_duration);
+                    editor.putFloat("CALL_RATE", (float) total_call_cost * 100 / total_call_duration);
+                    //Log.d(TAG, "Normally CALL_RATE =" + (float) total_call_cost* 100 / total_call_duration);
+                    editor.commit();
+                } catch (Exception e)
+                {
+                    editor.putFloat("CALL_RATE", (float) 1.7);
+                    //Log.d(TAG, "Exception CALL_RATE = 1.7");
+                    editor.commit();
+                }
+            } else
+            {
+                editor.putFloat("CALL_RATE", (float) 1.7);
+                //Log.d(TAG, "No data callRate = 1.7");
+                editor.commit();
             }
-        } else {
-			editor.putFloat("CALL_RATE", (float) 1.7);
-			//Log.d(TAG, "No data callRate = 1.7");
-			editor.commit();
-		}
+        }
+        catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
+        finally
+        {
+            cursor.close();
+        }
 
 		//Log.d("getEntriesFromDate()", entries.toString());
 		// return entries
@@ -208,6 +240,8 @@ public class BalanceHelper {
         Cursor c = readableDb.rawQuery(query,null);
         float callCost = (float) 0.0;
         int duration = 0;
+        try{
+
         if(c.moveToFirst())
         {
             try
@@ -219,6 +253,15 @@ public class BalanceHelper {
                //V10e.printStackTrace();
             }
         }
+    }
+    catch (Exception e)
+    {
+        Crashlytics.logException(e);
+    }
+    finally
+    {
+        c.close();
+    }
         float total_cost = callCost + ((total_duration-duration) * call_rate)/100;
         return  total_cost;
 	}

@@ -351,7 +351,7 @@ boolean cancelButtonFound = false;
         }
         cancelButtonFound = false;
         text = getTextFromNode(event.getSource());// getEventText(event);
-        if(text==null || text.isEmpty())
+        if(text==null || text.isEmpty() || text.toUpperCase().contains("USSD CODE RUNNING")|| text.toUpperCase().matches("^CONNECTION PROBLEM OR INVALID MMI CODE"))
             return;
         SharedPreferences sharedPreferences = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,
                 Context.MODE_PRIVATE);
@@ -363,7 +363,16 @@ boolean cancelButtonFound = false;
             return;
         }
         String original_message = text;
-        text = text.replace("\r", "_").replace("\n", "_").replace("\u0011"," ").replace("ยง"," ").toUpperCase();
+
+        text = text.trim()
+                .replace("\r", " ")
+                .replace("\n", " ")
+                .replace("\u0011"," ")
+                .replace("Â§"," ")
+                .replace("ยง"," ")
+                .replace('_',' ')
+                .replaceAll("\\s+"," ")
+                .toUpperCase();
 
         if (event.getClassName().toString().toUpperCase(Locale.US).contains("ALERT"))
         {
@@ -374,9 +383,19 @@ boolean cancelButtonFound = false;
             {
                //V16//V16Log.d(TAG,"Successful Parse");
                 ///Original Message
-                parser.getDetails().original_message = original_message;
-                ConstantsAndStatics.WAITING_FOR_REFRESH = false;
-                processUSSD(parser);
+                if(ConstantsAndStatics.WAITING_FOR_REFRESH)
+                {
+                    //Switch off the flag
+
+                    ConstantsAndStatics.WAITING_FOR_REFRESH = false;
+                    processRefresh(parser,original_message);
+                }
+                else
+                {
+                    parser.getDetails().original_message = original_message;
+                    processUSSD(parser);
+                }
+
             }
             else
             {
@@ -384,7 +403,7 @@ boolean cancelButtonFound = false;
                 if(ConstantsAndStatics.WAITING_FOR_REFRESH ==true)
                 {
                     ConstantsAndStatics.WAITING_FOR_REFRESH = false;
-                    EventBus.getDefault().post(new BalanceRefreshMessage(-2.0f,original_message));
+                    EventBus.getDefault().post(new BalanceRefreshMessage(Float.MIN_VALUE,null,original_message));
                 }
                 logOnParse(text);
             }
@@ -393,13 +412,39 @@ boolean cancelButtonFound = false;
         catch (Exception e)
         {
             Crashlytics.logException(e);
-            //e.printStackTrace();
+            e.printStackTrace();
+            logOnParse(text);
         }
 
+        }
+        ConstantsAndStatics.PASTE_DEVICE_ID = false;
+        text = "";
+
+    }
+
+    private void processRefresh(USSDParser parser, String original_message)
+    {
+        //getRefresh must not be null because the REFRESH_WAITING flag was up
+        dissmissUSDD();
+        BalanceRefreshMessage message = parser.getRefreshMessage();
+        if(message!=null)
+        {
+
+            message.setOriginalMessage(original_message);
+            EventBus.getDefault().post(message);
+        }
+        else
+        {
+            Log.wtf(TAG,"The refresh flag was some how up");
+            //User will be waiting
+            EventBus.getDefault().post(new BalanceRefreshMessage(Float.MIN_VALUE,null,original_message));
         }
 
     }
-boolean foundWhatsAppEditText= false;
+
+
+
+    boolean foundWhatsAppEditText= false;
     private AccessibilityNodeInfo getWhatsAppEditText(AccessibilityNodeInfo accessibilityNodeInfo)
     {
         AccessibilityNodeInfo mNode= null;
@@ -483,26 +528,12 @@ boolean foundWhatsAppEditText= false;
             case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
                //V16//V16Log.d(TAG,"Type Pack Data");
                 processData(ussDetails);
-            case ConstantsAndStatics.USSD_TYPES.MAIN_BALANCE:
-                Log.d(TAG,"Type Main Balance Check");
-                processMainBal(ussDetails);
                 break;
-            case ConstantsAndStatics.USSD_TYPES.PACK_SMS_CHECK:
-                Log.d(TAG,"Type SMS Pack Check");
-
-                break;
-            case ConstantsAndStatics.USSD_TYPES.PACK_DATA_CHECK:
-                Log.d(TAG,"Type Data Pack Check");
-
-                break;
-        }
+            }
 
     }
 
-    private void processMainBal(USSDBase ussDetails)
-    {
-        EventBus.getDefault().post(new BalanceRefreshMessage(999.999f,"Ahmed Sends his Regards"));
-    }
+
 
 
     private void processCallEvent(Message msg) throws Exception
@@ -559,6 +590,7 @@ boolean foundWhatsAppEditText= false;
                //V16//V16Log.d(TAG,"Call detail = "+mNormalCallDetails.toString());
 
                //V16//V16Log.d(TAG,"Displaying pop_up");
+                dissmissUSDD();
                 showPopup(popup_intent);
             }
             else if(tempCallUSSDDetails instanceof  PackCall)
@@ -570,7 +602,7 @@ boolean foundWhatsAppEditText= false;
                 popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
                 popup_intent.putExtra("DATA", mPackCallPopupDetails);
                //V16//V16Log.d(TAG,"Call detail = "+mPackCallPopupDetails.toString());
-
+                dissmissUSDD();
                 showPopup(popup_intent);
             }
 
@@ -625,7 +657,7 @@ boolean foundWhatsAppEditText= false;
                //V16//V16Log.d(TAG,"Normal SMS detail = "+smsPopupDetails.toString());
 
 
-
+                dissmissUSDD();
                 showPopup(popup_intent);
             }
             else if(ussDetails instanceof PackSMS)
@@ -636,7 +668,7 @@ boolean foundWhatsAppEditText= false;
                 popup_intent.putExtra("TYPE", ussDetails.getType());
                 popup_intent.putExtra("DATA", smsPopupDetails);
                //V16//V16Log.d(TAG,"SMS Pack detail = "+smsPopupDetails.toString());
-
+                dissmissUSDD();
                 showPopup(popup_intent);
             }
 
@@ -665,8 +697,7 @@ boolean foundWhatsAppEditText= false;
             popup_intent.putExtra("DATA", normalDataDetails);
            //V16//V16Log.d(TAG,"Normal Data detail = "+normalDataDetails.toString());
 
-            if (dismissNode != null)
-                dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            dissmissUSDD();
 
             showPopup(popup_intent);
         }
@@ -678,34 +709,44 @@ boolean foundWhatsAppEditText= false;
             popup_intent.putExtra("DATA", packDataDetails);
            //V16//V16Log.d(TAG,"Pack Data detail = "+packDataDetails.toString());
 
-            if (dismissNode != null)
-                dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            dissmissUSDD();
 
             showPopup(popup_intent);
         }
-        dismissNode = null;
 
        //V16//V16Log.d(TAG,"Adding Data to Db");
         addToDatabase(ussDetails);
     }
 
-    private void logOnParse(String text)  throws Exception
+    private void logOnParse(String text)
     {
-        if(text==null)
-            return;
-        SharedPreferences sharedPreferences = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
-        ParseObject pObj = new ParseObject("Invalid_USSD");
-        pObj.put("DEVICE_ID",Helper.getDeviceId());
-        pObj.put("Total", text);
-        pObj.put("NUMBER",
-                sharedPreferences.getString("VERIFIED_NUMBER", sharedPreferences.getString("NUMBER", "0000")));
-        pObj.put("CARRIER",
-                sharedPreferences.getString("CARRIER_0", sharedPreferences.getString("CARRIER","Unknown")));
-        pObj.put("CIRCLE",
-                sharedPreferences.getString("CIRCLE_0", sharedPreferences.getString("CIRCLE","Unknown")));
-        pObj.saveEventually();
+        try
+        {
+            if (text == null) return;
+            SharedPreferences sharedPreferences = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY, Context.MODE_PRIVATE);
+            ParseObject pObj = new ParseObject("Invalid_USSD");
+            pObj.put("DEVICE_ID", Helper.getDeviceId());
+            pObj.put("Total", text);
+            pObj.put("NUMBER", sharedPreferences.getString("VERIFIED_NUMBER", sharedPreferences.getString("NUMBER", "0000")));
+            pObj.put("CARRIER", sharedPreferences.getString("CARRIER_0", sharedPreferences.getString("CARRIER_1", "Unknown")));
+            pObj.put("CIRCLE", sharedPreferences.getString("CIRCLE_0", sharedPreferences.getString("CIRCLE_1", "Unknown")));
+            pObj.saveEventually();
+        }
+        catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
     }
+    void dissmissUSDD()
+    {
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+        {
 
+            if (dismissNode != null)
+                dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+        }
+        dismissNode = null;
+    }
     private void pasteDeviceId(AccessibilityNodeInfo editTextField, int type) throws Exception
     {
         String textToShare = "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getsimply ";
@@ -1049,13 +1090,13 @@ boolean foundWhatsAppEditText= false;
             {
                 ////V10Log.d(tag+"USSD", "More than one subchild"+
                 // ac.getChildCount());
-                sb.append(getTextFromNode(ac));
+                sb.append(getTextFromNode(ac)+" ");
             }
             ////V10Log.d(tag+"USSD",ac.getClassName()+"");
             if (ac.getClassName().equals(TextView.class.getName()))
             {
 
-                sb.append(ac.getText());
+                sb.append(ac.getText()+" ");
                 ////V10Log.d("TEST", "Number:" + i + "   " + sb);
             }
             else if (ac.getClassName().equals(Button.class.getName()) && !cancelButtonFound)

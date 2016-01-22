@@ -66,6 +66,8 @@ public class NormalSMSHelper {
 				main_bal_idx = cursor.getColumnIndex(IbalanceContract.SMSEntry.COLUMN_NAME_BALANCE),
 				message_idx = cursor.getColumnIndex(IbalanceContract.SMSEntry.COLUMN_NAME_MESSAGE),
 				sim_slot_idx = cursor.getColumnIndex(IbalanceContract.SMSEntry.COLUMN_NAME_SLOT);
+		try
+		{
 		if (cursor.moveToFirst()) {
 			do {
 				entry = new NormalSMS();
@@ -79,7 +81,15 @@ public class NormalSMSHelper {
 				entries.add(entry);
 			} while (cursor.moveToNext());
 		}
+	}
+	catch (Exception e)
+	{
+		//V10e.printStackTrace();
+	}
+	finally
+	{
 		cursor.close();
+	}
 
 		// //Log.d("getAllUSSD Entries()", entries.toString());
 		// return entries

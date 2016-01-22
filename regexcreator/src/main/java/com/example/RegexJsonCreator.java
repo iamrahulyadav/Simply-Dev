@@ -22,7 +22,7 @@ public class RegexJsonCreator
     String regex;
     JSONArray allJson = null;
     String TYPE = "SMS_PACK";
-    File regex_json = new File("G:/SimplyV2/TextMining/json/NORMAL_SMS_PATTERNS.json");
+    File regex_json = new File("G:/SimplyV2/TextMining/json/V2/MAIN_BALANCE_PATTERNS.json");
     int costPos = -1, durationSecPos = -1,mainBalPos = -1,durationClockPosHH = -1,durationClockPosMM = -1,durationClockPosSS = -1;
     int usedData = -1, leftData = -1,type = -1,usedDataMetric = -1,leftDataMetric = -1,validity = -1,mainbalance = -1;
     int cont = -1;
@@ -52,7 +52,7 @@ public class RegexJsonCreator
             String str = new String(data, "UTF-8");
             JSONArray mJsonArray = null;
                 mJsonArray = new JSONArray(str);
-            int id = 0,version=1;
+            int id = 0,version=2;
             while (true)
             {
                 //regex

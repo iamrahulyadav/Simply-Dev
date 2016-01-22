@@ -1,6 +1,5 @@
 package com.builder.ibalance;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -21,14 +20,10 @@ public class NoSimActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_no_sim);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_splashscreen);
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_no_sim);
         Button retryButton = (Button) findViewById(R.id.Retry_id);
         retryButton.setOnClickListener(new View.OnClickListener()
         {

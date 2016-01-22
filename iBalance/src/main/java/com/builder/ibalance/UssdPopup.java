@@ -166,10 +166,10 @@ public class UssdPopup extends AppCompatActivity
 			field1.setText(rupee_symbol+" "+details.getCall_cost());
 
 			head2.setText("Current Balance");
-            SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-			float minimum_bal = mSharedPreferences.getFloat("MINIMUM_BALANCE",10.0f);
-			int popUpCount = mSharedPreferences.getInt("POP_UP_COUNT",1);
-			mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
+            SharedPreferences userDataPrefs = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+			float minimum_bal = userDataPrefs.getFloat("MINIMUM_BALANCE",10.0f);
+			int popUpCount = userDataPrefs.getInt("POP_UP_COUNT",1);
+			userDataPrefs.edit().putInt("POP_UP_COUNT",popUpCount+1);
 			if(popUpCount%10==0)
 			{
 				rate = true;

@@ -2,7 +2,10 @@ package com.builder.ibalance.util;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.BuildConfig;
@@ -21,6 +24,11 @@ import com.parse.Parse;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterCore;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 
 import io.fabric.sdk.android.Fabric;
@@ -53,14 +61,16 @@ public class MyApplication extends Application
         Parse.enableLocalDatastore(this);
         Parse.initialize(this, "UDKaBRgXs4lSZoTyUbUFtEDcCoFjnVHYkt8M7xvW", "7Sf6euqZUq30EqN9YDjOgwZTD4uSYm9En7pqH7Ax");
         AppsFlyerLib.setAppsFlyerKey("M3yd5JZJrEjPSSvFggiwME");
-        /*//for US
-        SharedPreferences mSharedPreferences = getSharedPreferences("US", Context.MODE_PRIVATE);
-        if(mSharedPreferences.getBoolean("YET_TO_COPY",true))
+        //for US
+        if(ConstantsAndStatics.DEMO)
         {
-            copyAssets();
-            mSharedPreferences.edit().putBoolean("YET_TO_COPY",false).commit();
-        }*/
-
+            SharedPreferences mSharedPreferences = getSharedPreferences("US", Context.MODE_PRIVATE);
+            if (mSharedPreferences.getBoolean("YET_TO_COPY", true))
+            {
+                copyAssets();
+                mSharedPreferences.edit().putBoolean("YET_TO_COPY", false).commit();
+            }
+        }
         String deviceId =mtelTelephonyManager.getDeviceId(); 
         //String number =mtelTelephonyManager.getLine1Number() ;
 
@@ -81,7 +91,7 @@ public class MyApplication extends Application
         FlurryAgent.setLogEnabled(false);
         FlurryAgent.init(this, "7R65ZKFNW9CPSNGS4XNK");
     }
-	/*private void copyAssets() {
+	private void copyAssets() {
 		AssetManager assetManager = getAssets();
 		String[] files = null;
 		try {
@@ -92,15 +102,16 @@ public class MyApplication extends Application
 		if (files != null) for (String filename : files) {
             if(filename.equals("DEVICE_DETAILS.xml") || filename.equals("GOOGLE_PREFS.xml") || filename.equals("USER_DATA.xml"))
             {
-               //V16Log.d(tag,"Writing  = "+filename);
+               Log.d(tag,"Writing  = "+filename);
                 InputStream in = null;
                 OutputStream out = null;
                 try
                 {
 
                     in = assetManager.open(filename);
-                    String shared_pref_path = "/data/data/com.builder.ibalance/shared_prefs/";
-                   //V16Log.d(tag,"shared_pref_path = "+shared_pref_path);
+                    File sharedPrefFolder = new File(getFilesDir(), "../shared_prefs");
+                    String shared_pref_path = sharedPrefFolder.getPath();
+                    Log.d(tag,"shared_pref_path = "+shared_pref_path);
                         File outFile = new File( shared_pref_path, filename);
                     out = new FileOutputStream(outFile);
                     copyFile(in, out);
@@ -140,7 +151,7 @@ public class MyApplication extends Application
 		while((read = in.read(buffer)) != -1){
 			out.write(buffer, 0, read);
 		}
-	}*/
+	}
 	/*@Override
 	public void attachBaseContext(Context base) {
 		MultiDex.install(base);

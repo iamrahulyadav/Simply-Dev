@@ -52,18 +52,28 @@ public class RechargeHelper {
 		SQLiteDatabase myDataBase = mMySQLiteHelper.getReadableDatabase();
 		Bundle mBundle = new Bundle();
 		Cursor cursor = myDataBase.rawQuery(query, null);
-		if(cursor.moveToFirst())
+		try
+		{if(cursor.moveToFirst())
 		{
 			mBundle.putLong("DATE", cursor.getLong(1));
 			mBundle.putFloat("RECHARGE_AMOUNT", cursor.getFloat(2));
-			cursor.close();
+
 			return mBundle;
 		}
 		else
 			{
-			cursor.close();
 				return null;
 			}
+	}
+	catch (Exception e)
+	{
+		//V10e.printStackTrace();
+		return null;
+	}
+	finally
+	{
+		cursor.close();
+	}
 	}
 	public Cursor getData() {
 		// 1. build the query
@@ -76,7 +86,7 @@ public class RechargeHelper {
 				SQLiteDatabase.OPEN_READONLY);*/
 		SQLiteDatabase myDataBase = mMySQLiteHelper.getReadableDatabase();
 		// SQLiteDatabase db = this.getWritableDatabase();
-		Cursor cursor = myDataBase.rawQuery(query, null);
-		return cursor;
+		//Return Cursor
+		return myDataBase.rawQuery(query, null);
 	}
 }

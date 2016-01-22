@@ -11,6 +11,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
 import com.builder.ibalance.database.helpers.IMSIHelper;
+import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.Helper.SharedPreferenceHelper;
 import com.builder.ibalance.util.MyApplication;
@@ -187,12 +188,11 @@ public class DualSim
         else
         {
             sim_list = mSharedPreferenceHelper.getDualSimDetails();
-            /*//for US
-            int i=1;
-            if(i==1)
+            //TODO for US
+            if(ConstantsAndStatics.DEMO)
             {
                 return sim_list;
-            }*/
+            }
             debugInfo.append("SIM From Prefs TYPE = "+type+"\n");
             debugInfo.append("SIM DETAILS = " + sim_list.toString() + "\n");
             if(sim_list.isEmpty() )

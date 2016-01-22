@@ -15,7 +15,6 @@ public class IMSIHelper
 {
     final String tag = IMSIHelper.class.getSimpleName();
     SQLiteDatabase mSqlDB;
-    Cursor mCursor;
     // Define a projection that specifies which columns from the database
 // you will actually use after this query.
     String[] projection = {
@@ -43,7 +42,7 @@ public class IMSIHelper
 
             ArrayList<String> carrier_circle = null;
             Cursor c = null;
-            try{
+
                c = mSqlDB.query(
                         IbalanceContract.IMSIEntry.TABLE_NAME,  // The table to query
                         projection,                               // The columns to return
@@ -53,6 +52,7 @@ public class IMSIHelper
                         null,                                     // don't filter by row groups
                         null                                 // The sort order
                 );
+            try{
                 if(c.moveToFirst())
                 {
                     carrier_circle = new ArrayList<>();

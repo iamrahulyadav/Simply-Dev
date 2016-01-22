@@ -56,6 +56,8 @@ public class NormalDataHelper {
 		// 3. go over each row, build entry and add it to list
 		NormalData entry = null;
 		// 1-Date 2-COST 3-DATA_CONSUMED 4-BALANCE 5-MESSAGE
+		try
+		{
 		if (cursor.moveToFirst()) {
 			do {
 				entry = new NormalData();
@@ -69,7 +71,15 @@ public class NormalDataHelper {
 				entries.add(entry);
 			} while (cursor.moveToNext());
 		}
+	}
+	catch (Exception e)
+	{
+		//V10e.printStackTrace();
+	}
+	finally
+	{
 		cursor.close();
+	}
 
 		// //Log.d("getAllUSSD Entries()", entries.toString());
 		// return entries

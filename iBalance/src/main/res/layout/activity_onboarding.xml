@@ -3,32 +3,44 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:weightSum="12"
-
+              android:weightSum="10.5"
+              android:background="@drawable/dialog_border"
 
     >
-    <TextView
-        android:layout_width="match_parent"
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="40dp">
+
+    <ImageButton
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/almost_there"
-        android:background="@color/primary_green"
-        android:gravity="center"
-        android:textSize="20sp"
-        android:padding="10dp"
-        android:textColor="#FFFFFF"
-        />
+        android:id="@+id/imageButton"
+        android:src="@drawable/close_icon"
+        android:background="@color/white"
+        android:layout_centerVertical="true"
+        android:paddingRight="5dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
+</RelativeLayout>
 
 
 
     <FrameLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
+     <TextView
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:text="Almost there!"
+         android:gravity="center"
+         android:paddingBottom="2dp"
+         android:paddingTop="2dp"/>
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
         android:paddingRight="5dp"
         android:paddingLeft="5dp"
-        android:paddingTop="15dp"
-        android:paddingBottom="15dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
         android:progressDrawable="@drawable/onboarding_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -53,7 +65,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="?attr/selectableItemBackground"
         android:paddingLeft="5dp"
         android:layout_weight="3">
         <TextView
@@ -88,7 +100,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:id="@+id/recorder_on_layout"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="?attr/selectableItemBackground"
         android:layout_height="0dp"
         android:paddingLeft="5dp"
         android:layout_weight="3">
@@ -126,7 +138,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:id="@+id/refresh_bal_layout"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="?attr/selectableItemBackground"
         android:paddingLeft="5dp"
         android:layout_weight="3">
         <TextView
@@ -161,17 +173,18 @@
 <RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="0dp"
-    android:layout_weight="3"
-    android:layout_gravity="center">
+    android:layout_weight="1.5"
+    >
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Having Trouble? "
-        android:id="@+id/textView3"
-        android:layout_above="@+id/onboarding_contact"
-        android:layout_centerHorizontal="true"/>
+        android:id="@+id/balance_text"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        />
 
     <TextView
         android:layout_width="wrap_content"
@@ -180,22 +193,18 @@
         android:text="Contact Us"
         android:textColor="@android:color/holo_blue_dark"
         android:id="@+id/onboarding_contact"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="11dp"/>
+        android:layout_below="@+id/balance_text"
+        android:layout_centerHorizontal="true"/>
+
+
 </RelativeLayout>
-    <Button
-        android:layout_width="match_parent"
+
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Turn ON Recorder >"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        style="@style/ussd_popup_button"
-        android:textColor="#FFFFFF"
-        android:id="@+id/splash_next_button"
-        android:paddingBottom="3dp"
-        android:layout_marginBottom="1dp"
-        />
-
-
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="I&apos;ll do this later"
+        android:id="@+id/do_it_later"
+        android:paddingBottom="2dp"
+        android:layout_gravity="center"/>
 </LinearLayout>

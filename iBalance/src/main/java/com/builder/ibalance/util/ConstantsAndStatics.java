@@ -15,6 +15,9 @@ public  class ConstantsAndStatics {
 	public static boolean WAITING_FOR_SERVICE = false;
 	public static String RECENT_EVENT = "UNKNOWN";
 	public static String USER_PREF_KEY = "USER_DATA";
+	//TODO ALWAYS turn it off, if for Demo Ok
+	public static final boolean DEMO = false;
+	public static String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";//to check if service is on
 
 	// name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,imageUuri
 	 public static class MainMap
@@ -53,5 +56,6 @@ public  class ConstantsAndStatics {
 		 public static final int MAIN_BALANCE = 7;
 		 public static final int PACK_SMS_CHECK = 8;
 		 public static final int PACK_DATA_CHECK = 9;
+		 public static final int PACK_CALL_CHECK = 10;
 	 }
 }

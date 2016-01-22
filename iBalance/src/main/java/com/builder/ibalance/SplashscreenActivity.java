@@ -21,7 +21,6 @@ import android.widget.TextView;
 import com.builder.ibalance.core.DualSim;
 import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
-import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.DualSimConstants;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
@@ -46,7 +45,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
 
     final String TAG = SplashscreenActivity.class.getSimpleName();
     final int SPLASH_TIME_OUT = 1000;
-    String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";//to check if service is on
+
     Helper.SharedPreferenceHelper mSharedPreferenceHelper = new Helper.SharedPreferenceHelper();
     ProgressBar dual_sim_bar;
     boolean recharge = false;
@@ -173,8 +172,8 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
         }
         new SimChecker().execute();
         //LOGIN Code
-        /*isVerified = mSharedPreferences.getBoolean("USER_VERIFIED",false);
-        numberOfSkips = mSharedPreferences.getInt("SKIP_COUNTER", 1);
+        /*isVerified = userDataPrefs.getBoolean("USER_VERIFIED",false);
+        numberOfSkips = userDataPrefs.getInt("SKIP_COUNTER", 1);
         if(getIntent().getExtras()!=null && !TextUtils.isEmpty(getIntent().getExtras().getString("isSkipped"))){
             isSkipped = false;
         }
@@ -228,10 +227,10 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             }
 
         }else if(R.id.btnSkipLogin ==v.getId()){
-            SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-            numberOfSkips = mSharedPreferences.getInt("SKIP_COUNTER" ,0);
+            SharedPreferences userDataPrefs = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+            numberOfSkips = userDataPrefs.getInt("SKIP_COUNTER" ,0);
             numberOfSkips = numberOfSkips+1;
-            mSharedPreferences.edit().putInt("SKIP_COUNTER",numberOfSkips).commit();
+            userDataPrefs.edit().putInt("SKIP_COUNTER",numberOfSkips).commit();
             isSkipped = true;
             new SimChecker().execute();
 
@@ -353,7 +352,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                    //V10Log.d(TAG + " Sim Info =", "Null");
                 }
                //V10Log.d(TAG, "Debug info :" + SimModel.debugInfo);
-               // SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+               // SharedPreferences userDataPrefs = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
                 boolean first_app_launch = userDataPref.getBoolean("FIRST_APP_LAUNCH", true);
                 if (first_app_launch)
                 {
@@ -393,26 +392,12 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                 }
                 //Send SMS Data to the Server But don't slow down Data initializer so start it in onPostExecute of DataInitializer
 
-                Boolean isEnabledAccess = Helper.isAccessibilityEnabled(accessibiltyID);
-                boolean hasRefreshedBalance = userDataPref.getBoolean("REFRESHED_BAL",false);
-                //|| !hasRefreshedBalance
-                if (!isEnabledAccess )
-                {
-                    //Log.d(TAG, "Accesibilty  Not Enabled");
-                    ConstantsAndStatics.WAITING_FOR_SERVICE = true;
-                    startActivity(new Intent(getApplicationContext(), ServiceEnableActivity.class));
-                    finish();
-//	          				DataInitializer.initializeUSSDData(getApplicationContext());
-//	          	 			//mBalanceHelper.addDemoentries();
-//	          	 			startActivity(new Intent(getApplicationContext(),MainActivity.class));
-//	          	 			finish();
-                } else
-                {
-                    //Log.d(TAG, "Accesibilty  Enabled!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                    //mBalanceHelper.addDemoentries();
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class).putExtra("RECHARGE",recharge));
-                    finish();
-                }
+
+                //Log.d(TAG, "Accesibilty  Enabled!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                //mBalanceHelper.addDemoentries();
+                //Accessibilty is handled by MainActivity
+                startActivity(new Intent(getApplicationContext(), MainActivity.class).putExtra("RECHARGE",recharge));
+                finish();
             }
         }
 

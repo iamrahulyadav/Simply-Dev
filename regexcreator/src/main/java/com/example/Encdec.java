@@ -46,11 +46,11 @@ public class Encdec {
     private Cipher cipher;
     private SecretKey key;
     private IvParameterSpec iv;
-    String type = "NORMAL_SMS_PATTERNS";
-    File folder = new File("G:/SimplyV2/TextMining/json/Final 05-01-16");
+    String type = "MAIN_BALANCE_PATTERNS";//No need
+    File folder = new File("G:/SimplyV2/TextMining/json/V2");
     //File regexFile = new File("G:/SimplyV2/TextMining/json/"+type+".json");
-    File encryptedRegexFile = new File("G:/SimplyV2/TextMining/json/"+type+"_ENCRYPTED.json");
-    File decryptedRegexFile = new File("G:/SimplyV2/TextMining/json/"+type+"_DECRYPTED.json");
+    File encryptedRegexFile; //= new File("G:/SimplyV2/TextMining/json/"+type+"_ENCRYPTED.json");
+    File decryptedRegexFile;// = new File("G:/SimplyV2/TextMining/json/"+type+"_DECRYPTED.json");
     FileInputStream mFileReader ;
     byte[] data;
     public Encdec()  {
@@ -140,7 +140,7 @@ public class Encdec {
         {
             if(regexFile.isDirectory())
                 return;
-            File encryptedRegexFile = new File("G:/SimplyV2/TextMining/json/"+regexFile.getName()+"_ENCRYPTED.json");
+            File encryptedRegexFile = new File("G:/SimplyV2/TextMining/json/"+regexFile.getName().replaceFirst("[.][^.]+$", "")+"_ENCRYPTED.json");
             try
             {
                 String key = "0x000102030405060708090A0B0C0D0E0F";
