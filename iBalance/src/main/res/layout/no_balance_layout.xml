@@ -20,10 +20,9 @@
             android:layout_height="wrap_content"
             android:layout_weight=".33"
             android:gravity="center"
-            android:padding="25dp"
-            android:text="Balance NOT tracked"
-            android:textColor="#FF6633"
-            android:textSize="22dp"/>
+            android:text="Balance Not Tracked"
+            android:textColor="@color/text_red"
+            android:textSize="20dp"/>
 
 
         <ImageView
@@ -35,25 +34,31 @@
             android:layout_weight=".33"
             android:src="@drawable/call_icon"/>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
         <TextView
-            android:id="@+id/textView22"
+            android:id="@+id/call_not_tracked"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/imageView6"
             android:gravity="center_horizontal"
             android:padding="20dp"
-            android:text="Tracking will start after you make a call,if it doesn't work then please"
+            android:text="Click below to start tracking your Balance"
             android:textColor="#1ad3a2"
             android:textSize="20dp"/>
 
         <Button
-            android:id="@+id/bal_contact_us"
+            android:id="@+id/bal_refresh"
             style="@style/ussd_popup_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="Contact Us"
+            android:text="Refresh Balance"
             />
+        </LinearLayout>
 
     </LinearLayout>
 

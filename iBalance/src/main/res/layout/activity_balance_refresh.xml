@@ -14,8 +14,7 @@
         android:id="@+id/low_bal_header"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_horizontal"
-        android:weightSum="5">
+        android:gravity="center_horizontal">
         <ImageView
             android:layout_width="30dp"
             android:layout_height="30dp"
@@ -23,20 +22,20 @@
             android:src="@drawable/refresh_icon"
             android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
-            android:layout_toLeftOf="@+id/refresh_heading"
-            android:layout_toStartOf="@+id/refresh_heading"/>
+            android:layout_toLeftOf="@+id/alert_heading"
+            android:layout_toStartOf="@+id/alert_heading"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Airtel main balance "
+            android:text="Airtel, Main balance "
             android:textSize="20dp"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:id="@+id/refresh_heading"
-            android:layout_weight="1"
+            android:id="@+id/alert_heading"
             android:textColor="@color/black"
-            android:layout_centerInParent="true"/>
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"/>
 
 
     </RelativeLayout>
@@ -51,26 +50,27 @@
         android:id="@+id/low_separator" />
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
         android:visibility="gone"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:id="@+id/progressBar" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"
         android:gravity="center"
         android:textSize="18sp"
         android:id="@+id/wait_msg_id"
-        android:text="waiting for message from airtel.."/>
+        android:text="waiting for message from operator..."/>
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="70dp"
         android:visibility="gone"
         android:id="@+id/sorry_layout"
+        android:gravity="center"
         android:layout_gravity="center">
 
         <ImageView
@@ -98,7 +98,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-
         android:visibility="gone"
         android:id="@+id/success_layout_bal"
         >
@@ -119,7 +118,7 @@
             android:layout_margin="5dp"
             android:textColor="@color/black"
             android:layout_gravity="center"
-            android:text="Rs 201.10"
+            android:text="@string/rupee_symbol"
             android:textSize="18sp"
             android:id="@+id/balance_text"
             />
@@ -129,30 +128,38 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone"
         android:id="@+id/success_layout_msg"
         >
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="25dp"
+    android:layout_marginTop="3dp"
+    android:visibility="gone"
+    android:id="@+id/message_layout"
+    android:layout_marginBottom="3dp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Message"
+            android:textSize="18sp"
             android:textColor="@color/black"
             android:layout_marginLeft="10dp"
-            android:layout_marginBottom="4dp"
+
             android:id="@+id/textView4" />
 
+</LinearLayout>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:padding="5dp"
+            android:visibility="gone"
             android:layout_marginRight="5dp"
             android:id="@+id/original_message_text"
             android:textColor="@color/dark_grey"
             android:textSize="15sp"
             android:background="@drawable/box_style"
-            android:text="Lastcallchrg Rs=0.3040.LastCall Duration=00:00:19..Main Bal=15.5500.All Local+STD Calls at 1.2p/2sec for 60 Day in Rs32 .Benefit in4hr"
+            android:text=""
             />
     </LinearLayout>
 
@@ -168,7 +175,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="To check balance dial below code"
+            android:text="Dialing below code"
             android:id="@+id/low_bal_text_id"
             android:layout_gravity="center"
 
@@ -191,19 +198,20 @@
                 android:gravity="center"
                 android:layout_gravity="center"
                 android:inputType="phone"
-
+                android:enabled="false"
                 android:textColor="@color/black"
                 android:padding="5dp"
                 android:background="@drawable/box_style"
                 android:layout_centerHorizontal="true" />
-            <ImageView
+            <ImageButton
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-
+                android:background="@drawable/edit"
+                android:id="@+id/enable_edit"
                 android:layout_alignBottom="@+id/ussd_edit_id"
                 android:layout_toRightOf="@+id/ussd_edit_id"
-                android:layout_toEndOf="@+id/ussd_edit_id" />
-            <!--android:src="@drawable/edit"-->
+                android:layout_toEndOf="@+id/ussd_edit_id"
+                android:layout_marginBottom="5dp"/>
         </RelativeLayout>
 
 
@@ -221,7 +229,6 @@
         android:background="#8c8c8c"
         android:layout_marginTop="10dp"
         android:id="@+id/low_separator2" />
-    <!--TODO STYLE CHENGE-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -242,36 +249,30 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:id="@+id/sorry_layout_button"
+        android:weightSum="1"
         android:visibility="gone">
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             style="@style/ussd_popup_button"
             android:layout_weight="0.5"
             android:layout_margin="15dp"
-            android:layout_below="@+id/low_separator2"
             android:text="Cancel"
             android:layout_gravity="center"
             android:textSize="15sp"
-            android:id="@+id/cancel_btn"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
+            android:id="@+id/cancel_btn" />
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             style="@style/ussd_popup_button"
             android:layout_margin="15dp"
             android:layout_weight="0.5"
-
-            android:layout_below="@+id/low_separator2"
             android:text="Try Again"
             android:layout_gravity="center"
             android:textSize="15sp"
-            android:id="@+id/try_again_btn"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
+            android:id="@+id/try_again_btn" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="fill_parent"
@@ -290,7 +291,7 @@
             android:text="Okay"
             android:layout_gravity="center"
             android:textSize="15sp"
-            android:id="@+id/refresh_btn_2"
+            android:id="@+id/refresh_okay"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true" />
         <Button
@@ -303,7 +304,7 @@
             android:text="Report"
             android:layout_gravity="center"
             android:textSize="15sp"
-            android:id="@+id/refresh_btn_3"
+            android:id="@+id/refresh_report"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true" />
     </LinearLayout>

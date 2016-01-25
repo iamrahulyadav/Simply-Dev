@@ -31,7 +31,10 @@ public class BalanceRefreshMessage {
         this.originalMessage = originalMessage;
     }
 
-
+    public String detailstoLog()
+    {
+        return balance+", "+validity;
+    }
     @Override
     public String toString()
     {

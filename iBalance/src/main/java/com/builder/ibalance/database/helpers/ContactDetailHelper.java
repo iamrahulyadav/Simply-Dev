@@ -14,6 +14,8 @@ import com.crashlytics.android.Crashlytics;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import hugo.weaving.DebugLog;
+
 /**
  * Created by Shabaz on 03-Oct-15.
  */
@@ -172,6 +174,7 @@ public class ContactDetailHelper
     }
 
     //Returns in  secs
+    @DebugLog
     public int getOutDurationLocalSameCarrier(String sim_circle, String sim_carrier)
     {
         int total_duration = 0;

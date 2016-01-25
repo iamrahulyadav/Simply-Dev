@@ -13,7 +13,6 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -21,7 +20,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,10 +37,10 @@ import com.builder.ibalance.database.helpers.CallLogsHelper;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
+import com.builder.ibalance.messages.UpdateBalanceOnScreen;
 import com.builder.ibalance.models.USSDModels.NormalCall;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.GlobalData;
-import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -89,10 +88,11 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     ArrayList<String> xVals;
     View rootView;
     float current_balance, minimum_balance;
-    Button contactUsButton;
+    Button refreshMainBal;
     //ParallaxListView mListView;
     RecyclerView mListView;
     Typeface tf;
+    boolean normalBalRefresh = false;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
@@ -137,7 +137,6 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
                     } else sim_slot = 0;
                     Toast.makeText(MyApplication.context, "Switched to Sim " + (sim_slot + 1), Toast.LENGTH_SHORT).show();
-                    //getActivity().getActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
                     ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
                     new USSDLoader().execute(sim_slot);
                 }
@@ -152,15 +151,16 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             //V12Log.d(tag,"Bal Frag Loading Slot = "+sim_slot);
             carrier = GlobalData.globalSimList.get(sim_slot).carrier;
 
-            current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -1.0);
+            current_balance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -200.0);
             minimum_balance = mSharedPreferences.getFloat("MINIMUM_BALANCE", (float) 10.0);
-            if (current_balance > 0.0)
+            if (current_balance > -100.0f)
             {
                 if (current_balance < minimum_balance)
                 {
                     if ((sim_slot == 0 && MainActivity.sim1BalanceReminderShown == false) || (sim_slot == 1 && MainActivity.sim2BalanceReminderShown == false))
                     {
-                        createReminderDialog(this.getActivity());
+                        if(!((MainActivity)getActivity()).showingUpdateDialog)
+                            createReminderDialog(this.getActivity());
                     }
                 }
             }
@@ -205,7 +205,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         View mView = inflater.inflate(R.layout.recharge_reminder, null);
         alertbox.setView(mView);
         TextView infoText = (TextView) mView.findViewById(R.id.low_bal_text_id);
-        Button rechargeNow = (Button) mView.findViewById(R.id.recharge_now);
+        Button rechargeNow = (Button) mView.findViewById(R.id.recharge_now_button);
         infoText.setText(" Your Current Balance is Rs." + current_balance);
 
         final AlertDialog alert = alertbox.create();
@@ -297,11 +297,11 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         if (sim_slot == 0)
         {
             //V12Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
-            currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, mSharedPreferences.getFloat("CURRENT_BALANCE", (float) -1.0));
+            currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, mSharedPreferences.getFloat("CURRENT_BALANCE",  -200.0f));
         } else
         {
             //V12Log.d(tag,"Bal Frag sim_slot = "+sim_slot);
-            currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -1.0);
+            currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot,  -200.0f);
         }
 
         //Log.d(tag,"Balance  = "+currBalance);
@@ -313,12 +313,13 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         }
 
 
-        if (currBalance < 0.0)
+        if (currBalance < -100.0)
             balanceTextView.setText(getResources().getString(R.string.rupee_symbol) + " --.--");
         else
             balanceTextView.setText(getResources().getString(R.string.rupee_symbol) + " " + currBalance);
 
-        balance_layout.setOnClickListener(this);/*new OnClickListener()
+        balance_layout.setOnClickListener(this);
+        /*new OnClickListener()
         {
 
             @Override
@@ -334,7 +335,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         dataLayout1.setOnLongClickListener(this);
         //V12Log.d(tag, "Bal Frag currBalance = " + currBalance);
 
-        if (currBalance > -1.0)
+        if (currBalance > -100.0)
         {
             //mListView = (ParallaxListView) rootView.findViewById(R.id.recents_list);
             rootView.findViewById(R.id.nobal).setVisibility(View.GONE);
@@ -404,13 +405,14 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             //rootView.findViewById(R.id.recents_list).setVisibility(View.GONE);
             rootView.findViewById(R.id.nobal).setVisibility(View.VISIBLE);
             //this.getActivity().getLayoutInflater().inflate(R.layout.no_balance_layout, container, true);
-            contactUsButton = (Button) rootView.findViewById(R.id.bal_contact_us);
-            contactUsButton.setOnClickListener(new OnClickListener()
+            refreshMainBal = (Button) rootView.findViewById(R.id.bal_refresh);
+            refreshMainBal.setOnClickListener(this);/*new OnClickListener()
             {
                 @Override
                 public void onClick(View v)
                 {
-                    if (!Helper.contactExists("+919739663487"))
+
+                    *//*if (!Helper.contactExists("+919739663487"))
                     {
                         //V10Log.d(tag, "Whatsapp contact not found adding contact");
 
@@ -424,9 +426,9 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
                         //Sending Device Id doesn't work
                         ConstantsAndStatics.PASTE_DEVICE_ID=true;
                         startActivity(Helper.openWhatsApp("+919739663487", ((TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId()));
-                    }
+                    }*//*
                 }
-            });
+            });*/
         }
 
 
@@ -438,20 +440,24 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
         }
 
+
         boolean isDatapackActive=false, isSmsPackActive = false, isCallpackActive = false;
-        //If user explicity deleted data pack then it should be hidden
-        isDatapackActive = mSharedPreferences.getBoolean("PACK_DATA_ACTIVE_" + sim_slot,true);
-        if(!isDatapackActive)
-        {
-            rootView.findViewById(R.id.pack_data_layout).setVisibility(View.GONE);
-        }
+
+
         isCallpackActive = mSharedPreferences.getBoolean("PACK_CALL_ACTIVE_" + sim_slot,false);
         isDatapackActive = mSharedPreferences.getBoolean("PACK_DATA_ACTIVE_" + sim_slot,false);
         isSmsPackActive = mSharedPreferences.getBoolean("PACK_SMS_ACTIVE_" + sim_slot,false);
         int activeAcc = 1;//default for balance, data will be ther unless it is deleted
-        if(isDatapackActive || rootView.findViewById(R.id.pack_data_layout).getVisibility() == View.VISIBLE) activeAcc++;
         if(isCallpackActive) activeAcc++;
         if(isSmsPackActive) activeAcc++;
+        //If user explicity deleted data pack then it should be hidden, Disable only if some other is active otherwise show empty
+        if(!isDatapackActive && activeAcc>1)
+        {
+            rootView.findViewById(R.id.pack_data_layout).setVisibility(View.GONE);
+        }
+        if(isDatapackActive || rootView.findViewById(R.id.pack_data_layout).getVisibility() == View.VISIBLE) activeAcc++;
+
+
         float layoutWeight = 1.0f/(float)activeAcc;
         if(layoutWeight>0.5f)
             layoutWeight = 0.5f;
@@ -514,12 +520,81 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             smsPackLayout.setOnClickListener(this);
             int sms_left = mSharedPreferences.getInt("PACK_SMS_REMAINING_" + sim_slot,0);
             String validity = mSharedPreferences.getString("PACK_SMS_VALIDITY_" + sim_slot,"N/A");
-            ((TextView)smsPackLayout.findViewById(R.id.pack_sms_left)).setText("Rem."+ sms_left);
+            ((TextView)smsPackLayout.findViewById(R.id.pack_sms_left)).setText( sms_left+"");
             ((TextView)smsPackLayout.findViewById(R.id.pack_sms_validity)).setText(validity!=null?validity:"N/A");
 
         }
 
 
+    }
+    /**
+     * Called when a view has been clicked and held.
+     *
+     * @param v The view that was clicked and held.
+     * @return true if the callback consumed the long click, false otherwise.
+     */
+    @Override
+    public boolean onLongClick(final View v)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+
+        builder.setTitle("Confirm");
+
+
+
+
+        switch (v.getId())
+        {
+
+            case R.id.pack_data_layout:
+                builder.setMessage("Delete Data Pack ?");
+                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                        pref.edit().putBoolean("PACK_DATA_ACTIVE_"+sim_slot,false)
+                        .putFloat("PACK_DATA_REMAINING_" + sim_slot,0.0f)
+                        .putString("PACK_DATA_VALIDITY_" + sim_slot,"N/A").apply();
+                        v.setVisibility(View.GONE);
+                        dialog.cancel();
+                    }});
+                break;
+            case R.id.pack_call_layout:
+                builder.setMessage("Delete Call Pack ?");
+                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                        pref.edit().putBoolean("PACK_CALL_ACTIVE_"+sim_slot,false)
+                                .putInt("PACK_CALL_DUR_REMAINING_" + sim_slot, 0)
+                                .putString("PACK_CALL_DUR_METRIC_" + sim_slot, "s")
+                                .putFloat("PACK_CALL_BAL_REMAINING_" + sim_slot, 0.0f)
+                                .putString("PACK_CALL_VALIDITY_" + sim_slot, "N/A")
+                                .apply();
+                        v.setVisibility(View.GONE);
+                        dialog.cancel();
+                    }});
+                break;
+            case R.id.pack_sms_layout:
+                builder.setMessage("Delete SMS Pack ?");
+                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                        pref.edit().putBoolean("PACK_SMS_ACTIVE_"+sim_slot,false)
+                                .putInt("PACK_SMS_REMAINING_" + sim_slot,0)
+                                .putString("PACK_SMS_VALIDITY_" + sim_slot,"N/A").apply();
+                        v.setVisibility(View.GONE);
+                        dialog.cancel();
+                    }});
+                break;
+
+            default:return false;
+        }
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+        return true;
     }
 
     @Override
@@ -557,7 +632,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     {
         //Log.d("TEST", "setPredictedDays Called");
         SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-        currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -1.0);
+        currBalance = mSharedPreferences.getFloat("CURRENT_BALANCE_" + sim_slot, (float) -200.0);
         //Log.d("TEST", "setPredictedDays currBalance = "+currBalance);
         if (currBalance >= 0.0)
         {
@@ -591,7 +666,8 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         mLineChart.setOnChartValueSelectedListener(this);
         // no description text
         mLineChart.setDescription("");
-        mLineChart.setNoDataTextDescription("Please Make Calls for Balance tracking");
+        mLineChart.setNoDataText("Your Call Deductions will come here");
+        mLineChart.setNoDataTextDescription("after you start making calls");
 
         // enable value highlighting
         //mLineChart.setHighlightEnabled(true);
@@ -734,67 +810,30 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
     }
 
-    /**
-     * Called when a view has been clicked and held.
-     *
-     * @param v The view that was clicked and held.
-     * @return true if the callback consumed the long click, false otherwise.
-     */
-    @Override
-    public boolean onLongClick(final View v)
+
+    public void onEvent(UpdateBalanceOnScreen message)
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
-
-        builder.setTitle("Confirm");
-
-
-
-
-        switch (v.getId())
+        Log.d(tag,"Updating Screen "+message.toString());
+        switch (message.getType())
         {
-
-            case R.id.pack_data_layout:
-                builder.setMessage("Delete Data Pack ?");
-                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
-                                 pref.edit().putBoolean("PACK_DATA_ACTIVE_"+sim_slot,false).apply();
-                                v.setVisibility(View.GONE);
-                                dialog.cancel();
-                            }});
+            case "MAIN_BAL" :
+                if(balanceTextView == null)
+                balanceTextView = (TextView) rootView.findViewById(R.id.balance_text);
+                Log.d(tag,"Updating to "+message.getBalance());
+                balanceTextView.setText(getResources().getString(R.string.rupee_symbol)+String.format(" %.2f",message.getBalance()));
+                if(!normalBalRefresh)
+                {
+                    Log.d(tag,"Updating Balance Screen");
+                    intializeScreen(sim_slot);
+                }
                 break;
-            case R.id.pack_call_layout:
-                builder.setMessage("Delete Call Pack ?");
-                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
-                        pref.edit().putBoolean("PACK_CALL_ACTIVE_"+sim_slot,false).apply();
-                        v.setVisibility(View.GONE);
-                        dialog.cancel();
-                    }});
+            case "DATA_2G" :
+            case "DATA_3G" :
                 break;
-            case R.id.pack_sms_layout:
-                builder.setMessage("Delete SMS Pack ?");
-                builder.setPositiveButton("Delete",  new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        SharedPreferences pref = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
-                        pref.edit().putBoolean("PACK_SMS_ACTIVE_"+sim_slot,false).apply();
-                        v.setVisibility(View.GONE);
-                        dialog.cancel();
-                    }});
+            case "SMS_BAL" :
                 break;
-
-            default:return false;
         }
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-            dialog.cancel();
-        }
-        });
-        builder.show();
-        return true;
     }
-
     /**
      * Called when a view has been clicked.
      *
@@ -807,6 +846,8 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         switch (v.getId())
         {
             case R.id.bal_layout:
+                normalBalRefresh = true;
+            case R.id.bal_refresh:
                 refreshIntent.putExtra("SIM_SLOT",sim_slot).putExtra("TYPE","MAIN_BAL");
                 startActivity(refreshIntent);
                 break;
@@ -819,7 +860,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
                 //refreshIntent.putExtra("SIM_SLOT",sim_slot).putExtra("TYPE","MAIN_BAL");
                 break;
             case R.id.pack_sms_layout:
-                Toast.makeText(this.getActivity(),"SMS Refresh is coming soon",Toast.LENGTH_LONG).show();
+                Toast.makeText(this.getActivity(),"SMS Refresh is coming soon ",Toast.LENGTH_LONG).show();
                 //refreshIntent.putExtra("SIM_SLOT",sim_slot).putExtra("TYPE","MAIN_BAL");
                 break;
         }

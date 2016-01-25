@@ -24,7 +24,8 @@ import static com.example.Choice.ptln;
 public class USSDParser
 {
     final String TAG = USSDParser.class.getSimpleName();
-    final String DIR = "G:/SimplyV2/TextMining/json/V1/";
+    final String DIR = "G:/SimplyV2/TextMining/json/V2/";
+    String s = null;
 
     public USSDParser()
     {
@@ -40,7 +41,7 @@ public class USSDParser
             while((message = br.readLine())!=null)
             {
                 ptln("Working on : "+message);
-                if(!tryAllTypes(message.toUpperCase()))
+                if(!normalCall(message.toUpperCase()))
                 {
                     ptln("Failed:\n"+message);
                 }

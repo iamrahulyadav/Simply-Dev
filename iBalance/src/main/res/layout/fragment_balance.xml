@@ -219,23 +219,22 @@
             <include layout="@layout/recent_call_list" />
 
             <include layout="@layout/no_balance_layout" />
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/sim_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right|end"
+                app:layout_anchorGravity="bottom|right|end"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="60dp"
+                android:src="@drawable/sim_toggle"
 
+                />
         </android.support.design.widget.CoordinatorLayout>
 
     </LinearLayout>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/sim_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:src="@drawable/sim_toggle"
-        android:visibility="gone"
 
-        />
     <!--<com.melnykov.fab.FloatingActionButton
         xmlns:fab="http://schemas.android.com/apk/res-auto"
         android:id="@+id/sim_switch"

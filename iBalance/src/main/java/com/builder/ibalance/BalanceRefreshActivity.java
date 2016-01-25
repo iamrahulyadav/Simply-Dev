@@ -15,15 +15,20 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.builder.ibalance.messages.BalanceRefreshMessage;
+import com.builder.ibalance.messages.UpdateBalanceOnScreen;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.ReflectionHelper;
 import com.crashlytics.android.Crashlytics;
+import com.flurry.android.FlurryAgent;
+import com.parse.ParseObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,13 +50,15 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
     TextView refreshHeading;
     Button refreshButton;
     int sim_slot = 0;
-
+    String carrier = "";
+    String refreshType = "";
     @Override
     @DebugLog
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_balance_refresh);
+        this.setFinishOnTouchOutside(false);
         EventBus.getDefault().register(this);
         /*You sill receive two extras
         1. The SIM_SLOT, by default 0, you do the extra addition to dial for dual sim here
@@ -64,15 +71,17 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
         */
         Intent mIntent = this.getIntent();
         sim_slot = mIntent.getIntExtra("SIM_SLOT", 0);
-        String refreshType = mIntent.getStringExtra("TYPE");
+        refreshType = mIntent.getStringExtra("TYPE");
         userPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY, MODE_PRIVATE);
         ussdCodeText = (EditText) findViewById(R.id.ussd_edit_id);
-        refreshHeading = (TextView) findViewById(R.id.refresh_heading);
+        refreshHeading = (TextView) findViewById(R.id.alert_heading);
         refreshButton = (Button) findViewById(R.id.refresh_btn);
+        ImageButton enableEdit = (ImageButton) findViewById(R.id.enable_edit);
+        enableEdit.setOnClickListener(this);
         refreshButton.setOnClickListener(this);
-        String carrier = GlobalData.globalSimList.get(sim_slot).getCarrier();
+        carrier = GlobalData.globalSimList.get(sim_slot).getCarrier();
         ussdCodes = getUssdCodes(carrier);
-        refreshHeading.setText("Dialing for " + carrier + ", " + getDisplayType(refreshType));
+        refreshHeading.setText(carrier + ", " + getDisplayType(refreshType));
         if (refreshType != null)
         {
             try
@@ -100,16 +109,31 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
         switch (v.getId())
         {
             case R.id.refresh_btn:
-                dialUSSDCode();
-                wait_for_ussd();
+                ussdToDial = ussdCodeText.getText().toString();
+
+                if(ussdToDial.matches("^\\*(\\d+\\**)+#$"))
+                {
+                    dialUSSDCode();
+
+                    wait_for_ussd();
+                }
+                else
+                {
+                    Toast.makeText(this,"Invalid USSD Code",Toast.LENGTH_LONG).show();
+
+
+                }
                 break;
+            case R.id.enable_edit:
+                ussdCodeText.setEnabled(true);
+                break;
+
         }
     }
 
     @TargetApi(Build.VERSION_CODES.M)
     private void dialUSSDCode()
     {
-        Log.wtf("Shjhhd","fcd");
         String extras[] = {
                 "extra_asus_dial_use_dualsim",
                 "com.android.phone.extra.slot",
@@ -132,59 +156,62 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
         ConstantsAndStatics.WAITING_FOR_REFRESH = true;
         ConstantsAndStatics.REFRESH_TYPE = ConstantsAndStatics.USSD_TYPES.MAIN_BALANCE;
         Log.d(TAG, "Dialing " + ussdToDial);
-        ussdToDial = ussdToDial.replace("*", Uri.encode("*")).replace("#", Uri.encode("#"));
-        Intent mIntent = new Intent(Intent.ACTION_CALL);
-        Uri data = Uri.parse("tel:" + ussdToDial);
-        mIntent.setData(data);
-        if(GlobalData.globalSimList==null)
-        {
-            GlobalData.globalSimList = new Helper.SharedPreferenceHelper().getDualSimDetails();
-        }
-        if(GlobalData.globalSimList.size()>1)
-        {
-            for (String extraKey : extras)
+            ussdToDial = ussdToDial.replace("*", Uri.encode("*")).replace("#", Uri.encode("#"));
+            Intent mIntent = new Intent(Intent.ACTION_CALL);
+            Uri data = Uri.parse("tel:" + ussdToDial);
+            mIntent.setData(data);
+            if (GlobalData.globalSimList == null)
             {
-                mIntent.putExtra(extraKey, sim_slot);
+                GlobalData.globalSimList = new Helper.SharedPreferenceHelper().getDualSimDetails();
             }
-            if(GlobalData.globalSimList.get(0).subid != -1)
+            if (GlobalData.globalSimList.size() > 1)
             {
-                mIntent.putExtra("sub_id", GlobalData.globalSimList.get(0).subid);
-                mIntent.putExtra("subscription", GlobalData.globalSimList.get(0).subid);
-                mIntent.putExtra("Subscription", GlobalData.globalSimList.get(0).subid);
-            }
-            try
-            {
-
-                if (ReflectionHelper.classExists("android.telecom.TelecomManager"))
+                for (String extraKey : extras)
                 {
-                    TelecomManager localTelecomManager = (TelecomManager) this.getSystemService(Context.TELECOM_SERVICE);
-                    List localList = localTelecomManager.getCallCapablePhoneAccounts();
-                    Log.d("Shabaz Account ",localList.toString());
-                    //List localList = (List) ReflectionHelper.getObject((Object) localTelecomManager, localTelecomManager.getClass().getName(), "getAllPhoneAccountHandles", null);
-                    if ((localList != null) && (Helper.isExists(localList, sim_slot)))
+                    mIntent.putExtra(extraKey, sim_slot);
+                }
+                if (GlobalData.globalSimList.get(0).subid != -1)
+                {
+                    mIntent.putExtra("sub_id", GlobalData.globalSimList.get(0).subid);
+                    mIntent.putExtra("subscription", GlobalData.globalSimList.get(0).subid);
+                    mIntent.putExtra("Subscription", GlobalData.globalSimList.get(0).subid);
+                }
+                try
+                {
+
+                    if (ReflectionHelper.classExists("android.telecom.TelecomManager"))
                     {
-                        mIntent.putExtra("android.telecom.extra.PHONE_ACCOUNT_HANDLE", (Parcelable) localList.get(sim_slot));
+                        TelecomManager localTelecomManager = (TelecomManager) this.getSystemService(Context.TELECOM_SERVICE);
+                        List localList = localTelecomManager.getCallCapablePhoneAccounts();
+                        Log.d("Shabaz Account ", localList.toString());
+                        //List localList = (List) ReflectionHelper.getObject((Object) localTelecomManager, localTelecomManager.getClass().getName(), "getAllPhoneAccountHandles", null);
+                        if ((localList != null) && (Helper.isExists(localList, sim_slot)))
+                        {
+                            mIntent.putExtra("android.telecom.extra.PHONE_ACCOUNT_HANDLE", (Parcelable) localList.get(sim_slot));
+                        }
                     }
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
                 }
             }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
 
-        startActivity(mIntent);
+            startActivity(mIntent);
+
     }
 
     public void onEvent(BalanceRefreshMessage message)
    {
+       FlurryAgent.endTimedEvent("ONBOARD");
        if(message.isSuccessful())
        {
+           FlurryAgent.logEvent("ONBOARD_REFRESH_SUCCESS");
            success_message(message);
            updateValues(message);
        }
        else
        {
+           FlurryAgent.logEvent("ONBOARD_REFRESH_FAIL");
            unsuccess_message(message.getOriginalMessage());
        }
    }
@@ -198,29 +225,130 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
         findViewById(R.id.wait_msg_id).setVisibility(View.VISIBLE);
         findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
         findViewById(R.id.layout_2).setVisibility(View.GONE);
-        findViewById(R.id.refresh_btn).setVisibility(View.GONE);
+        final Button mcancelButton = (Button) findViewById(R.id.refresh_btn);
+        mcancelButton.setText("Cancel");
+        mcancelButton.setOnClickListener(null);
+        mcancelButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+
+                FlurryAgent.logEvent("ONBOARD_REFRESH_FAIL");
+                finish();
+            }
+        });
     }
-    private void success_message(BalanceRefreshMessage message)
+    private void success_message(final BalanceRefreshMessage message)
     {
+        String rupeeSymbol = getResources().getString(R.string.rupee_symbol);
         findViewById(R.id.success_layout_bal).setVisibility(View.VISIBLE);
         findViewById(R.id.success_layout_msg).setVisibility(View.VISIBLE);
         findViewById(R.id.success_layout_button).setVisibility(View.VISIBLE);
         findViewById(R.id.wait_msg_id).setVisibility(View.GONE);
         findViewById(R.id.progressBar).setVisibility(View.GONE);
-        ((TextView)findViewById(R.id.balance_text)).setText(message.getBalance()+"");
-        ((TextView)findViewById(R.id.original_message_text)).setText(message.getOriginalMessage());
+        findViewById(R.id.refresh_btn).setVisibility(View.GONE);
+        findViewById(R.id.message_layout).setVisibility(View.VISIBLE);
+
+        Button okay = (Button) findViewById(R.id.refresh_okay);
+        okay.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                SharedPreferences userPreferences = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
+                userPreferences.edit().putFloat("CURRENT_BALANCE_"+sim_slot,message.getBalance()).commit();
+                UpdateBalanceOnScreen mUpdateBalanceOnScreen  = new UpdateBalanceOnScreen(refreshType,message.getValidity(),message.getBalance());
+                EventBus.getDefault().postSticky(mUpdateBalanceOnScreen);
+                BalanceRefreshActivity.this.finish();
+            }
+        });
+        Button report = (Button) findViewById(R.id.refresh_report);
+        report.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                try
+                {
+
+                    ParseObject pObj = new ParseObject("BALANCE_REFRESH");
+                    pObj.put("DEVICE_ID", Helper.getDeviceId());
+                    pObj.put("REFRESH_TYPE", refreshType);
+                    pObj.put("MESSAGE", message.detailstoLog());
+                    pObj.put("PARSER_RESULTS", message.getOriginalMessage());
+                    pObj.put("USSD_CODE", ussdToDial);
+                    pObj.put("CARRIER", carrier);
+                    pObj.saveEventually();
+                    Toast.makeText(BalanceRefreshActivity.this,"Thank you for reporting. We will fix it ASAP",Toast.LENGTH_LONG).show();
+                    BalanceRefreshActivity.this.finish();
+
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    Crashlytics.logException(e);
+                }
+            }
+        });
+
+        ((TextView)findViewById(R.id.balance_text)).setText(rupeeSymbol+" "+String.format("%.2f",message.getBalance()));
+
+
+        final TextView originalMessage = ((TextView) findViewById(R.id.original_message_text));
+        originalMessage.setText(message.getOriginalMessage());
+        originalMessage.setVisibility(View.VISIBLE);
+
     }
 
     private void unsuccess_message(String originalMessage)
     {
+
+        findViewById(R.id.success_layout_msg).setVisibility(View.VISIBLE);
         findViewById(R.id.success_layout_bal).setVisibility(View.GONE);
         findViewById(R.id.success_layout_button).setVisibility(View.GONE);
         findViewById(R.id.wait_msg_id).setVisibility(View.GONE);
         findViewById(R.id.progressBar).setVisibility(View.GONE);
+        findViewById(R.id.refresh_btn).setVisibility(View.GONE);
         findViewById(R.id.sorry_layout).setVisibility(View.VISIBLE);
+        findViewById(R.id.message_layout).setVisibility(View.VISIBLE);
         findViewById(R.id.sorry__msg_id).setVisibility(View.VISIBLE);
         findViewById(R.id.sorry_layout_button).setVisibility(View.VISIBLE);
-        findViewById(R.id.success_layout_msg).setVisibility(View.VISIBLE);
+        TextView originalMessageText = ((TextView) findViewById(R.id.original_message_text));
+        originalMessageText.setText(originalMessage);
+        originalMessageText.setVisibility(View.VISIBLE);
+        Button dismiss = (Button) findViewById(R.id.cancel_btn);
+        Button tryAgain = (Button) findViewById(R.id.try_again_btn);
+        tryAgain.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            @DebugLog
+            public void onClick(View v)
+            {
+                Intent mIntent = new Intent(BalanceRefreshActivity.this,BalanceRefreshActivity.class);
+                mIntent.putExtra("SIM_SLOT",sim_slot);
+                mIntent.putExtra("TYPE",refreshType);
+                startActivity(mIntent);
+                BalanceRefreshActivity.this.finish();
+            }
+        });
+
+        dismiss.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                BalanceRefreshActivity.this.finish();
+            }
+        });
+        ParseObject pObj = new ParseObject("INVALID_BALANCE_REFRESH");
+        pObj.put("DEVICE_ID", Helper.getDeviceId());
+        pObj.put("REFRESH_TYPE", refreshType);
+        pObj.put("MESSAGE", originalMessage);
+        pObj.put("USSD_CODE", ussdToDial);
+        pObj.put("CARRIER", carrier);
+        pObj.saveEventually();
+
     }
     private String getDisplayType(String refreshType)
 {

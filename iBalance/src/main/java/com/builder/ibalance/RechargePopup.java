@@ -1,14 +1,11 @@
 package com.builder.ibalance;
 
-import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -166,8 +163,9 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                     intent.putExtra("amount", amount+"");
                     startActivity(intent);
 
-                } catch (PackageManager.NameNotFoundException e)
+                } catch (Exception e)
                 {
+
                     t.send(new HitBuilders.EventBuilder()
                             .setCategory("REFERRAL")
                             .setAction("PAYTM")
@@ -176,21 +174,9 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                     FlurryAgent.logEvent("REFERRAL_PAYTM");
                     //Ask them to install the app
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=net.one97.paytm&referrer=utm_source=SimplyApp")));
-                    Toast.makeText(this,"You must install Paytm before Recharge",Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,"You must install/update Paytm before Recharge",Toast.LENGTH_LONG).show();
                    // e.printStackTrace();
-                }
-                catch (ActivityNotFoundException e)
-                {
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("REFERRAL")
-                            .setAction("PAYTM")
-                            .setLabel("UPDATE")
-                            .build());
-                    FlurryAgent.logEvent("REFERRAL_PAYTM");
-                    //Ask them to install the app
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=net.one97.paytm&referrer=utm_source=SimplyApp")));
-                    Toast.makeText(this,"You must install Paytm before Recharge",Toast.LENGTH_LONG).show();
-                   // e.printStackTrace();
+                    Crashlytics.logException(e);
                 }
 
 
@@ -216,7 +202,7 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                     intent.putExtra("amount", amount);
                     startActivity(intent);
 
-                } catch (PackageManager.NameNotFoundException e)
+                } catch (Exception e)
                 {
                     t.send(new HitBuilders.EventBuilder()
                             .setCategory("REFERRAL")
@@ -226,21 +212,9 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                     FlurryAgent.logEvent("REFERRAL_MOBIKWIK");
                     //Ask them to install the app
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.mobikwik_new&referrer=utm_source=SimplyApp")));
-                    Toast.makeText(this,"You must install Mobikwik before Recharge",Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,"You must install/Update Mobikwik before Recharge",Toast.LENGTH_LONG).show();
+                    Crashlytics.logException(e);
                    //e.printStackTrace();
-                }
-                catch (ActivityNotFoundException e)
-                {
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("REFERRAL")
-                            .setAction("MOBIKWIK")
-                            .setLabel("UPDATE")
-                            .build());
-                    FlurryAgent.logEvent("REFERRAL_MOBIKWIK");
-                    //Ask them to install the app
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.mobikwik_new&referrer=utm_source=SimplyApp")));
-
-                    Toast.makeText(this,"Please Update Mobikwik before Recharge",Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.freecharge_recharge:
@@ -254,8 +228,9 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                     intent.putExtra("referralSource", "SimplyApp");
                     intent.putExtra("referral", "SimplyApp");
                     startActivity(intent);
-                } catch (PackageManager.NameNotFoundException e)
+                } catch (Exception e)
                 {
+                    Crashlytics.logException(e);
                     t.send(new HitBuilders.EventBuilder()
                             .setCategory("REFERRAL")
                             .setAction("FREECHARGE")
@@ -263,21 +238,11 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                             .build());
                     FlurryAgent.logEvent("REFERRAL_FREECHARGE");
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.freecharge.android&referrer=utm_source=SimplyApp")));
-                    Toast.makeText(this,"You must install FreeCharge before Recharge",Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,"You must install/update FreeCharge before Recharge",Toast.LENGTH_LONG).show();
+                    Crashlytics.logException(e);
                     //e.printStackTrace();
                 }
-                catch (ActivityNotFoundException e)
-                {
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("REFERRAL")
-                            .setAction("FREECHARGE")
-                            .setLabel("UPDATE")
-                            .build());
-                    FlurryAgent.logEvent("REFERRAL_FREECHARGE");
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.freecharge.android&referrer=utm_source=SimplyApp")));
-                    Toast.makeText(this,"Please Update FreeCharge before Recharge",Toast.LENGTH_LONG).show();
-                    //e.printStackTrace();
-                }
+
 
                 break;
             default:

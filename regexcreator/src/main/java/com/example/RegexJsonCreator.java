@@ -1,5 +1,7 @@
 package com.example;
 
+import com.google.code.regexp.Pattern;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,7 +24,13 @@ public class RegexJsonCreator
     String regex;
     JSONArray allJson = null;
     String TYPE = "SMS_PACK";
-    File regex_json = new File("G:/SimplyV2/TextMining/json/V2/MAIN_BALANCE_PATTERNS.json");
+    //File regex_json = new File("G:/SimplyV2/TextMining/json/V2/NORMAL_CALL_PATTERNS.json");
+    //File regex_json = new File("G:/SimplyV2/TextMining/json/V2/NORMAL_DATA_PATTERNS.json");
+    //File regex_json = new File("G:/SimplyV2/TextMining/json/V2/NORMAL_SMS_PATTERNS.json");
+    //File regex_json = new File("G:/SimplyV2/TextMining/json/V2/PACK_CALL_PATTERNS.json");
+    //File regex_json = new File("G:/SimplyV2/TextMining/json/V2/PACK_DATA_PATTERNS.json");
+    File regex_json = new File("G:/SimplyV2/TextMining/json/V2/PACK_SMS_PATTERNS.json");
+    //File regex_json = new File("G:/SimplyV2/TextMining/json/V2/MAIN_BALANCE_PATTERNS.json");
     int costPos = -1, durationSecPos = -1,mainBalPos = -1,durationClockPosHH = -1,durationClockPosMM = -1,durationClockPosSS = -1;
     int usedData = -1, leftData = -1,type = -1,usedDataMetric = -1,leftDataMetric = -1,validity = -1,mainbalance = -1;
     int cont = -1;
@@ -62,6 +70,7 @@ public class RegexJsonCreator
                 //d HH
                 //d MM
                 //d SS
+                ptln("Current id = "+(id+1));
                 ptln("Enter the regex for call -1 to Stop OR 0 to undo");
                 regex = reader.readLine();
                 if(regex.equals("-1"))
@@ -119,7 +128,7 @@ public class RegexJsonCreator
                 mJsonArray.put(entry);
 
             }
-
+            testJson(mJsonArray);
             mFileWriter = new FileOutputStream(regex_json);
             mFileWriter.write(mJsonArray.toString().getBytes());
             mFileWriter.flush();
@@ -144,6 +153,30 @@ public class RegexJsonCreator
         }
 
 
+    }
+
+    private void testJson(JSONArray regex_array)
+    {
+        for (int i = 0; i < regex_array.length(); i++)
+        {
+            try
+            {
+                regex = regex_array.getJSONObject(i).getString("REGEX");
+            } catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+            //Log.d(TAG, "Trying with : " + regex);
+            try
+            {
+                Pattern mPattern = Pattern.compile(regex);
+            }
+            catch (Exception e)
+            {
+                ptln("Failed "+i+1);
+            }
+        }
+        ptln("Finished Checking");
     }
 
     private JSONObject getnewEntryforSMSPack(String regex) throws JSONException

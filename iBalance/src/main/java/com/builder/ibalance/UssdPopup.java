@@ -41,6 +41,8 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.squareup.picasso.Picasso;
 
+import hugo.weaving.DebugLog;
+
 public class UssdPopup extends AppCompatActivity
 {
     final String TAG = UssdPopup.class.getSimpleName();
@@ -365,7 +367,8 @@ public class UssdPopup extends AppCompatActivity
                 @Override
                 public void onClick(View v)
                 {
-
+                    SharedPreferences userPrefs = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                    userPrefs.edit().putBoolean("RATED",true).apply();
                     Tracker t = ((MyApplication) getApplication()).getTracker(
                             MyApplication.TrackerName.APP_TRACKER);
                     t.send(new HitBuilders.EventBuilder().setCategory("RATE")
@@ -436,7 +439,9 @@ public class UssdPopup extends AppCompatActivity
 		}
 	}
     //Handle a bug in Call rate, it is set default to 0.0f
-    private void displayNormalCallPopUp(final NormalCallPopup details) {
+    @DebugLog
+    private void displayNormalCallPopUp(final NormalCallPopup details)
+    {
         TextView plan_id = (TextView) findViewById(R.id.plan_id);
         plan_id.setText("Main Bal");
         TextView head_1 = (TextView) findViewById(R.id.head1);
@@ -457,57 +462,65 @@ public class UssdPopup extends AppCompatActivity
         TextView field_2 = (TextView) findViewById(R.id.field2);
         SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
         float minimum_bal = mSharedPreferences.getFloat("MINIMUM_BALANCE",10.0f);
+
+        boolean rated = mSharedPreferences.getBoolean("RATED",false);
         int popUpCount = mSharedPreferences.getInt("POP_UP_COUNT",1);
-        mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
-        if(popUpCount>=10)
+        mSharedPreferences.edit().putInt("POP_UP_COUNT", popUpCount + 1).apply();
+        if(!rated && popUpCount >= 10)
         {
-            //TODO this is not a good structure, half here and half in onCreate fix it later
-            rate = true;
+                //TODO this is not a good structure, half here and half in onCreate fix it later
+                rate = true;
         }
         else if(!details.getName().matches("[0-9]+"))
         {
-            //To stop inflating the normmal one
-            share = true;
-            TextView infoText = ((TextView)findViewById(R.id.ussd_share_info));
-            infoText.setVisibility(View.VISIBLE);
-
-            SpannableStringBuilder mBuilder = new SpannableStringBuilder();
-            mBuilder.append("Like Simply ?\nLet ");
-
-            Spannable span = new SpannableString(details.getName());
-            span.setSpan(new RelativeSizeSpan(1.1f), 0 , details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0 , details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            span.setSpan(new UnderlineSpan(), 0 , details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            mBuilder.append(span);
-            mBuilder.append(" know about it!");
-            infoText.setText(mBuilder);
-            Button shareButton = (Button) findViewById(R.id.ussd_open_app);
-            shareButton.setText("Share Now");
-            ((LinearLayout)findViewById(R.id.ussd_dismiss).getParent()).setVisibility(View.GONE);
-            LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1);
-            ((LinearLayout) shareButton.getParent()).setLayoutParams(mLayout);
-            shareButton.setOnClickListener(new View.OnClickListener()
+            final SharedPreferences sharedContacts = MyApplication.context.getSharedPreferences("SHARED_CONTACTS",Context.MODE_PRIVATE);
+            boolean sharedAlready  = sharedContacts.getBoolean(details.getNumber(),false);
+            if(!sharedAlready)
             {
-                @Override
-                public void onClick(View v)
+                //To stop inflating the normmal one
+                share = true;
+                TextView infoText = ((TextView) findViewById(R.id.ussd_share_info));
+                infoText.setVisibility(View.VISIBLE);
+
+                SpannableStringBuilder mBuilder = new SpannableStringBuilder();
+                mBuilder.append("Like Simply ?\nLet ");
+
+                Spannable span = new SpannableString(details.getName());
+                span.setSpan(new RelativeSizeSpan(1.1f), 0, details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                span.setSpan(new UnderlineSpan(), 0, details.getName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mBuilder.append(span);
+                mBuilder.append(" know about it!");
+                infoText.setText(mBuilder);
+                Button shareButton = (Button) findViewById(R.id.ussd_open_app);
+                shareButton.setText("Share Now");
+                FlurryAgent.logEvent("WHATSAPP_SHARE_SHOWN");
+                ((LinearLayout) findViewById(R.id.ussd_dismiss).getParent()).setVisibility(View.GONE);
+                LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+                ((LinearLayout) shareButton.getParent()).setLayoutParams(mLayout);
+                shareButton.setOnClickListener(new View.OnClickListener()
                 {
-
-                    if(Helper.whatsappInstalledOrNot())
+                    @Override
+                    public void onClick(View v)
                     {
-                        //TODO Add Tracking info
-                        ConstantsAndStatics.PASTE_SHARE_APP = true;
-                        startActivity(Helper.openWhatsApp(details.getNumber(), "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply "));
-                    }
-                    else
-                    {
-                        Uri uri = Uri.parse("smsto:"+details.getNumber());
-                        Intent it = new Intent(Intent.ACTION_SENDTO, uri);
-                        it.putExtra("sms_body","To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply ");
+                        FlurryAgent.logEvent("WHATSAPP_SHARED");
+                        sharedContacts.edit().putBoolean(details.getNumber(),true).apply();
+                        if (Helper.whatsappInstalledOrNot())
+                        {
+                            //TODO Add Tracking info
+                            ConstantsAndStatics.PASTE_SHARE_APP = true;
+                            startActivity(Helper.openWhatsApp(details.getNumber(), "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply "));
+                        } else
+                        {
+                            Uri uri = Uri.parse("smsto:" + details.getNumber());
+                            Intent it = new Intent(Intent.ACTION_SENDTO, uri);
+                            it.putExtra("sms_body", "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply ");
 
-                        startActivity(it);
+                            startActivity(it);
+                        }
                     }
-                }
-            });
+                });
+            }
 
         }
         if(details.getCurrent_balance() <= minimum_bal)

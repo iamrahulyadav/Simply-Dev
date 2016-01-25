@@ -113,7 +113,7 @@ public class RecorderUpdaterService extends AccessibilityService
                 checkForRecharge(entryBase);
                 mBalanceHelper.addEntry(callDetails);
                 ////V10Log.d(tag + "Current Bal", details.bal + " ");
-                sharedPreferences.edit().putFloat("CURRENT_BALANCE_"+callDetails.sim_slot, (float) callDetails.main_bal).apply();
+                sharedPreferences.edit().putFloat("CURRENT_BALANCE_"+callDetails.sim_slot, callDetails.main_bal).apply();
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
                 PackCall mPackDetails = (PackCall) entryBase;
@@ -322,7 +322,7 @@ boolean cancelButtonFound = false;
     {
         Log.d(TAG,String.format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
                 getEventType(event), event.getClassName(),
-                event.getPackageName(), event.getEventTime(), text));
+                event.getPackageName(), event.getEventTime(), event.getText()));
         if(event.getPackageName().toString().toUpperCase(Locale.US).contains("WHATSAPP"))
         {
          if(ConstantsAndStatics.PASTE_DEVICE_ID==true)
@@ -351,31 +351,37 @@ boolean cancelButtonFound = false;
         }
         cancelButtonFound = false;
         text = getTextFromNode(event.getSource());// getEventText(event);
-        if(text==null || text.isEmpty() || text.toUpperCase().contains("USSD CODE RUNNING")|| text.toUpperCase().matches("^CONNECTION PROBLEM OR INVALID MMI CODE"))
-            return;
-        SharedPreferences sharedPreferences = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,
-                Context.MODE_PRIVATE);
-        String previousUssdMessage = sharedPreferences.getString("PREV_MSG","");
-        sharedPreferences.edit().putString("PREV_MSG",text).apply();
-        if(previousUssdMessage.equals(text))
-        {
-           //V16//V16//V16Log.d(TAG,"Duplicate event: "+previousUssdMessage);
-            return;
-        }
-        String original_message = text;
 
-        text = text.trim()
-                .replace("\r", " ")
-                .replace("\n", " ")
-                .replace("\u0011"," ")
-                .replace("Â§"," ")
-                .replace("ยง"," ")
-                .replace('_',' ')
-                .replaceAll("\\s+"," ")
-                .toUpperCase();
 
         if (event.getClassName().toString().toUpperCase(Locale.US).contains("ALERT"))
         {
+            if(text==null || text.isEmpty())
+            {
+                Log.d(TAG,"Returning bcoz: "+text);
+                return;
+            }
+            if(!ConstantsAndStatics.WAITING_FOR_REFRESH)
+            {
+                SharedPreferences sharedPreferences = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY, Context.MODE_PRIVATE);
+                String previousUssdMessage = sharedPreferences.getString("PREV_MSG", "");
+                sharedPreferences.edit().putString("PREV_MSG", text).apply();
+                if (previousUssdMessage.equals(text))
+                {
+                    Log.d(TAG, "Duplicate event: " + previousUssdMessage);
+                    return;
+                }
+            }
+            String original_message = text;
+
+            text = text.trim()
+                    .replace("\r", " ")
+                    .replace("\n", " ")
+                    .replace("\u0011"," ")
+                    .replace("Â§"," ")
+                    .replace("ยง"," ")
+                    .replace('_',' ')
+                    .replaceAll("\\s+"," ")
+                    .toUpperCase();
         try
         {
             USSDParser parser = new USSDParser();
@@ -403,6 +409,7 @@ boolean cancelButtonFound = false;
                 if(ConstantsAndStatics.WAITING_FOR_REFRESH ==true)
                 {
                     ConstantsAndStatics.WAITING_FOR_REFRESH = false;
+                    dissmissUSDD();
                     EventBus.getDefault().post(new BalanceRefreshMessage(Float.MIN_VALUE,null,original_message));
                 }
                 logOnParse(text);
@@ -745,6 +752,7 @@ boolean cancelButtonFound = false;
             if (dismissNode != null)
                 dismissNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
         }
+
         dismissNode = null;
     }
     private void pasteDeviceId(AccessibilityNodeInfo editTextField, int type) throws Exception

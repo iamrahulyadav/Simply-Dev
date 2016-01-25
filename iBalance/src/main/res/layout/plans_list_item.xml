@@ -65,13 +65,16 @@
         android:layout_width="0dp"
         android:layout_weight="7"
         android:layout_height="wrap_content"
-        android:paddingTop="10dp">
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
 
         <View
             android:layout_width="0.3dp"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/benefits_id"
             android:layout_marginBottom="10dp"
+
+
             android:background="@android:color/darker_gray"
             />
 
@@ -130,6 +133,7 @@
             android:layout_alignParentStart="true"
             android:layout_below="@+id/Talktime_id"
             android:padding="10dp"
+            android:text=""
             android:textColor="#837E7E"
             android:textSize="12dp"/>
 

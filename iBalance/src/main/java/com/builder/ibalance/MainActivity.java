@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,12 +25,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
-import com.builder.ibalance.models.PopupModels.NormalCallPopup;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
@@ -41,6 +42,9 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.Kahuna;
+import com.parse.ConfigCallback;
+import com.parse.ParseConfig;
+import com.parse.ParseException;
 
 import de.greenrobot.event.EventBus;
 
@@ -58,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     // MainActivityAdapter mainActivityAdapter;
     MainActivityAdapter mainActivityAdapter;
     ViewPager mViewPager;
+    boolean showingUpdateDialog = false;
     public ActionBar ab;
 
     @Override
@@ -114,10 +119,12 @@ public class MainActivity extends AppCompatActivity {
         }
         tabLayout.setupWithViewPager(mViewPager);
         Boolean isEnabledAccess = Helper.isAccessibilityEnabled(ConstantsAndStatics.accessibiltyID);
-        boolean hasRefreshedBalance = userDataPrefs.getBoolean("REFRESHED_BAL",false);
-        //|| !hasRefreshedBalance
-        //TODO revert
-        if (!isEnabledAccess )
+        boolean hasRefreshedBAl = userDataPrefs.getBoolean("REFRESHED_BAL",false);
+
+        float currentBal = userDataPrefs.getFloat("CURRENT_BALANCE_0",userDataPrefs.getFloat("CURRENT_BALANCE_1",-20.0f));
+        if(currentBal>-20.0f)
+            hasRefreshedBAl = true;
+        if (!isEnabledAccess || hasRefreshedBAl == false )
         {
             //Log.d(TAG, "Accesibilty  Not Enabled");
             ConstantsAndStatics.WAITING_FOR_SERVICE = true;
@@ -132,9 +139,79 @@ public class MainActivity extends AppCompatActivity {
             {
                 goToRechargepage();
             }
+            else
+            {
+                showingUpdateDialog = true;
+                final int APP_VERSION = BuildConfig.VERSION_CODE;
+                ParseConfig.getInBackground(new ConfigCallback()
+                {
+                    @Override
+                    public void done(ParseConfig config, ParseException e)
+                    {
+                        if (e == null)
+                        {
+                            //V16Log.d(tag, "Yay! Config was fetched from the server.");
+                        } else
+                        {
+                            Log.e(tag, "Failed to fetch. Using Cached Config.");
+                            config = ParseConfig.getCurrentConfig();
+                        }
+                        if ((config != null))
+                        {
+                            int NEW_APP_VERSION = config.getInt("APP_VERSION");
+                            //V16Log.d(tag,"NEW_PARSER_VERSION = "+NEW_PARSER_VERSION);
+                            if (APP_VERSION <NEW_APP_VERSION)
+                            {
+                                createUpdateDialog();
+                            }
+                        }
+                        //Log.d(tag, String.format("The ad frequency is %d!", adFrequency));
+                    }
+                });
+
+            }
         }
 
 
+    }
+
+    private void createUpdateDialog()
+    {
+        AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View mView = inflater.inflate(R.layout.recharge_reminder, null);
+        alertbox.setView(mView);
+        ((TextView)mView.findViewById(R.id.alert_heading)).setText("Simply Update");
+        mView.findViewById(R.id.alert_static_text).setVisibility(View.GONE);
+        TextView infoText = (TextView) mView.findViewById(R.id.low_bal_text_id);
+        Button rechargeNow = (Button) mView.findViewById(R.id.recharge_now_button);
+        rechargeNow.setText("Update");
+        infoText.setText("New Version of the App is Available,\n Update is Highly Recommended");
+
+        final AlertDialog alert = alertbox.create();
+
+        rechargeNow.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Tracker t = ((MyApplication) getApplication()).getTracker(
+                        TrackerName.APP_TRACKER);
+                t.send(new HitBuilders.EventBuilder().setCategory("UPDATE")
+                        .setAction(BuildConfig.VERSION_CODE+"").setLabel("").build());
+                FlurryAgent.logEvent("UPDATE");
+                Uri uri = Uri.parse("market://details?id=" + MainActivity.this.getPackageName());
+                //Log.d(tag,"URI = "+ uri);
+                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                try {
+                    startActivity(goToMarket);
+                } catch (ActivityNotFoundException e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" +  MainActivity.this.getPackageName())));
+                }
+                alert.dismiss();
+            }
+        });
+        alert.show();
     }
 
     public void goToRechargepage() {
@@ -255,7 +332,7 @@ int i = 0;
                 //Log.d(tag, "Set Bal");
                 return setbal();
             case R.id.privacy:
-                //TODO remove this before release
+                /*
                 Intent popup_intent = new Intent(this,
                         UssdPopup.class);
                 popup_intent.putExtra("TYPE", ConstantsAndStatics.USSD_TYPES.NORMAL_CALL);
@@ -264,7 +341,7 @@ int i = 0;
                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
                 popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivity(popup_intent);
+                startActivity(popup_intent);*/
                 //Log.d(tag, "Prefrences selected");
 			/*USSDParser mParser = new USSDParser();
                 if(i==0)
@@ -274,10 +351,10 @@ int i = 0;
                 i++;
 			Log.d(tag,mParser.getDetails().getType()+"");
 			Log.d(tag,mParser.getDetails().toString());*/
-                /*String url = "http://ibalanceapp.com/privacy-policy/";
+                String url = "http://ibalanceapp.com/privacy-policy/";
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
-                startActivity(i);*/
+                startActivity(i);
                 break;
             case R.id.contact_us:
                 //Log.d(tag, "contact_us selected");
@@ -288,6 +365,9 @@ int i = 0;
                 verifyUser();
                 break;
             case R.id.rate:
+
+                SharedPreferences userPrefs = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                userPrefs.edit().putBoolean("RATED",true).apply();
                 t.send(new HitBuilders.EventBuilder().setCategory("RATE")
                         .setAction("Rate").setLabel("").build());
                 FlurryAgent.logEvent("Rate");

@@ -23,13 +23,13 @@ public class ServiceEnableTranslucent extends AppCompatActivity implements View.
         Button mButton = (Button) findViewById(R.id.got_it);
         imageView = (ImageView) findViewById(R.id.recorder_on_img);
         imageView.setOnClickListener(this);
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT || Build.MANUFACTURER.toUpperCase().contains("XIAOMI"))
+        if(!Build.MANUFACTURER.toUpperCase().contains("XIAOMI")&& (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT || Build.MANUFACTURER.toUpperCase().contains("SAMSUNG") || Build.MANUFACTURER.toUpperCase().contains("LG")|| Build.MANUFACTURER.toUpperCase().contains("SONY") ))
         {
-            imageView.setImageResource(R.drawable.service_enable_white);
+            imageView.setImageResource(R.drawable.service_enable_black);
         }
         else
         {
-            imageView.setImageResource(R.drawable.service_enable_black);
+            imageView.setImageResource(R.drawable.service_enable_white);
         }
 
         mButton.setOnClickListener(this);

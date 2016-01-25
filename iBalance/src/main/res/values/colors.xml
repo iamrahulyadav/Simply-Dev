@@ -18,6 +18,8 @@
     <color name="translucent">#33000000</color>
     <color name="black">#000000</color>
 	<color name="dark_grey">#9e9e9e</color>
+	<color name="service_background">#00334d</color>
+	<color name="text_red">#FF6633</color>
 	<color name="pressed">#abb</color>
 	<color name="focused">#00F000</color>
     <color name="primary_material_dark">#1ad3a2</color>

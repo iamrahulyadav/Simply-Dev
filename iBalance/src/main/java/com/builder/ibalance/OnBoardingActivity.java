@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -39,8 +40,9 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
     final static String tag = OnBoardingActivity.class.getSimpleName();
     static int num_of_toggle = 0;
     ImageView recorderOn, refreshBal;
-    String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";
+    final String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";
     TextView downloadText,recorderText,refreshText,percentageText,contactUs,doItLater;
+    ImageButton closeButton;
     //Button nextButton;
     ProgressBar mProgressBar;
     View recorderOnView,refreshBalView;
@@ -56,7 +58,7 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 		setContentView(R.layout.activity_onboarding);
 
         getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT); //set below the setContentview
-
+        FlurryAgent.logEvent("ONBOARD",true);
         int progress = 33;
         recorderOnView = findViewById(R.id.recorder_on_layout);
         recorderOnView.setOnClickListener(this);
@@ -69,7 +71,9 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
         contactUs = (TextView) findViewById(R.id.onboarding_contact);
         contactUs.setOnClickListener(this);
         doItLater = (TextView) findViewById(R.id.do_it_later);
-        doItLater.setOnClickListener(this);/*
+        doItLater.setOnClickListener(this);
+        closeButton = (ImageButton) findViewById(R.id.close_button);
+        closeButton.setOnClickListener(this);/*
         nextButton = (Button) findViewById(R.id.splash_next_button);
         nextButton.setOnClickListener(this);*/
         mProgressBar = (ProgressBar) findViewById(R.id.onboarding_progress_bar);
@@ -84,10 +88,8 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
         boolean hasRefreshedBAl = userDataPref.getBoolean("REFRESHED_BAL",false);
 
         float currentBal = userDataPref.getFloat("CURRENT_BALANCE_0",userDataPref.getFloat("CURRENT_BALANCE_1",-20.0f));
-        if(currentBal>0.0f)
+        if(currentBal>-20.0f)
             hasRefreshedBAl = true;
-        //Todo remove
-        hasRefreshedBAl = false;
         if(hasRefreshedBAl)
         {
             refreshBal.setImageResource(R.drawable.checked);
@@ -105,10 +107,6 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
         else
         {
             refreshBalView.setBackgroundResource(R.color.grey);
-        }
-        if(isEnabledAccess && hasRefreshedBAl==false)
-        {
-           // nextButton.setText( "Refresh Balance >");
         }
         percentageText.setText(progress+"%");
         mProgressBar.setProgress(progress);
@@ -204,6 +202,7 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 		switch (v.getId()) {
         case R.id.recorder_on_layout:
             num_of_toggle++;
+            FlurryAgent.logEvent("ONBOARD_GO_TO_SETTINGS");
             intent= new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivityForResult(intent, 0);
             intent = new Intent(this, ServiceEnableTranslucent.class);
@@ -216,7 +215,8 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
             }
             else
             {
-                //userDataPref.edit().putBoolean("REFRESHED_BAL",true).apply();
+                FlurryAgent.logEvent("ONBOARD_REFRESH");
+                userDataPref.edit().putBoolean("REFRESHED_BAL",true).apply();
                 refreshBalance();
             }
 
@@ -238,6 +238,7 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
             }
 			break;*/
         case R.id.onboarding_contact:
+            FlurryAgent.logEvent("ONBOARD_CONTACT");
             if (!Helper.contactExists("+919739663487"))
             {
                 //V10Log.d(tag, "Whatsapp contact not found adding contact");
@@ -255,6 +256,9 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
             }
                 break;
             case R.id.do_it_later:
+            case R.id.close_button:
+                FlurryAgent.endTimedEvent("ONBOARD");
+                FlurryAgent.logEvent("ONBOARD_DISMISS");
                 finish();
                 break;
 		default:
@@ -267,5 +271,6 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
     private void refreshBalance()
     {
         startActivity((new Intent(this,BalanceRefreshActivity.class)).putExtra("SIM_SLOT",0).putExtra("TYPE","MAIN_BAL"));
+        this.finish();
     }
 }

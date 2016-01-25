@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
+import hugo.weaving.DebugLog;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.SlideInLeftAnimator;
 
@@ -320,7 +321,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             spinnerPosition = circleAdapter.getPosition(currentCircle);
             circleSpinner.setTag(spinnerPosition);
             circleSpinner.setSelection(spinnerPosition);
-            //loadPlans(currentCarrier,currentCircle);
+            loadPlans(currentCarrier,currentCircle);
         }
     }
 
@@ -363,8 +364,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     }
     void populatePlans(List<ParseObject> plans)
     {
-        if(this.isVisible())
-            Helper.toastHelper(currentCarrier + " " + currentCircle);
+
         View plansLoading = rootView.findViewById(R.id.plans_loading);
             if(plans.size()>0)
             {
@@ -385,6 +385,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             }
 
     }
+    @DebugLog
     void setUsageDetails(int same_local, int others_local, int same_std, int others_std)
     {
         Resources res = getResources();
