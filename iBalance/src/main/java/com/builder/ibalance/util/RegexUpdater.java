@@ -21,11 +21,11 @@ public class RegexUpdater
 {
     final static String tag = RegexUpdater.class.getSimpleName();
 
-    int PARSER_VERSION = 1;
+    int PARSER_VERSION = 2;
     int NEW_PARSER_VERSION = 1;
     public void check()
     {
-        PARSER_VERSION =  MyApplication.context.getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION_V2",1);
+        PARSER_VERSION =  MyApplication.context.getSharedPreferences("GOOGLE_PREFS", Context.MODE_PRIVATE).getInt("PARSER_VERSION_V2",2);
         ParseConfig.getInBackground(new ConfigCallback()
         {
             @Override
@@ -62,32 +62,12 @@ public class RegexUpdater
         regexQuery.findInBackground(new FindCallback()
         {
 
-
-            /**
-             * Override this function with the code you want to run after the fetch is complete.
-             *
-             * @param objects The objects that were retrieved, or null if it did not succeed.
-             * @param e
-             */
             @Override
             public void done(List objects, ParseException e)
             {
 
             }
 
-            /**
-             * {@code done(t1, t2)} must be overridden when you are doing a background operation. It is called
-             * when the background operation completes.
-             * <p/>
-             * If the operation is successful, {@code t1} will contain the results and {@code t2} will be
-             * {@code null}.
-             * <p/>
-             * If the operation was unsuccessful, {@code t1} will be {@code null} and {@code t2} will contain
-             * information about the operation failure.
-             *
-             * @param object         Generally the results of the operation.
-             * @param throwable Generally an {@link Throwable} that was thrown by the operation, if there was any.
-             */
             @Override
             public void done(Object object, Throwable throwable)
             {

@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.CallLog;
+import android.text.TextUtils;
 
 import com.builder.ibalance.core.SimModel;
 import com.builder.ibalance.messages.OutgoingCallMessage;
@@ -120,7 +121,7 @@ public class CallLogObserver extends ContentObserver
                                             if (column_name.toLowerCase().equals("iccid") || column_name.toLowerCase().equals("icc_id"))
                                             {
                                                 String iccId = cursor.getString(cursor.getColumnIndex(column_name));
-                                                if (iccId != null || iccId.equals(""))
+                                                if (!TextUtils.isEmpty(iccId))
                                                 {
                                                     slot_id = getSlotIdforLG(iccId);
                                                     found = true;

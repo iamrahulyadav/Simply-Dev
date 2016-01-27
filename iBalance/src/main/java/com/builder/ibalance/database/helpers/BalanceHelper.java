@@ -75,11 +75,12 @@ public class BalanceHelper {
 	 }
 	 return null;
  }
-	public List<NormalCall> getAllEntries() {
+	public List<NormalCall> getAllEntries(int sim_slot) {
 		List<NormalCall> entries = new LinkedList<NormalCall>();
 
 		// 1. build the query
-		String query = "SELECT  * FROM " + "CALL";
+		String query = "SELECT  * FROM " + "CALL "+"WHERE "
+                +IbalanceContract.CallEntry.COLUMN_NAME_SLOT + " = "+sim_slot;
 
 		// 2. get reference to writable DB
 		SQLiteDatabase myDataBase = mMySQLiteHelper.getReadableDatabase();

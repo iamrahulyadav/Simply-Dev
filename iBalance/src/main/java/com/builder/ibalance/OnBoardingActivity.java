@@ -9,8 +9,6 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -25,22 +23,16 @@ import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class OnBoardingActivity extends Activity implements OnClickListener{
 
     final static String tag = OnBoardingActivity.class.getSimpleName();
     static int num_of_toggle = 0;
     ImageView recorderOn, refreshBal;
-    final String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";
     TextView downloadText,recorderText,refreshText,percentageText,contactUs,doItLater;
     ImageButton closeButton;
     //Button nextButton;
@@ -48,6 +40,7 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
     View recorderOnView,refreshBalView;
     SharedPreferences userDataPref;
     boolean isEnabledAccess =false;
+    boolean firstTimeOnBoard = true;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -58,7 +51,8 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 		setContentView(R.layout.activity_onboarding);
 
         getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT); //set below the setContentview
-        FlurryAgent.logEvent("ONBOARD",true);
+
+
         int progress = 33;
         recorderOnView = findViewById(R.id.recorder_on_layout);
         recorderOnView.setOnClickListener(this);
@@ -85,18 +79,29 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
         doItLater.setPaintFlags(doItLater.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
 
         userDataPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
-        boolean hasRefreshedBAl = userDataPref.getBoolean("REFRESHED_BAL",false);
 
-        float currentBal = userDataPref.getFloat("CURRENT_BALANCE_0",userDataPref.getFloat("CURRENT_BALANCE_1",-20.0f));
+        if(!BuildConfig.DEBUG){
+            firstTimeOnBoard =userDataPref.getBoolean("FIRST_ONBOARD",true);
+            if(firstTimeOnBoard)
+            {
+                FlurryAgent.logEvent("ONBOARD");
+
+                userDataPref.edit().putBoolean("FIRST_ONBOARD",false).apply();
+            }
+            else FlurryAgent.logEvent("ONBOARD_REPEAT",true);
+        }
+        boolean hasRefreshedBal = userDataPref.getBoolean("REFRESHED_BAL",false);
+
+        float currentBal = userDataPref.getFloat("CURRENT_BALANCE_0",userDataPref.getFloat("CURRENT_BALANCE_1",-200.0f));
         if(currentBal>-20.0f)
-            hasRefreshedBAl = true;
-        if(hasRefreshedBAl)
+            hasRefreshedBal = true;
+        if(hasRefreshedBal)
         {
             refreshBal.setImageResource(R.drawable.checked);
             refreshText.setPaintFlags(refreshText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             progress += 33;
         }
-        isEnabledAccess = Helper.isAccessibilityEnabled(accessibiltyID);
+        isEnabledAccess = Helper.isAccessibilityEnabled(ConstantsAndStatics.accessibiltyID);
         if(isEnabledAccess)
         {
             recorderOn.setImageResource(R.drawable.checked);
@@ -110,42 +115,23 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
         }
         percentageText.setText(progress+"%");
         mProgressBar.setProgress(progress);
-        /*ImageView gifImageView = (ImageView) findViewById(R.id.splash_simply_rec_img_id);
 
-		AnimationDrawable anim = new AnimationDrawable();
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT || Build.MANUFACTURER.toUpperCase().contains("XIAOMI"))
+        if(!isEnabledAccess)
         {
-            //White Screen service enable
-			anim.addFrame(getResources().getDrawable(R.drawable.service_white_1), 2000);
-			anim.addFrame(getResources().getDrawable(R.drawable.service_white_2), 700);
-
-
-            //Picasso.with(this).load(R.drawable.service_enable_white).into(gifImageView);
-        }
-        else
-        {
-            anim.addFrame(getResources().getDrawable(R.drawable.service_black_1), 2000);
-            anim.addFrame(getResources().getDrawable(R.drawable.service_black_2), 700);
-        }
-		gifImageView.setBackgroundDrawable(anim);
-		anim.setOneShot(false);
-		anim.start();
-        gifImageView.setOnClickListener(this);*/
-		final TelephonyManager mtelTelephonyManager = (TelephonyManager) this
-				.getSystemService(Context.TELEPHONY_SERVICE);
-
-		ParseQuery<ParseObject> query = ParseQuery.getQuery("SERVICE_STATUS");
-		query.whereEqualTo("DEVICE_ID", mtelTelephonyManager.getDeviceId());
-		// Retrieve the object by Device id
-		query.addDescendingOrder("createdAt");
-		query.getFirstInBackground(new GetCallback<ParseObject>() {
-		  public void done(ParseObject simply_service_status, ParseException e) {
-		    if (e == null)
-            {// Now let's update it
-                simply_service_status.put("SERVICE_STATUS", "OFF");
-                simply_service_status.increment("SERVICE_TOGGLE_COUNT");
-                simply_service_status.saveEventually();
-                Tracker t = ((MyApplication) OnBoardingActivity.this.getApplication()).getTracker(
+            ParseQuery<ParseObject> query = ParseQuery.getQuery("SERVICE_STATUS");
+            query.whereEqualTo("DEVICE_ID", Helper.getDeviceId());
+            // Retrieve the object by Device id
+            query.addDescendingOrder("createdAt");
+            query.getFirstInBackground(new GetCallback<ParseObject>()
+            {
+                public void done(ParseObject simply_service_status, ParseException e)
+                {
+                    if (e == null)
+                    {// Now let's update it
+                        simply_service_status.put("SERVICE_STATUS", "OFF");
+                        simply_service_status.increment("SERVICE_TOGGLE_COUNT");
+                        simply_service_status.saveEventually();
+                /*Tracker t = ((MyApplication) OnBoardingActivity.this.getApplication()).getTracker(
                         MyApplication.TrackerName.APP_TRACKER);
                 t.send(new HitBuilders.EventBuilder()
                         .setCategory("SERVICE_STATUS")
@@ -155,46 +141,31 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("STATUS", "OFF");
                 params.put("DEVICE_ID", Helper.getDeviceId());
-                FlurryAgent.logEvent("SERVICE",params);
-		    }
-            else
-            {
-                simply_service_status = new ParseObject("SERVICE_STATUS");
-                simply_service_status.put("DEVICE_ID", mtelTelephonyManager.getDeviceId());
-                simply_service_status.put("SERVICE_STATUS", "OFF");
-                simply_service_status.put("APP_VERSION", BuildConfig.VERSION_CODE);
-                simply_service_status.put("SERVICE_TOGGLE_COUNT",0);
-                simply_service_status.saveEventually();
+                FlurryAgent.logEvent("SERVICE",params);*/
+                    } else
+                    {
+                        simply_service_status = new ParseObject("SERVICE_STATUS");
+                        simply_service_status.put("DEVICE_ID", Helper.getDeviceId());
+                        simply_service_status.put("SERVICE_STATUS", "OFF");
+                        simply_service_status.put("APP_VERSION", BuildConfig.VERSION_CODE);
+                        simply_service_status.put("SERVICE_TOGGLE_COUNT", 0);
+                        simply_service_status.saveEventually();
 
-            }
-		  }
-		});
+                    }
+                }
+            });
+        }
 		
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.service_enable, menu);
-		return true;
-	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
+
+
 
 	@Override
 	public void onClick(View v)
     {
-        if(num_of_toggle>4)
+        if(num_of_toggle>3)
         {
             Toast.makeText(MyApplication.context,"Please Restart your phone and Try Again!",Toast.LENGTH_LONG).show();
         }
@@ -202,7 +173,13 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 		switch (v.getId()) {
         case R.id.recorder_on_layout:
             num_of_toggle++;
-            FlurryAgent.logEvent("ONBOARD_GO_TO_SETTINGS");
+            if(!BuildConfig.DEBUG)
+            {
+                if(firstTimeOnBoard)
+                    FlurryAgent.logEvent("ONBOARD_GO_TO_SETTINGS");
+                else
+                    FlurryAgent.logEvent("ONBOARD_REPEAT_GO_TO_SETTINGS");
+            }
             intent= new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivityForResult(intent, 0);
             intent = new Intent(this, ServiceEnableTranslucent.class);
@@ -215,9 +192,20 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
             }
             else
             {
-                FlurryAgent.logEvent("ONBOARD_REFRESH");
+                if(!BuildConfig.DEBUG)
+                {
+                    boolean firstRefresh =userDataPref.getBoolean("FIRST_REFRESH",true);
+                    if(firstRefresh)
+                    {
+                        FlurryAgent.logEvent("ONBOARD_REFRESH");
+
+                        userDataPref.edit().putBoolean("FIRST_REFRESH",false).apply();
+                    }
+                    else FlurryAgent.logEvent("ONBOARD_REPEAT_REFRESH");
+                }
                 userDataPref.edit().putBoolean("REFRESHED_BAL",true).apply();
-                refreshBalance();
+                startActivity((new Intent(this,BalanceRefreshActivity.class)).putExtra("SIM_SLOT",0).putExtra("TYPE","MAIN_BAL"));
+                this.finish();
             }
 
             break;
@@ -238,7 +226,11 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
             }
 			break;*/
         case R.id.onboarding_contact:
-            FlurryAgent.logEvent("ONBOARD_CONTACT");
+            if(!BuildConfig.DEBUG)
+            {
+                if (firstTimeOnBoard) FlurryAgent.logEvent("ONBOARD_CONTACT");
+                else FlurryAgent.logEvent("ONBOARD_REPEAT_CONTACT");
+            }
             if (!Helper.contactExists("+919739663487"))
             {
                 //V10Log.d(tag, "Whatsapp contact not found adding contact");
@@ -257,8 +249,11 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
                 break;
             case R.id.do_it_later:
             case R.id.close_button:
-                FlurryAgent.endTimedEvent("ONBOARD");
-                FlurryAgent.logEvent("ONBOARD_DISMISS");
+                if(!BuildConfig.DEBUG)
+                {
+                    if (firstTimeOnBoard) FlurryAgent.logEvent("ONBOARD_DISMISS");
+                    else FlurryAgent.logEvent("ONBOARD_REPEAT_DISMISS");
+                }
                 finish();
                 break;
 		default:
@@ -268,9 +263,5 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 		
 	}
 
-    private void refreshBalance()
-    {
-        startActivity((new Intent(this,BalanceRefreshActivity.class)).putExtra("SIM_SLOT",0).putExtra("TYPE","MAIN_BAL"));
-        this.finish();
-    }
+
 }

@@ -588,7 +588,8 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                 else
                 {
 
-                  if(numberField.getText()==null || numberField.getText().toString().length()<10)
+                  if(numberField.getText()==null || numberField.getText().toString().length()<10
+                          ||!numberField.getText().toString().matches("^[0-9]+$"))
                 {
                     Helper.toastHelper("Mobile Number not valid");
                     numberField.requestFocus();

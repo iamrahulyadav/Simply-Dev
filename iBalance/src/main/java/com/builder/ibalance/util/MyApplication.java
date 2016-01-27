@@ -102,7 +102,7 @@ public class MyApplication extends Application
 		if (files != null) for (String filename : files) {
             if(filename.equals("DEVICE_DETAILS.xml") || filename.equals("GOOGLE_PREFS.xml") || filename.equals("USER_DATA.xml"))
             {
-               Log.d(tag,"Writing  = "+filename);
+              //V17Log.d(tag,"Writing  = "+filename);
                 InputStream in = null;
                 OutputStream out = null;
                 try
@@ -111,7 +111,7 @@ public class MyApplication extends Application
                     in = assetManager.open(filename);
                     File sharedPrefFolder = new File(getFilesDir(), "../shared_prefs");
                     String shared_pref_path = sharedPrefFolder.getPath();
-                    Log.d(tag,"shared_pref_path = "+shared_pref_path);
+                   //V17Log.d(tag,"shared_pref_path = "+shared_pref_path);
                         File outFile = new File( shared_pref_path, filename);
                     out = new FileOutputStream(outFile);
                     copyFile(in, out);

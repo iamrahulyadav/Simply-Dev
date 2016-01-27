@@ -546,7 +546,6 @@ public class UssdPopup extends AppCompatActivity
         }
         findViewById(R.id.validity_layout).setVisibility(View.GONE);
         findViewById(R.id.separator_id).setVisibility(View.GONE);
-        findViewById(R.id.ussd_contact_layout).setVisibility(View.VISIBLE);
 
         expand.setOnClickListener(new View.OnClickListener()
         {
@@ -635,7 +634,6 @@ public class UssdPopup extends AppCompatActivity
         findViewById(R.id.sec_column).setVisibility(View.GONE);
         findViewById(R.id.validity_layout).setVisibility(View.GONE);
         findViewById(R.id.separator_id).setVisibility(View.GONE);
-        findViewById(R.id.ussd_contact_layout).setVisibility(View.VISIBLE);
 
         expand.setOnClickListener(new View.OnClickListener()
         {
@@ -713,7 +711,6 @@ public class UssdPopup extends AppCompatActivity
         else
             validity.setText(details.getValidity());
 
-        findViewById(R.id.ussd_contact_layout).setVisibility(View.VISIBLE);
 
         expand.setOnClickListener(new View.OnClickListener()
         {
@@ -938,7 +935,6 @@ public class UssdPopup extends AppCompatActivity
             validity.setText("N/A");
         else
             validity.setText(details.getValidity());
-        findViewById(R.id.ussd_contact_layout).setVisibility(View.VISIBLE);
 
         expand.setOnClickListener(new View.OnClickListener()
         {
@@ -1015,7 +1011,6 @@ public class UssdPopup extends AppCompatActivity
             validity.setText("N/A");
         else
             validity.setText(details.getValidity());
-        findViewById(R.id.ussd_contact_layout).setVisibility(View.VISIBLE);
 
         expand.setOnClickListener(new View.OnClickListener()
         {

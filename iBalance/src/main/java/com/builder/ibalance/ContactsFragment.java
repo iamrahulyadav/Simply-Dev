@@ -28,6 +28,7 @@ import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -49,6 +50,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 	//private CustomContactsAdapter adapter;
 	private CustomContactsRecyclerAdapter adapter;
 	List<ContactDetailModel> contactsList;
+	ContactsLoader mContactsLoader;
 
 	// ContactsFragment ctx;
 
@@ -85,7 +87,8 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 		
 		
 			
-			new ContactsLoader().execute(0);
+		mContactsLoader = new ContactsLoader();
+		mContactsLoader.execute(0);
 
 
 	}
@@ -99,7 +102,14 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 
     @Override
     public void onStop() {
-
+		try
+		{
+			if (mContactsLoader != null) mContactsLoader.cancel(false);
+		}
+		catch (Exception e)
+		{
+			Crashlytics.logException(e);
+		}
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
@@ -253,7 +263,7 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 			{
 			//adapter = new CustomContactsAdapter(contactsList1);
 				//adapter=(new CustomContactsRecyclerAdapter(contactsList1));
-				adapter = (new CustomContactsRecyclerAdapter(getActivity().getApplicationContext(),contactsList1));
+				adapter = (new CustomContactsRecyclerAdapter(MyApplication.context,contactsList1));
 			}
 
 			ScaleInAnimationAdapter animContactAdapter = new ScaleInAnimationAdapter(adapter);

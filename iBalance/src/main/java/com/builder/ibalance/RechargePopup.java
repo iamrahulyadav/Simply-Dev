@@ -190,8 +190,10 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
 
                     getPackageManager().getPackageInfo("com.mobikwik_new", 0);
                     //If app Installed
-                    intent = new Intent("com.mobikwik_new.RECHARGE");
-                    intent.setComponent(new ComponentName("com.mobikwik_new", "com.mobikwik_new.home.activities.MainNavigationActivity"));
+                    intent = new Intent("com.mobikwik_new");
+                    //START u0 {act=com.mobikwik_new.RECHARGE cmp=com.mobikwik_new/.recharge.activity.RechargeActivity (has extras)}
+                    intent.setComponent(new ComponentName("com.mobikwik_new", "com.mobikwik_new.recharge.activity.RechargeActivity"));
+
                     initializeMapForMobiKwik();
                     circleId = circle.get(circleExtra);
                     carrierId = carriers.get(carrierExtra);
@@ -204,16 +206,20 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
 
                 } catch (Exception e)
                 {
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("REFERRAL")
-                            .setAction("MOBIKWIK")
-                            .setLabel("")
-                            .build());
-                    FlurryAgent.logEvent("REFERRAL_MOBIKWIK");
-                    //Ask them to install the app
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.mobikwik_new&referrer=utm_source=SimplyApp")));
-                    Toast.makeText(this,"You must install/Update Mobikwik before Recharge",Toast.LENGTH_LONG).show();
-                    Crashlytics.logException(e);
+                    try
+                    {
+                        intent.setComponent(new ComponentName("com.mobikwik_new", "com.mobikwik_new.home.activities.MainNavigationActivity"));
+                        startActivity(intent);
+                    }
+                    catch (Exception e1)
+                    {
+                        t.send(new HitBuilders.EventBuilder().setCategory("REFERRAL").setAction("MOBIKWIK").setLabel("").build());
+                        FlurryAgent.logEvent("REFERRAL_MOBIKWIK");
+                        //Ask them to install the app
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.mobikwik_new&referrer=utm_source=SimplyApp")));
+                        Toast.makeText(this, "You must install/Update Mobikwik before Recharge", Toast.LENGTH_LONG).show();
+                        Crashlytics.logException(e1);
+                    }
                    //e.printStackTrace();
                 }
                 break;
@@ -221,12 +227,25 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                 //FeeCharge
                 try
                 {
+                   // {act=android.intent.action.VIEW dat=freechargeapp://freecharge?action=recharge
+                    // &number=9972115447&type=prepaid&amount=36
+                    // &operator=Airtel&circle=Karnataka
+                    // &source=Juice cmp=com.freecharge.android/com.freecharge.ui.MainSplashActivity
                     getPackageManager().getPackageInfo("com.freecharge.android", 0);
-                    intent = new Intent("com.freecharge.android");
-                    intent.setComponent(new ComponentName("com.freecharge.android", "com.freecharge.ui.MainSplashActivity"));
+                    intent = new Intent(Intent.ACTION_VIEW);
+                    Uri mUri = Uri.parse("freechargeapp://freecharge?action=recharge"
+                            +"&number="+number
+                            +"&type=prepaid"
+                            +"&amount="+amount
+                            +"&operator="+carrierExtra
+                            +"&circle="+circleExtra
+                            +"&source="+"SimplyApp");
+                    intent.setData(mUri);
+                    //{act=com.freecharge.android.MainSplashActivity cmp=com.freecharge.android/com.freecharge.ui.MainSplashActivity (has extras)} from pid 8164
+                    /*intent.setComponent(new ComponentName("com.freecharge.android", "com.freecharge.ui.MainSplashActivity"));
                     intent.putExtra("src", "SimplyApp");
                     intent.putExtra("referralSource", "SimplyApp");
-                    intent.putExtra("referral", "SimplyApp");
+                    intent.putExtra("referral", "SimplyApp");*/
                     startActivity(intent);
                 } catch (Exception e)
                 {

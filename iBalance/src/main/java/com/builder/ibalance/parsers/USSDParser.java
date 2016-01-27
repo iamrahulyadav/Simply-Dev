@@ -173,10 +173,10 @@ public class USSDParser
 
             //Original message will be filled in RecorderUpdater,
             this.refreshMessage = new BalanceRefreshMessage(mainBal,validity,"");
-            Log.d(TAG,this.refreshMessage.toString());
+           //V17Log.d(TAG,this.refreshMessage.toString());
             return true;
         }
-        Log.d(TAG, "Balance refresh Didn't Match");
+       //V17Log.d(TAG, "Balance refresh Didn't Match");
         return false;
     }
     private boolean smsBalance(String message)

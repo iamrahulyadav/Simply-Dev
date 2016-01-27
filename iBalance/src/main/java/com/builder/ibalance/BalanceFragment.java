@@ -20,7 +20,6 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,6 +40,7 @@ import com.builder.ibalance.messages.UpdateBalanceOnScreen;
 import com.builder.ibalance.models.USSDModels.NormalCall;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.GlobalData;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
@@ -123,6 +123,12 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         balanceTextView.setTypeface(tf);
         balance_layout = (LinearLayout) rootView.findViewById(R.id.bal_layout);
         mLineChart = (LineChart) rootView.findViewById(R.id.balcontainer);
+        if(GlobalData.globalSimList == null)
+        {
+            GlobalData.globalSimList =  new Helper.SharedPreferenceHelper().getDualSimDetails();
+        }
+
+
         if (GlobalData.globalSimList.size() >= 2)
         {
             sim_switch.setVisibility(View.VISIBLE);
@@ -135,9 +141,13 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
                     {
                         sim_slot = 1;
 
-                    } else sim_slot = 0;
+                    } else
+                    {
+                        sim_slot = 0;
+                    }
                     Toast.makeText(MyApplication.context, "Switched to Sim " + (sim_slot + 1), Toast.LENGTH_SHORT).show();
                     ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(GlobalData.globalSimList.get(sim_slot).carrier + " - " + (sim_slot + 1));
+
                     new USSDLoader().execute(sim_slot);
                 }
             });
@@ -439,6 +449,9 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             setData();
 
         }
+        else {
+            mLineChart.clear();
+        }
 
 
         boolean isDatapackActive=false, isSmsPackActive = false, isCallpackActive = false;
@@ -714,6 +727,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
         int i = 0;
         if (DataInitializer.ussdDataList == null)
         {
+            //TODO remove this hack and use LIMIT in query
             BalanceHelper mBalanceHelper = new BalanceHelper();
             //Log.d(tag, "Got Nullfrom DataInitializer creating a again");
             //mBalanceHelper.addDemoentries();
@@ -723,7 +737,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             Date fromDate = cal.getTime();
             String fromdate = dateFormat.format(fromDate);
             //Log.d(tag,"7 day old date = "+fromDate);
-            ussdDataList = mBalanceHelper.getAllEntries();
+            ussdDataList = mBalanceHelper.getAllEntries(sim_slot);
             //Log.d(tag ,ussdDataList.toString());
         } else ussdDataList = DataInitializer.ussdDataList;
         //Log.d(tag, "Adding Values");
@@ -813,17 +827,17 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
     public void onEvent(UpdateBalanceOnScreen message)
     {
-        Log.d(tag,"Updating Screen "+message.toString());
+       //V17Log.d(tag,"Updating Screen "+message.toString());
         switch (message.getType())
         {
             case "MAIN_BAL" :
                 if(balanceTextView == null)
                 balanceTextView = (TextView) rootView.findViewById(R.id.balance_text);
-                Log.d(tag,"Updating to "+message.getBalance());
+               //V17Log.d(tag,"Updating to "+message.getBalance());
                 balanceTextView.setText(getResources().getString(R.string.rupee_symbol)+String.format(" %.2f",message.getBalance()));
                 if(!normalBalRefresh)
                 {
-                    Log.d(tag,"Updating Balance Screen");
+                   //V17Log.d(tag,"Updating Balance Screen");
                     intializeScreen(sim_slot);
                 }
                 break;

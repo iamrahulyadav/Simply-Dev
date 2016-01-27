@@ -11,14 +11,12 @@ import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.telecom.TelecomManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.builder.ibalance.messages.BalanceRefreshMessage;
 import com.builder.ibalance.messages.UpdateBalanceOnScreen;
 import com.builder.ibalance.util.ConstantsAndStatics;
@@ -52,6 +50,14 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
     int sim_slot = 0;
     String carrier = "";
     String refreshType = "";
+
+    @Override
+    protected void onStop()
+    {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
     @Override
     @DebugLog
     protected void onCreate(Bundle savedInstanceState)
@@ -59,8 +65,14 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_balance_refresh);
         this.setFinishOnTouchOutside(false);
+        if(!Helper.isAccessibilityEnabled(ConstantsAndStatics.accessibiltyID))
+        {
+            Toast.makeText(BalanceRefreshActivity.this, "Need to Enable Simply Recorder First", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this,OnBoardingActivity.class));
+            this.finish();
+        }
         EventBus.getDefault().register(this);
-        /*You sill receive two extras
+        /*You shall receive two extras
         1. The SIM_SLOT, by default 0, you do the extra addition to dial for dual sim here
         2.The type to Check it will bethe KEY to the JSOn Object,they are as follows
                 "MAIN_BAL" : "*111*2#",
@@ -69,6 +81,7 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
 				"SMS_BAL" : "*149#",
 				"MOB_NUMBER"
         */
+
         Intent mIntent = this.getIntent();
         sim_slot = mIntent.getIntExtra("SIM_SLOT", 0);
         refreshType = mIntent.getStringExtra("TYPE");
@@ -79,7 +92,17 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
         ImageButton enableEdit = (ImageButton) findViewById(R.id.enable_edit);
         enableEdit.setOnClickListener(this);
         refreshButton.setOnClickListener(this);
+        if(GlobalData.globalSimList==null)
+        {
+            GlobalData.globalSimList =  new Helper.SharedPreferenceHelper().getDualSimDetails();
+
+        }
         carrier = GlobalData.globalSimList.get(sim_slot).getCarrier();
+        if(TextUtils.isEmpty(carrier))
+        {
+            //TODO change this
+            carrier = "Airtel";
+        }
         ussdCodes = getUssdCodes(carrier);
         refreshHeading.setText(carrier + ", " + getDisplayType(refreshType));
         if (refreshType != null)
@@ -87,13 +110,15 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
             try
             {
                 ussdToDial = ussdCodes.getString(refreshType);
-            } catch (JSONException e)
+            } catch (Exception e)
             {
+                //TODO Change event this
+                ussdToDial = "*123#";
                 Crashlytics.logException(e);
             }
         }
         ussdCodeText.setText(ussdToDial);
-        Log.d(TAG, "USSD to Dial" + ussdToDial);
+       //V17Log.d(TAG, "USSD to Dial" + ussdToDial);
     }
 
 
@@ -155,7 +180,7 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
 
         ConstantsAndStatics.WAITING_FOR_REFRESH = true;
         ConstantsAndStatics.REFRESH_TYPE = ConstantsAndStatics.USSD_TYPES.MAIN_BALANCE;
-        Log.d(TAG, "Dialing " + ussdToDial);
+       //V17Log.d(TAG, "Dialing " + ussdToDial);
             ussdToDial = ussdToDial.replace("*", Uri.encode("*")).replace("#", Uri.encode("#"));
             Intent mIntent = new Intent(Intent.ACTION_CALL);
             Uri data = Uri.parse("tel:" + ussdToDial);
@@ -183,7 +208,7 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
                     {
                         TelecomManager localTelecomManager = (TelecomManager) this.getSystemService(Context.TELECOM_SERVICE);
                         List localList = localTelecomManager.getCallCapablePhoneAccounts();
-                        Log.d("Shabaz Account ", localList.toString());
+                       //V17Log.d("Shabaz Account ", localList.toString());
                         //List localList = (List) ReflectionHelper.getObject((Object) localTelecomManager, localTelecomManager.getClass().getName(), "getAllPhoneAccountHandles", null);
                         if ((localList != null) && (Helper.isExists(localList, sim_slot)))
                         {
@@ -202,16 +227,33 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
 
     public void onEvent(BalanceRefreshMessage message)
    {
-       FlurryAgent.endTimedEvent("ONBOARD");
+       SharedPreferences userDataPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
+       boolean firstRefresh = userDataPref.getBoolean("FIRST_REFRESH",true);
        if(message.isSuccessful())
        {
-           FlurryAgent.logEvent("ONBOARD_REFRESH_SUCCESS");
+           if(firstRefresh)
+           {
+               FlurryAgent.logEvent("ONBOARD_REFRESH_SUCCESS");
+               userDataPref.edit().putBoolean("FIRST_REFRESH",false).apply();
+           }
+           else
+           {
+               FlurryAgent.logEvent(refreshType+"_SUCCESS");
+           }
            success_message(message);
            updateValues(message);
        }
        else
        {
-           FlurryAgent.logEvent("ONBOARD_REFRESH_FAIL");
+           if(firstRefresh)
+           {
+               FlurryAgent.logEvent("ONBOARD_REFRESH_FAIL");
+               userDataPref.edit().putBoolean("FIRST_REFRESH",false).apply();
+           }
+           else
+           {
+               FlurryAgent.logEvent(refreshType+"_FAIL");
+           }
            unsuccess_message(message.getOriginalMessage());
        }
    }
@@ -375,21 +417,28 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
     {
         //TODO Update USSD number from dropbox
         JSONObject mJsonObject = null;
+        if(TextUtils.isEmpty(carrier))
+        {
+            //TODO change this
+            carrier = "Airtel";
+        }
         try
         {
             String raw = userPref.getString(carrier, null);
-            if (TextUtils.isEmpty(raw)) throw new JSONException("First Time");
+            if (TextUtils.isEmpty(raw)) {
+                throw new JSONException("First Time");
+            }
             mJsonObject = new JSONObject(raw);
-        } catch (JSONException e)
+        } catch (Exception e)
         {
             try
             {
                 JSONObject mObject = new JSONObject(loadJSONFromAsset("USSDCodes.json"));
                 mObject = mObject.getJSONObject("USSD_CODE");
                 mJsonObject = mObject.getJSONObject(carrier);
-                Log.d("BAL Refresh", mJsonObject.toString());
-                userPref.edit().putString(carrier, mJsonObject.toString());
-            } catch (JSONException e1)
+               //V17Log.d("BAL Refresh", mJsonObject.toString());
+                userPref.edit().putString(carrier, mJsonObject.toString()).apply();
+            } catch (Exception e1)
             {
                 Crashlytics.logException(e1);
             }

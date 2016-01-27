@@ -164,7 +164,8 @@ public class DualSim
                 getSimListForSingleSim(sim_details_known);
                 needMethodsToDebug = true;
             }
-            debugInfo.append(checkDualSim(needMethodsToDebug) + "\n\n");
+            if(needMethodsToDebug)
+            debugInfo.append("ALL DEBUG INFO :\n"+checkDualSim() + "\n\n");
             //If the Sim List is still empty iit means the phone is in flight mode or doesnt have sims
             //Try to use the old sim details
             //If no old SimDetails exist then show error screen
@@ -2186,6 +2187,7 @@ public class DualSim
 
     public ArrayList getCarrierCirclefromIMSI(String IMSI)
     {
+        IMSI.replaceAll("\\W","");
         if (IMSI == null || IMSI.equals("")) //IF MCC+MNC doesn't exist
         {
             return getCarrierCircleManually();
@@ -2304,7 +2306,7 @@ public class DualSim
     }
 
 
-    public final String checkDualSim(boolean classMethods) //for Debug only
+    public final String checkDualSim() //for Debug only
     {
       //V12Log.d(tag, "Testing Dual SIM Support");
         StringBuilder mStringBuilder = new StringBuilder("Debuf Info :");

@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
-import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
@@ -62,20 +61,16 @@ import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
-import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.builder.ibalance.util.RegexUpdater;
 import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -320,9 +315,9 @@ boolean cancelButtonFound = false;
 @DebugLog
     public void onAccessibilityEvent(AccessibilityEvent event)
     {
-        Log.d(TAG,String.format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
-                getEventType(event), event.getClassName(),
-                event.getPackageName(), event.getEventTime(), event.getText()));
+       //V17Log.d(TAG,String.format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
+                //getEventType(event), event.getClassName(),
+                //event.getPackageName(), event.getEventTime(), event.getText()));
         if(event.getPackageName().toString().toUpperCase(Locale.US).contains("WHATSAPP"))
         {
          if(ConstantsAndStatics.PASTE_DEVICE_ID==true)
@@ -357,7 +352,7 @@ boolean cancelButtonFound = false;
         {
             if(text==null || text.isEmpty())
             {
-                Log.d(TAG,"Returning bcoz: "+text);
+               //V17Log.d(TAG,"Returning bcoz: "+text);
                 return;
             }
             if(!ConstantsAndStatics.WAITING_FOR_REFRESH)
@@ -367,10 +362,11 @@ boolean cancelButtonFound = false;
                 sharedPreferences.edit().putString("PREV_MSG", text).apply();
                 if (previousUssdMessage.equals(text))
                 {
-                    Log.d(TAG, "Duplicate event: " + previousUssdMessage);
+                   //V17Log.d(TAG, "Duplicate event: " + previousUssdMessage);
                     return;
                 }
             }
+           
             String original_message = text;
 
             text = text.trim()
@@ -413,6 +409,7 @@ boolean cancelButtonFound = false;
                     EventBus.getDefault().post(new BalanceRefreshMessage(Float.MIN_VALUE,null,original_message));
                 }
                 logOnParse(text);
+                (new RegexUpdater()).check();
             }
 
         }
@@ -487,7 +484,7 @@ boolean cancelButtonFound = false;
             if (ac.getClassName().equals(EditText.class.getName()))
             {
                 foundWhatsAppEditText = true;
-                Log.d(TAG,"Found WhatsApp edit Text : "+ac.toString());
+               //V17Log.d(TAG,"Found WhatsApp edit Text : "+ac.toString());
                 mNode = ac;
                 return ac;
 
@@ -1240,23 +1237,24 @@ boolean cancelButtonFound = false;
         ////V10Log.d(TAG, "onServiceConnected");
         if (ConstantsAndStatics.WAITING_FOR_SERVICE)
         {
-            Tracker t = ((MyApplication) this.getApplication()).getTracker(
-                    TrackerName.APP_TRACKER);
-            t.send(new HitBuilders.EventBuilder()
-                    .setCategory("SERVICE_STATUS")
-                    .setAction("OFF")
-                    .setLabel(Helper.getDeviceId())
-                    .build());
-            Map<String, String> params = new HashMap<String, String>();
-            params.put("STATUS", "OFF");
-            params.put("DEVICE_ID", Helper.getDeviceId());
+            if(!BuildConfig.DEBUG)
+            {
+                SharedPreferences userDataPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
+                boolean firstTimeService = userDataPref.getBoolean("FIRST_SERVICE",true);
 
-            FlurryAgent.logEvent("SERVICE",params);
-            TelephonyManager mtelTelephonyManager = (TelephonyManager) this
-                    .getSystemService(Context.TELEPHONY_SERVICE);
+                if(firstTimeService)
+                {
+                    FlurryAgent.logEvent("ONBOARD_ACTIVATION");
+                    userDataPref.edit().putBoolean("FIRST_SERVICE",false).apply();
+                }
+                else {
+                    FlurryAgent.logEvent("ONBOARD_REPEAT_ACTIVATION");
+                }
+            }
+
             ParseQuery<ParseObject> query = ParseQuery
                     .getQuery("SERVICE_STATUS");
-            query.whereEqualTo("DEVICE_ID", mtelTelephonyManager.getDeviceId());
+            query.whereEqualTo("DEVICE_ID", Helper.getDeviceId());
             // Retrieve the object by Device id
 
             query.addDescendingOrder("createdAt");
@@ -1268,7 +1266,6 @@ boolean cancelButtonFound = false;
                     {
                         // Now let's update it pl
                        //V10Log.d(TAG, "Service On");
-                        service_status.put("APP_VERSION", BuildConfig.VERSION_CODE);
                         service_status.put("SERVICE_STATUS", "ON");
                         service_status.increment("SERVICE_TOGGLE_COUNT");
                         service_status.saveEventually();
@@ -1277,7 +1274,7 @@ boolean cancelButtonFound = false;
                 }
             });
 
-            ////V10Log.d(TAG, "OpeningMain Activity");
+            ////V10Log.d(TAG, "Opening Main Activity");
             ConstantsAndStatics.WAITING_FOR_SERVICE = false;
             Intent openApplication = new Intent(getApplicationContext(),
                     MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

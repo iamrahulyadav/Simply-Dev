@@ -41,7 +41,7 @@ public class USSDParser
             while((message = br.readLine())!=null)
             {
                 ptln("Working on : "+message);
-                if(!normalCall(message.toUpperCase()))
+                if(!mainBalance(message.toUpperCase()))
                 {
                     ptln("Failed:\n"+message);
                 }
