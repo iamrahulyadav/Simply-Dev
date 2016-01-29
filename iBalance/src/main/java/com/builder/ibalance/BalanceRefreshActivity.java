@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.builder.ibalance.messages.BalanceRefreshMessage;
 import com.builder.ibalance.messages.UpdateBalanceOnScreen;
 import com.builder.ibalance.util.ConstantsAndStatics;
@@ -54,6 +55,7 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
     @Override
     protected void onStop()
     {
+        FlurryAgent.endTimedEvent("BalanceRefreshActivity");
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
@@ -65,6 +67,7 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_balance_refresh);
         this.setFinishOnTouchOutside(false);
+        FlurryAgent.logEvent("BalanceRefreshActivity",true);
         if(!Helper.isAccessibilityEnabled(ConstantsAndStatics.accessibiltyID))
         {
             Toast.makeText(BalanceRefreshActivity.this, "Need to Enable Simply Recorder First", Toast.LENGTH_SHORT).show();
@@ -138,6 +141,8 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
 
                 if(ussdToDial.matches("^\\*(\\d+\\**)+#$"))
                 {
+                    Helper.logGA("REFRESH","STARTED");
+                    Helper.logFlurry("REFRESH","TYPE","STARTED");
                     dialUSSDCode();
 
                     wait_for_ussd();
@@ -233,13 +238,13 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
        {
            if(firstRefresh)
            {
-               FlurryAgent.logEvent("ONBOARD_REFRESH_SUCCESS");
+
+               Helper.logGA("ONBOARD","REFRESH_SUCCESS");
+               Helper.logFlurry("ONBOARD","ACTION","REFRESH_SUCCESS");
                userDataPref.edit().putBoolean("FIRST_REFRESH",false).apply();
            }
-           else
-           {
-               FlurryAgent.logEvent(refreshType+"_SUCCESS");
-           }
+           Helper.logGA("REFRESH",refreshType,"SUCCESS");
+           Helper.logFlurry("REFRESH","TYPE",refreshType,"ACTION","SUCCESS");
            success_message(message);
            updateValues(message);
        }
@@ -247,13 +252,12 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
        {
            if(firstRefresh)
            {
-               FlurryAgent.logEvent("ONBOARD_REFRESH_FAIL");
+               Helper.logGA("ONBOARD","REFRESH_FAIL");
+               Helper.logFlurry("ONBOARD","ACTION","REFRESH_FAIL");
                userDataPref.edit().putBoolean("FIRST_REFRESH",false).apply();
            }
-           else
-           {
-               FlurryAgent.logEvent(refreshType+"_FAIL");
-           }
+           Helper.logGA("REFRESH",refreshType,"FAILURE");
+           Helper.logFlurry("REFRESH","TYPE",refreshType,"ACTION","FAILURE");
            unsuccess_message(message.getOriginalMessage());
        }
    }
@@ -276,7 +280,8 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
             public void onClick(View v)
             {
 
-                FlurryAgent.logEvent("ONBOARD_REFRESH_FAIL");
+                Helper.logGA("REFRESH",refreshType,"CANCELLED");
+                Helper.logFlurry("REFRESH","TYPE",refreshType,"ACTION","CANCELLED");
                 finish();
             }
         });

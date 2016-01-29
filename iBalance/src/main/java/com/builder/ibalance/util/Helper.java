@@ -22,9 +22,6 @@ import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -167,27 +164,40 @@ public  class Helper {
     public static void logUserEngageMent(String from)
     {
 
-        Tracker t = ((MyApplication)MyApplication.context).getTracker(MyApplication.TrackerName.APP_TRACKER);
-        Map<String, String> engageParams = new HashMap<String, String>();
-        String deviceID = ((TelephonyManager)MyApplication.context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
-        engageParams.put("DEVICE_ID", deviceID);
-        engageParams.put("IST_DATE", (new IndianDate().getTime()) + "");
-        engageParams.put("FROM", from);
-        FlurryAgent.logEvent("USER_ENGAGEMENT", engageParams);
-        JSONObject jsonObject = new JSONObject();
-        try
-        {
-            jsonObject.put("DEVICE_ID",deviceID);
-            jsonObject.put("IST_DATE",(new IndianDate()).getTime());
-        } catch (JSONException e)
-        {
-           //V10e.printStackTrace();
-        }
-        t.send(new HitBuilders.EventBuilder().
-                setCategory("USER_ENGAGEMENT")
-                .setAction(from)
-                .setLabel(jsonObject.toString())
-                .build());
+
+            Tracker t = ((MyApplication) MyApplication.context).getTracker(MyApplication.TrackerName.APP_TRACKER);
+            Map<String, String> engageParams = new HashMap<String, String>();
+            String deviceID = ((TelephonyManager) MyApplication.context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+            engageParams.put("DEVICE_ID", deviceID);
+            engageParams.put("IST_DATE", (new IndianDate().getTime()) + "");
+            engageParams.put("FROM", from);
+            FlurryAgent.logEvent("USER_ENGAGEMENT", engageParams);
+    }
+    public static void logFlurry(String eventName,String param_key_1,String param_1,String param_key_2,String param_2)
+    {
+
+            HashMap<String, String> params = new HashMap<>();
+            params.put(param_key_1, param_1);
+            if (param_key_2 != null) params.put(param_key_2, param_2);
+            FlurryAgent.logEvent(eventName, params);
+
+    }
+    public static void logFlurry(String eventName,String param_key_1,String param_1)
+    {
+        logFlurry(eventName,param_key_1,param_1,null,null);
+    }
+    public static void logGA(String category,String action,String label)
+    {
+            Tracker t = ((MyApplication) MyApplication.context).getTracker(MyApplication.TrackerName.APP_TRACKER);
+            t.send(new HitBuilders.EventBuilder().setCategory(category).setAction(action).setLabel(label).build());
+    }
+    public static void logGA(String category,String action)
+    {
+        logGA( category, action,"");
+    }
+    public static void logGA(String category)
+    {
+        logGA( category, "");
     }
     public static class SharedPreferenceHelper
     {

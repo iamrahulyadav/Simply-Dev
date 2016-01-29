@@ -25,7 +25,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.models.PopupModels.NormalCallPopup;
 import com.builder.ibalance.models.PopupModels.NormalDataPopup;
 import com.builder.ibalance.models.PopupModels.NormalSmsPopup;
@@ -37,8 +36,7 @@ import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.kahuna.sdk.Kahuna;
 import com.squareup.picasso.Picasso;
 
 import hugo.weaving.DebugLog;
@@ -50,18 +48,33 @@ public class UssdPopup extends AppCompatActivity
         TextView originalMessage;
      ImageButton expand ;
     String rupee_symbol;
+    boolean dismissPopup = true;
     boolean recharge = false;
     boolean rate = false;
     boolean share = false;
+    boolean explicitDismiss = false;
 	String from = "CALL"; //what type of popup
 	 @Override
 	    protected void onStart() {
+
 	        super.onStart();
+         Kahuna.getInstance().start();
+         FlurryAgent.logEvent("UssdPopup", true);
 	        // Your Code Here
 	    }
 
 	    @Override
 	    protected void onStop() {
+            Kahuna.getInstance().stop();
+            FlurryAgent.endTimedEvent("UssdPopup");
+            if(dismissPopup)
+            {
+                String dismissType = null;
+                if(explicitDismiss)dismissType = "EXPLICIT";
+                else dismissType = "IMPLICIT";
+                Helper.logGA("POPUP_DISMISS",from,dismissType);
+                Helper.logFlurry("POPUP_DISMISS","SOURCE",from,"TYPE",dismissType);
+            }
 	        super.onStop();
 	        // Your Code Here
 	    }
@@ -85,31 +98,155 @@ public class UssdPopup extends AppCompatActivity
         {
             case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
                //V16Log.d(TAG,"Type Normal call");
+                from = "NORMAL_CALL";
                 displayNormalCallPopUp((NormalCallPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
                //V16Log.d(TAG,"Type Pack call");
+                from = "PACK_CALL";
                 displayCallPackPopup((PackCallPopup) mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_SMS:
                //V16Log.d(TAG,"Type Normal SMS");
+                from = "NORMAL_SMS";
                 displayNormalSMSPopup((NormalSmsPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_SMS:
                //V16Log.d(TAG,"Type Pack SMS");
+                from = "PACK_SMS";
                 displaySMSPackPopup((PackSmsPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_DATA:
                //V16Log.d(TAG,"Type Normal Data");
+                from = "NORMAL_DATA";
                 displayNormalDataPopup((NormalDataPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
                //V16Log.d(TAG,"Type Pack Data");
+                from = "PACK_DATA";
                 displayDataPackPopup((PackDataPopup)mIntent.getParcelableExtra("DATA"));
                 break;
         }
 
-		/*field1 = (TextView)findViewById(R.id.field1);
+
+		if(recharge)
+		{
+            TextView infoText = ((TextView)findViewById(R.id.ussd_share_info));
+            infoText.setVisibility(View.VISIBLE);
+            infoText.setText("Your Balance Low Recharge to stay connected");
+			findViewById(R.id.ussd_normal_layout).setVisibility(View.GONE);
+			View v = findViewById(R.id.ussd_recharge_layout);
+                    v.setVisibility(View.VISIBLE);
+            Button rechargeButton = (Button) v.findViewById(R.id.ussd_recharge);
+            rechargeButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    dismissPopup = false;
+                    Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
+                    mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    mIntent.putExtra("FROM", "POPUP");
+                    mIntent.putExtra("RECHARGE", true);
+                    startActivity(mIntent);
+                    finish();
+                }
+            });
+
+		}
+        else if(rate)
+        {
+
+            Helper.logGA("POPUP_RATE_SHOWN");
+            FlurryAgent.logEvent("POPUP_RATE_SHOWN");
+            TextView infoText = ((TextView)findViewById(R.id.ussd_share_info));
+            infoText.setVisibility(View.VISIBLE);
+            infoText.setText("Please take a few seconds to Rate the App :)");
+            Button rateButton = (Button) findViewById(R.id.ussd_open_app);
+            rateButton.setText("Rate App");
+            ((LinearLayout)findViewById(R.id.ussd_dismiss).getParent()).setVisibility(View.GONE);
+            LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1);
+            ((LinearLayout) rateButton.getParent()).setLayoutParams(mLayout);
+
+            rateButton.setOnClickListener(new View.OnClickListener()
+            {
+
+                @Override
+                public void onClick(View v)
+                {
+                    dismissPopup = false;
+                    SharedPreferences userPrefs = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
+                    userPrefs.edit().putBoolean("RATED",true).apply();
+                    Helper.logGA("RATE","POPUP");
+                    Helper.logFlurry("RATE","SOURCE","POPUP");
+                    Uri uri = Uri.parse("market://details?id=" + UssdPopup.this.getPackageName());
+                    //Log.d(tag,"URI = "+ uri);
+                    Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                    try {
+                        startActivity(goToMarket);
+                    } catch (ActivityNotFoundException e) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + UssdPopup.this.getPackageName())));
+                    }
+                    finish();
+
+                }
+            });
+
+        }
+        else if(share)
+        {
+            //Will Be handled in normal call popup
+
+
+        }
+		else
+		{
+			dismiss = (Button) findViewById(R.id.ussd_dismiss);
+            ImageView infoButton = (ImageView) findViewById(R.id.info_button);
+            open_app = (Button) findViewById(R.id.ussd_open_app);
+            infoButton.setOnClickListener(new View.OnClickListener()
+            {
+
+                @Override
+                public void onClick(View v)
+                {
+
+                    Toast.makeText(getApplicationContext(), "This is a Custom message,With call rate info.", Toast.LENGTH_LONG).show();
+
+                }
+            });
+            dismiss.setOnClickListener(new View.OnClickListener()
+            {
+
+                @Override
+                public void onClick(View v)
+                {
+                    Helper.logUserEngageMent(from + "_DISMISS");
+                    explicitDismiss = true;
+                    finish();
+
+                }
+            });
+            open_app.setOnClickListener(new View.OnClickListener()
+            {
+
+                @Override
+                public void onClick(View v)
+                {
+                    dismissPopup = false;
+                    Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
+                    mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    mIntent.putExtra("FROM", "POPUP");
+                    Helper.logUserEngageMent(from + "_OPEN");
+                    startActivity(mIntent);
+                    finish();
+
+                }
+            });
+		}
+
+
+        		/*field1 = (TextView)findViewById(R.id.field1);
 		field1.setTypeface(tf);
 		field2 =(TextView)findViewById(R.id.field2);
 		field2.setTypeface(tf);
@@ -254,7 +391,7 @@ public class UssdPopup extends AppCompatActivity
 			balance = mIntent.getStringExtra("BALANCE");
 			head2.setText("Current Balance");
 			field2.setText(rupee_symbol+" "+balance);
-			
+
 			String data_consumed = mIntent.getStringExtra("DATA_CONSUMED");
 			head3.setText("Data Used");
 			field3.setText(data_consumed+" MB");
@@ -298,7 +435,7 @@ public class UssdPopup extends AppCompatActivity
 			String data_left = mIntent.getStringExtra("DATA_LEFT");
 			head2.setText("Data Left");
 			field2.setText(data_left+" MB");
-			
+
 			balance = mIntent.getStringExtra("BALANCE");
 			head3.setText("Current Balance");
 			field3.setText(rupee_symbol+" "+balance);
@@ -327,116 +464,6 @@ public class UssdPopup extends AppCompatActivity
 		default:
 			break;
 		}*/
-		if(recharge)
-		{
-            TextView infoText = ((TextView)findViewById(R.id.ussd_share_info));
-            infoText.setVisibility(View.VISIBLE);
-            infoText.setText("Please take a few seconds to Rate the App, it means a lot :)");
-			findViewById(R.id.ussd_normal_layout).setVisibility(View.GONE);
-			View v = findViewById(R.id.ussd_recharge_layout);
-                    v.setVisibility(View.VISIBLE);
-            Button rechargeButton = (Button) v.findViewById(R.id.ussd_recharge);
-            rechargeButton.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-
-                    Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
-                    mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-                    mIntent.putExtra("FROM", "POPUP");
-                    mIntent.putExtra("RECHARGE", true);
-                    Helper.logUserEngageMent(from + "_RECHARGE");
-                    startActivity(mIntent);
-                    finish();
-                }
-            });
-
-		}
-        else if(rate)
-        {
-            Button rateButton = (Button) findViewById(R.id.ussd_open_app);
-            rateButton.setText("Rate App");
-            ((LinearLayout)findViewById(R.id.ussd_dismiss).getParent()).setVisibility(View.GONE);
-            LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT,1);
-            ((LinearLayout) rateButton.getParent()).setLayoutParams(mLayout);
-
-            rateButton.setOnClickListener(new View.OnClickListener()
-            {
-
-                @Override
-                public void onClick(View v)
-                {
-                    SharedPreferences userPrefs = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
-                    userPrefs.edit().putBoolean("RATED",true).apply();
-                    Tracker t = ((MyApplication) getApplication()).getTracker(
-                            MyApplication.TrackerName.APP_TRACKER);
-                    t.send(new HitBuilders.EventBuilder().setCategory("RATE")
-                            .setAction("Rate").setLabel("").build());
-                    FlurryAgent.logEvent("Rate");
-                    AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
-                            "Rate", "");
-                    Uri uri = Uri.parse("market://details?id=" + UssdPopup.this.getPackageName());
-                    //Log.d(tag,"URI = "+ uri);
-                    Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-                    try {
-                        startActivity(goToMarket);
-                    } catch (ActivityNotFoundException e) {
-                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + UssdPopup.this.getPackageName())));
-                    }
-
-                }
-            });
-
-        }
-        else if(share)
-        {
-            //Will Be handled in normal call popup
-
-        }
-		else
-		{
-			dismiss = (Button) findViewById(R.id.ussd_dismiss);
-            ImageView infoButton = (ImageView) findViewById(R.id.info_button);
-            open_app = (Button) findViewById(R.id.ussd_open_app);
-            infoButton.setOnClickListener(new View.OnClickListener()
-            {
-
-                @Override
-                public void onClick(View v)
-                {
-
-                    Toast.makeText(getApplicationContext(), "This is a Custom message,With call rate info.", Toast.LENGTH_LONG).show();
-
-                }
-            });
-            dismiss.setOnClickListener(new View.OnClickListener()
-            {
-
-                @Override
-                public void onClick(View v)
-                {
-                    Helper.logUserEngageMent(from + "_DISMISS");
-                    finish();
-
-                }
-            });
-            open_app.setOnClickListener(new View.OnClickListener()
-            {
-
-                @Override
-                public void onClick(View v)
-                {
-                    Intent mIntent = new Intent(getApplicationContext(), SplashscreenActivity.class);
-                    mIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-                    mIntent.putExtra("FROM", "POPUP");
-                    Helper.logUserEngageMent(from + "_OPEN");
-                    startActivity(mIntent);
-                    finish();
-
-                }
-            });
-		}
 	}
     //Handle a bug in Call rate, it is set default to 0.0f
     @DebugLog
@@ -466,12 +493,17 @@ public class UssdPopup extends AppCompatActivity
         boolean rated = mSharedPreferences.getBoolean("RATED",false);
         int popUpCount = mSharedPreferences.getInt("POP_UP_COUNT",1);
         mSharedPreferences.edit().putInt("POP_UP_COUNT", popUpCount + 1).apply();
-        if(!rated && popUpCount >= 10)
+        if(details.getCurrent_balance() <= minimum_bal)
+        {
+            field_2.setTextColor(Color.parseColor("#ff0000"));
+            recharge = true;
+        }
+        else if(!rated && (popUpCount% 10) ==0)
         {
                 //TODO this is not a good structure, half here and half in onCreate fix it later
                 rate = true;
         }
-        else if(!details.getName().matches("[0-9]+"))
+        else if(!details.getName().matches("^\\+?[0-9]+$"))
         {
             final SharedPreferences sharedContacts = MyApplication.context.getSharedPreferences("SHARED_CONTACTS",Context.MODE_PRIVATE);
             boolean sharedAlready  = sharedContacts.getBoolean(details.getNumber(),false);
@@ -494,7 +526,8 @@ public class UssdPopup extends AppCompatActivity
                 infoText.setText(mBuilder);
                 Button shareButton = (Button) findViewById(R.id.ussd_open_app);
                 shareButton.setText("Share Now");
-                FlurryAgent.logEvent("WHATSAPP_SHARE_SHOWN");
+                Helper.logGA("SHARE","POPUP","SHOWN");
+                Helper.logFlurry("SHARE","SOURCE","POPUP","ACTION","SHOWN");
                 ((LinearLayout) findViewById(R.id.ussd_dismiss).getParent()).setVisibility(View.GONE);
                 LinearLayout.LayoutParams mLayout = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
                 ((LinearLayout) shareButton.getParent()).setLayoutParams(mLayout);
@@ -503,7 +536,9 @@ public class UssdPopup extends AppCompatActivity
                     @Override
                     public void onClick(View v)
                     {
-                        FlurryAgent.logEvent("WHATSAPP_SHARED");
+                        dismissPopup = false;
+                        Helper.logGA("SHARE","POPUP","CLICKED");
+                        Helper.logFlurry("SHARE","SOURCE","POPUP","ACTION","CLICKED");
                         sharedContacts.edit().putBoolean(details.getNumber(),true).apply();
                         if (Helper.whatsappInstalledOrNot())
                         {
@@ -523,11 +558,7 @@ public class UssdPopup extends AppCompatActivity
             }
 
         }
-        if(details.getCurrent_balance() <= minimum_bal)
-        {
-            field_2.setTextColor(Color.parseColor("#ff0000"));
-            recharge = true;
-        }
+
         if(details.getCurrent_balance()<0)
             field_2.setText("N/A");
         else
@@ -554,6 +585,9 @@ public class UssdPopup extends AppCompatActivity
             {
                 if(originalMessage.getVisibility() == View.GONE)
                 {
+                    Helper.logGA("ORIGINAL_MSG_EXPAND","NORMAL_CALL");
+                    Helper.logFlurry("ORIGINAL_MSG_EXPAND","TYPE","NORMAL_CALL");
+
                     expand.setImageResource(R.drawable.minus_icon);
                     originalMessage.setText(details.getMessage());
                     originalMessage.setVisibility(View.VISIBLE);
@@ -642,6 +676,8 @@ public class UssdPopup extends AppCompatActivity
             {
                 if(originalMessage.getVisibility() == View.GONE)
                 {
+                    Helper.logGA("ORIGINAL_MSG_EXPAND","NORMAL_SMS");
+                    Helper.logFlurry("ORIGINAL_MSG_EXPAND","TYPE","NORMAL_SMS");
                     expand.setImageResource(R.drawable.minus_icon);
                     originalMessage.setText(details.getMessage());
                     originalMessage.setVisibility(View.VISIBLE);
@@ -719,6 +755,8 @@ public class UssdPopup extends AppCompatActivity
             {
                 if(originalMessage.getVisibility() == View.GONE)
                 {
+                    Helper.logGA("ORIGINAL_MSG_EXPAND","PACK_SMS");
+                    Helper.logFlurry("ORIGINAL_MSG_EXPAND","TYPE","PACK_SMS");
                     expand.setImageResource(R.drawable.minus_icon);
                     originalMessage.setText(details.getMessage());
                     originalMessage.setVisibility(View.VISIBLE);
@@ -796,11 +834,11 @@ public class UssdPopup extends AppCompatActivity
         float dataRate = -1.0f;
         try
         {
-            float data_10_kb = details.getData_used()/100;
+            float data_10_kb = details.getData_used()*100;
             dataRate = data_10_kb/details.getCost();
         }
         catch (Exception e){}
-        field_4.setText(String.format("%.1f",dataRate)+" P/KB");
+        field_4.setText(String.format("%.1f",dataRate)+" P/10KB");
         findViewById(R.id.validity_layout).setVisibility(View.GONE);
         findViewById(R.id.separator_id).setVisibility(View.GONE);
         expand.setOnClickListener(new View.OnClickListener()
@@ -810,6 +848,8 @@ public class UssdPopup extends AppCompatActivity
             {
                 if(originalMessage.getVisibility() == View.GONE)
                 {
+                    Helper.logGA("ORIGINAL_MSG_EXPAND","NORMAL_DATA");
+                    Helper.logFlurry("ORIGINAL_MSG_EXPAND","TYPE","NORMAL_DATA");
                     expand.setImageResource(R.drawable.minus_icon);
                     originalMessage.setText(details.getMessage());
                     originalMessage.setVisibility(View.VISIBLE);
@@ -884,6 +924,8 @@ public class UssdPopup extends AppCompatActivity
             {
                 if(originalMessage.getVisibility() == View.GONE)
                 {
+                    Helper.logGA("ORIGINAL_MSG_EXPAND","PACK_DATA");
+                    Helper.logFlurry("ORIGINAL_MSG_EXPAND","TYPE","PACK_DATA");
                     expand.setImageResource(R.drawable.minus_icon);
                     originalMessage.setText(details.getMessage());
                     originalMessage.setVisibility(View.VISIBLE);
@@ -943,6 +985,8 @@ public class UssdPopup extends AppCompatActivity
             {
                 if(originalMessage.getVisibility() == View.GONE)
                 {
+                    Helper.logGA("ORIGINAL_MSG_EXPAND","PACK_CALL_1");
+                    Helper.logFlurry("ORIGINAL_MSG_EXPAND","TYPE","PACK_CALL_1");
                     expand.setImageResource(R.drawable.minus_icon);
                     originalMessage.setText(details.getMessage());
                     originalMessage.setVisibility(View.VISIBLE);
@@ -1019,6 +1063,8 @@ public class UssdPopup extends AppCompatActivity
             {
                 if(originalMessage.getVisibility() == View.GONE)
                 {
+                    Helper.logGA("ORIGINAL_MSG_EXPAND","PACK_CALL_2");
+                    Helper.logFlurry("ORIGINAL_MSG_EXPAND","TYPE","PACK_CALL_2");
                     expand.setImageResource(R.drawable.minus_icon);
                     originalMessage.setText(details.getMessage());
                     originalMessage.setVisibility(View.VISIBLE);

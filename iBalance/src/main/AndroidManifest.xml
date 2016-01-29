@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest package="com.builder.ibalance"
           xmlns:android="http://schemas.android.com/apk/res/android"
-          android:versionCode="18"
-          android:versionName="2.1.1">
+          android:versionCode="19"
+          android:versionName="2.1.2">
 
     <uses-sdk
         android:minSdkVersion="15"
@@ -89,7 +89,7 @@
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.NEW_OUTGOING_CALL"/>
-                <action android:name="android.intent.action.DATE_CHANGED"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
             </intent-filter>
         </receiver>
         <service
@@ -122,12 +122,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity
+        <!--<activity
             android:name=".Wizard"
             android:noHistory="true"
             android:screenOrientation="portrait">
-        </activity>
-        <activity
+        </activity>-->
+        <!--<activity
             android:name=".Preferences"
             android:noHistory="true"
             android:parentActivityName=".MainActivity"
@@ -136,8 +136,8 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.builder.ibalance.MainActivity"/>
-        </activity>
-        <activity
+        </activity>-->
+        <!--<activity
             android:name=".HistoryActivity"
             android:label="@string/title_activity_deduction_history"
             android:parentActivityName=".MainActivity"
@@ -145,13 +145,17 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.builder.ibalance.MainActivity"/>
-        </activity>
+        </activity>-->
         <activity
+
+            android:screenOrientation="portrait"
             android:name=".UssdPopup"
             android:label="USSDPopup"
             android:theme="@style/PopupTheme">
         </activity>
         <activity
+
+            android:screenOrientation="portrait"
             android:name=".OnBoardingActivity"
             android:theme="@style/PopupTheme"
             android:label="@string/title_activity_service_enable">
@@ -159,6 +163,7 @@
         <activity
             android:name=".ContactUs"
             android:label="@string/title_activity_contact_us"
+
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -178,7 +183,6 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION"/>
 
-                <!-- MODIFICATION: Replace "com.kahuna.sample" with your package -->
                 <category android:name="com.builder.ibalance"/>
             </intent-filter>
         </receiver>
@@ -187,16 +191,22 @@
 
         <activity
             android:name=".NoSimActivity"
+
+            android:screenOrientation="portrait"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_no_sim"
             android:theme="@style/AppBaseTheme">
         </activity>
         <activity
             android:name=".RechargePopup"
+
+            android:screenOrientation="portrait"
             android:theme="@style/PopupTheme">
         </activity>
         <activity
             android:name=".ServiceEnableTranslucent"
+
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent">
         </activity>
         <activity android:name=".BalanceRefreshActivity"

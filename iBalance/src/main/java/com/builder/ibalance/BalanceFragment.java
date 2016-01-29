@@ -186,9 +186,8 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
 
     private void callingScreen(String phoneNumber)
     {
-        Tracker t = ((MyApplication) MyApplication.context).getTracker(TrackerName.APP_TRACKER);
-        t.send(new HitBuilders.EventBuilder().setCategory("CALL").setAction("RECENTS").setLabel("").build());
-        FlurryAgent.logEvent("CALL");
+        Helper.logGA("CALL","RECENTS");
+        Helper.logFlurry("CALL","SOURCE","RECENTS");
         Intent intent = new Intent(Intent.ACTION_DIAL);
 
 
@@ -229,9 +228,11 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
                 alert.dismiss();
             }
         });
+
         Tracker t = ((MyApplication) context.getApplicationContext()).getTracker(TrackerName.APP_TRACKER);
         t.send(new HitBuilders.EventBuilder().setCategory("LOW_BALANCE").setAction(current_balance + "").setLabel("").build());
-        FlurryAgent.logEvent("LOW_BALANCE");
+        Helper.logGA("LOW_BALANCE",""+current_balance);
+        Helper.logFlurry("LOW_BALANCE","DEVICE_ID",Helper.getDeviceId(),"BALANCE",current_balance+"");
         alert.show();
         //AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "LOW_BALANCE", "current_balance");
         // Set the message to display
@@ -615,22 +616,12 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     {
         //Log.d(tag,"ONResume");
         //intializeScreen();
-        Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(TrackerName.APP_TRACKER);
 
-        // Set screen name.
-        t.setScreenName("BalanceScreen");
-
-        // Send a screen view.
-        t.send(new HitBuilders.ScreenViewBuilder().build());
-        // Capture author info & user status
-        //Log the timed event when the user starts reading the article
-        //setting the third param to true creates a timed event
-        FlurryAgent.logEvent("BalanceScreen", true);
-        //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"Balance Screen","");
 
         // End the timed event, when the user navigates away from article
 
         super.onResume();
+        FlurryAgent.logEvent("BalanceScreen",true);
     }
 
     @Override

@@ -84,6 +84,9 @@ public class ContactUs extends AppCompatActivity implements OnClickListener
         {
             case R.id.whatapp_contact:
                 //Intent intent = new Intent(Intent.ACTION_DIAL);
+                Helper.logGA("CONTACT_US","WHATSAPP");
+                Helper.logFlurry("CONTACT_US","CHANNEL","WHATSAPP");
+
                 if (!Helper.contactExists("+919739663487"))
                 {
                    //V10Log.d(tag, "Whatsapp contact not found adding contact");
@@ -106,6 +109,8 @@ public class ContactUs extends AppCompatActivity implements OnClickListener
                 //startActivity(intent);
                 break;
             case R.id.mail_contact:
+                Helper.logGA("CONTACT_US","MAIL");
+                Helper.logFlurry("CONTACT_US","CHANNEL","MAIL");
                 sendIntent = new Intent(Intent.ACTION_SEND);
                 sendIntent.setType("text/html");
                 //sendIntent.setType("message/rfc822");
@@ -115,6 +120,8 @@ public class ContactUs extends AppCompatActivity implements OnClickListener
                 startActivity(Intent.createChooser(sendIntent, "Send FeedBack"));
                 break;
             case R.id.share_debug_button:
+                Helper.logGA("CONTACT_US","DEBUG");
+                Helper.logFlurry("CONTACT_US","CHANNEL","DEBUG");
                 sendIntent = new Intent();
                 try
                 {

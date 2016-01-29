@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -23,6 +22,7 @@ import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.flurry.android.FlurryAgent;
+import com.kahuna.sdk.Kahuna;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -41,10 +41,10 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
     SharedPreferences userDataPref;
     boolean isEnabledAccess =false;
     boolean firstTimeOnBoard = true;
-	@Override
+
+
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        int screenWidth = (int) (metrics.widthPixels * 0.90);
 
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -80,16 +80,18 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 
         userDataPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
 
-        if(!BuildConfig.DEBUG){
             firstTimeOnBoard =userDataPref.getBoolean("FIRST_ONBOARD",true);
             if(firstTimeOnBoard)
             {
-                FlurryAgent.logEvent("ONBOARD");
+                Helper.logGA("ONBOARD","START");
+                Helper.logFlurry("ONBOARD","ACTION","START");
 
                 userDataPref.edit().putBoolean("FIRST_ONBOARD",false).apply();
             }
-            else FlurryAgent.logEvent("ONBOARD_REPEAT",true);
-        }
+            else {
+                Helper.logGA("ONBOARD_REPEAT","START");
+                Helper.logFlurry("ONBOARD_REPEAT","ACTION","START");
+            }
         boolean hasRefreshedBal = userDataPref.getBoolean("REFRESHED_BAL",false);
 
         float currentBal = userDataPref.getFloat("CURRENT_BALANCE_0",userDataPref.getFloat("CURRENT_BALANCE_1",-200.0f));
@@ -128,6 +130,8 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
                 {
                     if (e == null)
                     {// Now let's update it
+                        Helper.logGA("SERVICE","OFF");
+                        Helper.logFlurry("SERVICE","STATUS","OFF");
                         simply_service_status.put("SERVICE_STATUS", "OFF");
                         simply_service_status.increment("SERVICE_TOGGLE_COUNT");
                         simply_service_status.saveEventually();
@@ -159,10 +163,20 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 	}
 
 
+    /**
+     * Called when the activity has detected the user's press of the back
+     * key.  The default implementation simply finishes the current activity,
+     * but you can override this to do whatever you want.
+     */
+    @Override
+    public void onBackPressed()
+    {
+        Helper.logGA("ONBOARD","DISMISS");
+        Helper.logFlurry("ONBOARD","ACTION","DISMISS");
+        super.onBackPressed();
+    }
 
-
-
-	@Override
+    @Override
 	public void onClick(View v)
     {
         if(num_of_toggle>3)
@@ -173,13 +187,16 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 		switch (v.getId()) {
         case R.id.recorder_on_layout:
             num_of_toggle++;
-            if(!BuildConfig.DEBUG)
-            {
                 if(firstTimeOnBoard)
-                    FlurryAgent.logEvent("ONBOARD_GO_TO_SETTINGS");
+                {
+                    Helper.logGA("ONBOARD","GO_TO_SETTINGS");
+                    Helper.logFlurry("ONBOARD","ACTION","GO_TO_SETTINGS");
+                }
                 else
-                    FlurryAgent.logEvent("ONBOARD_REPEAT_GO_TO_SETTINGS");
-            }
+                {
+                    Helper.logGA("ONBOARD_REPEAT","GO_TO_SETTINGS");
+                    Helper.logFlurry("ONBOARD_REPEAT","ACTION","GO_TO_SETTINGS");
+                }
             intent= new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivityForResult(intent, 0);
             intent = new Intent(this, ServiceEnableTranslucent.class);
@@ -192,17 +209,19 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
             }
             else
             {
-                if(!BuildConfig.DEBUG)
-                {
                     boolean firstRefresh =userDataPref.getBoolean("FIRST_REFRESH",true);
                     if(firstRefresh)
                     {
-                        FlurryAgent.logEvent("ONBOARD_REFRESH");
+                        Helper.logGA("ONBOARD","REFRESH_CLICKED");
+                        Helper.logFlurry("ONBOARD","ACTION","REFRESH_CLICKED");
 
                         userDataPref.edit().putBoolean("FIRST_REFRESH",false).apply();
                     }
-                    else FlurryAgent.logEvent("ONBOARD_REPEAT_REFRESH");
-                }
+                    else {
+                        //This should not come if it is Repeat
+                        Helper.logGA("ONBOARD_REPEAT","REFRESH_CLICKED");
+                        Helper.logFlurry("ONBOARD_REPEAT","ACTION","REFRESH_CLICKED");
+                    }
                 userDataPref.edit().putBoolean("REFRESHED_BAL",true).apply();
                 startActivity((new Intent(this,BalanceRefreshActivity.class)).putExtra("SIM_SLOT",0).putExtra("TYPE","MAIN_BAL"));
                 this.finish();
@@ -228,8 +247,14 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
         case R.id.onboarding_contact:
             if(!BuildConfig.DEBUG)
             {
-                if (firstTimeOnBoard) FlurryAgent.logEvent("ONBOARD_CONTACT");
-                else FlurryAgent.logEvent("ONBOARD_REPEAT_CONTACT");
+                if (firstTimeOnBoard) {
+                    Helper.logGA("ONBOARD","CONTACT");
+                    Helper.logFlurry("ONBOARD","ACTION","CONTACT");
+                }
+                else {
+                    Helper.logGA("ONBOARD_REPEAT","CONTACT");
+                    Helper.logFlurry("ONBOARD_REPEAT","ACTION","CONTACT");
+                }
             }
             if (!Helper.contactExists("+919739663487"))
             {
@@ -249,11 +274,14 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
                 break;
             case R.id.do_it_later:
             case R.id.close_button:
-                if(!BuildConfig.DEBUG)
-                {
-                    if (firstTimeOnBoard) FlurryAgent.logEvent("ONBOARD_DISMISS");
-                    else FlurryAgent.logEvent("ONBOARD_REPEAT_DISMISS");
-                }
+                    if (firstTimeOnBoard) {
+                        Helper.logGA("ONBOARD","DISMISS");
+                        Helper.logFlurry("ONBOARD","ACTION","DISMISS");
+                    }
+                    else {
+                        Helper.logGA("ONBOARD_REPEAT","DISMISS");
+                        Helper.logFlurry("ONBOARD_REPEAT","ACTION","DISMISS");
+                    }
                 finish();
                 break;
 		default:
@@ -262,6 +290,19 @@ public class OnBoardingActivity extends Activity implements OnClickListener{
 		
 		
 	}
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+        Kahuna.getInstance().start();
+        FlurryAgent.logEvent("OnBoardActivity", true);
+    }
+
+    @Override
+    protected void onStop() {
+        Kahuna.getInstance().stop();
+        FlurryAgent.endTimedEvent("OnBoardActivity");
+        super.onStop();
+    }
 
 }

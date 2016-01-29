@@ -1,22 +1,6 @@
 package com.builder.ibalance.adapters;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import com.builder.ibalance.R;
-import com.builder.ibalance.util.ConstantsAndStatics;
-import com.builder.ibalance.util.MyApplication;
-
-import android.content.Context;
-import android.database.Cursor;
-import android.support.v4.widget.CursorAdapter;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
+/*
 public class RechargesAdapter extends CursorAdapter{
 
 	public RechargesAdapter(Context context, Cursor c, boolean autoRequery) {
@@ -44,11 +28,14 @@ public class RechargesAdapter extends CursorAdapter{
 		
 			View view = LayoutInflater.from(mContext).inflate(R.layout.list_item_recharge, arg2, false);
 
-		/*RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.dummyfrag_scrollableview);
+		*/
+/*RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.dummyfrag_scrollableview);
 		LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mContext);
 		recyclerView.setLayoutManager(linearLayoutManager);
-		recyclerView.setHasFixedSize(true);*/
+		recyclerView.setHasFixedSize(true);*//*
+
 		return view;
 	}
 
 }
+*/

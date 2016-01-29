@@ -26,7 +26,6 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.builder.ibalance.BalanceWidget;
-import com.builder.ibalance.BuildConfig;
 import com.builder.ibalance.MainActivity;
 import com.builder.ibalance.R;
 import com.builder.ibalance.UssdPopup;
@@ -63,7 +62,6 @@ import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.RegexUpdater;
 import com.crashlytics.android.Crashlytics;
-import com.flurry.android.FlurryAgent;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -619,6 +617,8 @@ boolean cancelButtonFound = false;
     void showPopup(Intent popup_intent) throws Exception
     {
 
+        Helper.logGA("POPUP",popup_intent.getStringExtra("TYPE"));
+        Helper.logFlurry("POPUP","TYPE",popup_intent.getStringExtra("TYPE"));
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -1237,21 +1237,21 @@ boolean cancelButtonFound = false;
         ////V10Log.d(TAG, "onServiceConnected");
         if (ConstantsAndStatics.WAITING_FOR_SERVICE)
         {
-            if(!BuildConfig.DEBUG)
-            {
                 SharedPreferences userDataPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
                 boolean firstTimeService = userDataPref.getBoolean("FIRST_SERVICE",true);
 
                 if(firstTimeService)
                 {
-                    FlurryAgent.logEvent("ONBOARD_ACTIVATION");
+                    Helper.logGA("ONBOARD","ACTIVATED");
+                    Helper.logFlurry("ONBOARD","ACTION","ACTIVATED");
                     userDataPref.edit().putBoolean("FIRST_SERVICE",false).apply();
                 }
                 else {
-                    FlurryAgent.logEvent("ONBOARD_REPEAT_ACTIVATION");
+                    Helper.logGA("ONBOARD_REPEAT","ACTIVATED");
+                    Helper.logFlurry("ONBOARD_REPEAT","ACTION","ACTIVATED");
                 }
-            }
-
+            Helper.logGA("SERVICE","ON");
+            Helper.logFlurry("SERVICE","STATUS","ON");
             ParseQuery<ParseObject> query = ParseQuery
                     .getQuery("SERVICE_STATUS");
             query.whereEqualTo("DEVICE_ID", Helper.getDeviceId());

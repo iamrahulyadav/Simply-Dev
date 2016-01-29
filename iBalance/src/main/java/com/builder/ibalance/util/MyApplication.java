@@ -88,8 +88,18 @@ public class MyApplication extends Application
         //Log.d(tag, "Parse Initialization DONE!!!");
         //Configure GA
      // configure Flurry
+        FlurryAgent.setCaptureUncaughtExceptions(false);
         FlurryAgent.setLogEnabled(false);
-        FlurryAgent.init(this, "7R65ZKFNW9CPSNGS4XNK");
+        if(!BuildConfig.DEBUG)
+        {
+            //Release Key
+            FlurryAgent.init(this, "7R65ZKFNW9CPSNGS4XNK");
+        }
+        else
+        {
+            //DEBUG KEY
+            FlurryAgent.init(this, "HRZ63D96THTDTT4G9TVM");
+        }
     }
 	private void copyAssets() {
 		AssetManager assetManager = getAssets();

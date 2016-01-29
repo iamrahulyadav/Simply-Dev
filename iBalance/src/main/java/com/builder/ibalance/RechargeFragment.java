@@ -48,7 +48,6 @@ import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -85,6 +84,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     ArrayAdapter<CharSequence> carrierAdapter,circleAdapter;
     int spinnerPosition;
     View callSummary;
+    String number_source = "PREFILLED",carrier_source = "PREFILLED",circle_source = "PREFILLED",amount_source= "ENTERED";
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
@@ -124,6 +124,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         {
             rechargePhoneNumber = Helper.normalizeNumber(rechargePhoneNumber);
             numberField.setText(rechargePhoneNumber);
+            number_source = "PREFILLED";
         }
         numberField.addTextChangedListener(new TextWatcher()
         {
@@ -143,6 +144,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                     //DoNothing
                 } else
                 {
+                    number_source = "ENTERED";
                    numberChanged(Helper.normalizeNumber(s.toString())); //Do what you should when a number Changes
                 }
             }
@@ -221,6 +223,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                 currentCarrier = (String) parent.getItemAtPosition(pos);
                 if(((int)carrierSpinner.getTag()) != pos)
                 {
+                    carrier_source = "SELECTED";
                     loadPlans(currentCarrier, currentCircle);
                 }
                 carrierSpinner.setTag(-1);
@@ -254,6 +257,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
                 currentCircle = (String) parent.getItemAtPosition(pos);
                 if(((int)circleSpinner.getTag()) != pos)
                 {
+                    circle_source = "SELECTED";
                     loadPlans(currentCarrier, currentCircle);
                 }
                 circleSpinner.setTag(-1);
@@ -504,11 +508,6 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
 
     }
 
-    String valueToString(Object[] value)
-    {
-        return (String) (value[0] + "   " + value[1] + "  " + value[2] + "  " + value[3] + "  " + value[4] + "  " + value[5] + "  " + value[6] + "  " + value[7] + "  " + value[8]);
-
-    }
 
 
     @Override
@@ -525,6 +524,7 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             cursor.close();
             if (rechargePhoneNumber != null)
             {
+                number_source = "SELECTED";
                 rechargePhoneNumber = Helper.normalizeNumber(rechargePhoneNumber);
                 numberField.setText(rechargePhoneNumber);
                 numberChanged(rechargePhoneNumber);
@@ -570,69 +570,20 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         switch (v.getId())
         {
             case R.id.conatact_select:
-                t.send(new HitBuilders.EventBuilder()
-                        .setCategory("RECHARGE")
-                        .setAction("CONTACT_PICKED")
-                        .setLabel("")
-                        .build());
+                Helper.logGA("RECHARGE","CONTACT_PICKED");
+                //TODO have list with all params sent to flurry
                 FlurryAgent.logEvent("CONTACT_PICKED");
                 Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
                 startActivityForResult(i, PICK_CONTACT);
 
                 break;
             case R.id.recharge_butt_id:
-                if(numberField.getText()==null || numberField.getText().toString().length()<10)
-                {
-                    Helper.toastHelper("Mobile Number not valid");
-                }
-                else
-                {
-
-                  if(numberField.getText()==null || numberField.getText().toString().length()<10
-                          ||!numberField.getText().toString().matches("^[0-9]+$"))
-                {
-                    Helper.toastHelper("Mobile Number not valid");
-                    numberField.requestFocus();
-                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(numberField, InputMethodManager.SHOW_IMPLICIT);
-                }
-                    else
-                {
-                    if(amountField.getText()==null ||amountField.getText().toString().equals("") ||amountField.getText().toString().length()>4 )
-                    {
-                        Helper.toastHelper("Please Enter the valid Recharge Amount");
-                        amountField.requestFocus();
-                        amountField.selectAll();
-                        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.showSoftInput(amountField, InputMethodManager.SHOW_IMPLICIT);
-                    }
-                    else
-                    {
-                        t.send(new HitBuilders.EventBuilder()
-                                .setCategory("RECHARGE_INIT")
-                                .setAction(numberField.getText().toString())
-                                .setLabel(amountField.getText().toString())
-                                .build());
-                        FlurryAgent.logEvent("RECHARGE_INIT");
-                        Intent rechargeIntent = new Intent(this.getActivity(), RechargePopup.class);
-                        rechargeIntent.putExtra("NUMBER", numberField.getText().toString());
-                        rechargeIntent.putExtra("CARRIER", currentCarrier);
-                        rechargeIntent.putExtra("CIRCLE", currentCircle);
-                        rechargeIntent.putExtra("AMOUNT", Integer.parseInt(amountField.getText().toString()));
-                        startActivity(rechargeIntent);
-                        Helper.toastHelper("Recharging for " + rechargePhoneNumber);
-                    }
-                }
-                }
+                proceedToRecharge();
                 break;
             case R.id.call_summary_expand_button:
                 //toggle visibility
-                t.send(new HitBuilders.EventBuilder()
-                        .setCategory("CALL_SUMMARY")
-                        .setAction("TOGGLED")
-                        .setLabel("")
-                        .build());
-                FlurryAgent.logEvent("CALL_SUMMARY");
+                Helper.logGA("CALL_SUMMARY_TOGGLE");
+                FlurryAgent.logEvent("CALL_SUMMARY_TOGGLE");
                 callSummary.setVisibility((callSummary.getVisibility() == View.GONE)?View.VISIBLE:View.GONE);
                 break;
             default:
@@ -703,7 +654,57 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
 
     }
 
+    private void proceedToRecharge()
+    {
+        if(numberField.getText()==null || numberField.getText().toString().length()<10)
+        {
+            Helper.toastHelper("Mobile Number not valid");
+        }
+        else
+        {
 
+            if(numberField.getText()==null || numberField.getText().toString().length()<10
+                    ||!numberField.getText().toString().matches("^[0-9]+$"))
+            {
+                Helper.toastHelper("Mobile Number not valid");
+                numberField.requestFocus();
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(numberField, InputMethodManager.SHOW_IMPLICIT);
+            }
+            else
+            {
+                if(amountField.getText()==null ||amountField.getText().toString().equals("") ||amountField.getText().toString().length()>4 )
+                {
+                    Helper.toastHelper("Please Enter the valid Recharge Amount");
+                    amountField.requestFocus();
+                    amountField.selectAll();
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(amountField, InputMethodManager.SHOW_IMPLICIT);
+                }
+                else
+                {
+
+                    Helper.logGA("RECHARGE_INIT",numberField.getText().toString(),amountField.getText().toString());
+                    HashMap<String,String> params = new HashMap<>();
+                    params.put("NUMBER_SOURCE",number_source);
+                    params.put("CARRIER_SOURCE",carrier_source);
+                    params.put("CIRCLE_SOURCE",circle_source);
+                    params.put("AMOUNT_SOURCE",amount_source);
+                    FlurryAgent.logEvent("RECHARGE_INIT",params);
+
+
+                    Intent rechargeIntent = new Intent(this.getActivity(), RechargePopup.class);
+                    rechargePhoneNumber = numberField.getText().toString();
+                    rechargeIntent.putExtra("NUMBER",rechargePhoneNumber );
+                    rechargeIntent.putExtra("CARRIER", currentCarrier);
+                    rechargeIntent.putExtra("CIRCLE", currentCircle);
+                    rechargeIntent.putExtra("AMOUNT", Integer.parseInt(amountField.getText().toString()));
+                    startActivity(rechargeIntent);
+                    //Helper.toastHelper("Recharging for " + rechargePhoneNumber);
+                }
+            }
+        }
+    }
 
 
     @Override
@@ -717,19 +718,8 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
     @Override
     public void onResume()
     {
-        Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(
-                TrackerName.APP_TRACKER);
 
-        // Set screen name.
-        t.setScreenName("RechargeScreen");
-
-        // Send a screen view.
-        t.send(new HitBuilders.ScreenViewBuilder().build());
-        // Log the timed event when the user starts reading the article
-        // setting the third param to true creates a timed event
         FlurryAgent.logEvent("RechargeScreen", true);
-        //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Recharge Screen", "");
-        // End the timed event, when the user navigates away from article
 
         super.onResume();
     }
@@ -762,7 +752,9 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
        //V12Log.d(TAG, view.getTag().toString());
         String temp = view.getTag().toString();
         amountField.setText(temp);
-        if(numberField.getText()==null || numberField.getText().toString().length()<10)
+        amount_source = "SELECTED";
+        proceedToRecharge();
+        /*if(numberField.getText()==null || numberField.getText().toString().length()<10)
         {
             Helper.toastHelper("Mobile Number not valid");
             numberField.requestFocus();
@@ -776,6 +768,6 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
             rechargeIntent.putExtra("CIRCLE", currentCircle);
             rechargeIntent.putExtra("AMOUNT", Integer.parseInt(amountField.getText().toString()));
             startActivity(rechargeIntent);
-        }
+        }*/
     }
 }

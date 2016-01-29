@@ -1,28 +1,6 @@
 package com.builder.ibalance;
 
-import android.app.Fragment;
-import android.database.Cursor;
-import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.appsflyer.AppsFlyerLib;
-import com.builder.ibalance.adapters.RecycleRechargesAdapter;
-import com.builder.ibalance.database.helpers.RechargeHelper;
-import com.builder.ibalance.util.MyApplication;
-import com.builder.ibalance.util.MyApplication.TrackerName;
-import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-
+/*
 public class RechargesHistoryFragment extends  Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
 	@Override
@@ -71,15 +49,21 @@ public class RechargesHistoryFragment extends  Fragment implements LoaderManager
 		return view;
 	}
 
-	/*@Override
+	*/
+/*@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		*//*final Cursor cursor = new RechargeHelper().getData();
+		*//*
+*/
+/*final Cursor cursor = new RechargeHelper().getData();
 		cursor.moveToFirst();
 		mRechargesAdapter = new RechargesAdapter(getActivity(), cursor, false);
 		//mListView.setAdapter(mRechargesAdapter);*//*
+*/
+/*
 
-	}*/
+	}*//*
+
 
 
 	@Override
@@ -104,3 +88,4 @@ public class RechargesHistoryFragment extends  Fragment implements LoaderManager
 
 	}
 }
+*/

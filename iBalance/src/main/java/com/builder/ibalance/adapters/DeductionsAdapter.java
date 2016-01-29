@@ -1,21 +1,6 @@
 package com.builder.ibalance.adapters;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.graphics.Typeface;
-import android.support.v4.widget.CursorAdapter;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import com.builder.ibalance.R;
-import com.builder.ibalance.database.helpers.ContactDetailHelper;
-
-import java.util.Calendar;
-import java.util.TimeZone;
-
-public class DeductionsAdapter extends CursorAdapter{
+/*public class DeductionsAdapter extends CursorAdapter{
 	
 	//private Context mContext;
 
@@ -102,4 +87,4 @@ public class DeductionsAdapter extends CursorAdapter{
 		return view;
 	}
 
-}
+}*/

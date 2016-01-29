@@ -18,7 +18,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
-import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.CustomContactsRecyclerAdapter;
 import com.builder.ibalance.database.helpers.BalanceHelper;
 import com.builder.ibalance.database.helpers.ContactDetailHelper;
@@ -27,11 +26,8 @@ import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.datainitializers.DataInitializer;
 import com.builder.ibalance.messages.DataLoadingDone;
 import com.builder.ibalance.util.MyApplication;
-import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,21 +130,9 @@ public class ContactsFragment extends Fragment implements OnItemClickListener {
 
 	@Override
 	public void onResume() {
-		Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(
-			    TrackerName.APP_TRACKER);
 
-			// Set screen name.
-			t.setScreenName("Contact Screen");
-
-			// Send a screen view.
-			t.send(new HitBuilders.ScreenViewBuilder().build());
-
-		// Log the timed event when the user starts reading the article
-		// setting the third param to true creates a timed event
-		FlurryAgent.logEvent("ContactScreen", true);
-		AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Contact Screen", "");
 		// End the timed event, when the user navigates away from article
-
+		FlurryAgent.logEvent("ContactScreen",true);
 		super.onResume();
 	}
 

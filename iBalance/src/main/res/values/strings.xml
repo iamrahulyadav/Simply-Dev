@@ -7,7 +7,7 @@
     <string name="title_section2">Call Pattern</string>
     <string name="title_section3">Contacts</string>
     <string name="title_section4">Recharge</string>
-    <string name="service_description">This service is used to track the Balance from USSD responses  </string>
+    <string name="service_description">This service is used to track the Balance from USSD/Balance Messages sent by your operator  </string>
     <string name="service_label">\u25FC\u25FCSimply Recorder\u25FC\u25FC</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

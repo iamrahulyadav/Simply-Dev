@@ -1,30 +1,12 @@
 package com.builder.ibalance;
 
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v13.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewPager;
-
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import java.util.Locale;
-
 /**
  * 
  * Activity to show history.
  *
  */
+/*
 public class HistoryActivity extends AppCompatActivity  {
 	
 	private ViewPager mViewPager;
@@ -76,7 +58,8 @@ public class HistoryActivity extends AppCompatActivity  {
 
 	}
 
-	/*@Override
+	*/
+/*@Override
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
 		mViewPager.setCurrentItem(tab.getPosition());		
 	}
@@ -89,13 +72,16 @@ public class HistoryActivity extends AppCompatActivity  {
 	@Override
 	public void onTabReselected(Tab tab, FragmentTransaction ft) {
 		
-	}*/
+	}*//*
+
 	
-	/**
+	*/
+/**
 	 * 
 	 * Pager adapter to load the fragments.
 	 *
-	 */
+	 *//*
+
 	public static class RechargeDeductionsPagerAdapter extends FragmentPagerAdapter {
 
 		public RechargeDeductionsPagerAdapter(FragmentManager fm) {
@@ -138,3 +124,4 @@ public class HistoryActivity extends AppCompatActivity  {
 	}
 
 }
+*/

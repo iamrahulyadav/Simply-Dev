@@ -3,7 +3,6 @@ package com.builder.ibalance.Listeners;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.builder.ibalance.util.ConstantsAndStatics;
 
@@ -23,10 +22,11 @@ public class SimplyListener extends BroadcastReceiver
                //V16Log.d(TAG,"Outgoing Call");
                 ConstantsAndStatics.RECENT_EVENT = Intent.ACTION_NEW_OUTGOING_CALL;
                 break;
-            case Intent.ACTION_DATE_CHANGED:
+            //TODO FIX this
+           /* case Intent.CONN:
                //V16Log.d(TAG,"Data State Changed");
                 ConstantsAndStatics.RECENT_EVENT = Intent.ACTION_DATE_CHANGED;
-                break;
+                break;*/
         }
 
     }

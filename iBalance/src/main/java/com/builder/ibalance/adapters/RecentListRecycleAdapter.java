@@ -26,9 +26,6 @@ import com.builder.ibalance.database.models.ContactDetailModel;
 import com.builder.ibalance.util.CircleTransform;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
-import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.squareup.picasso.Picasso;
 
 import java.util.Calendar;
@@ -155,14 +152,8 @@ public class RecentListRecycleAdapter extends RecyclerView.Adapter<RecentListRec
         public void onClick(View v) {
             String phoneNumber = ((TextView) v.findViewById(R.id.recents_number)).getText().toString();
             //Log.e("Phone  Number",((TextView)view.findViewById(R.id.recents_number)).getText().toString());
-            Tracker t = ((MyApplication) MyApplication.context).getTracker(
-                    MyApplication.TrackerName.APP_TRACKER);
-            t.send(new HitBuilders.EventBuilder()
-                    .setCategory("CALL")
-                    .setAction("RECENTS")
-                    .setLabel("")
-                    .build());
-            FlurryAgent.logEvent("CALL");
+            Helper.logGA("CALL","RECENTS");
+            Helper.logFlurry("CALL","SOURCE","RECENTS");
             Intent intent = new Intent(Intent.ACTION_DIAL);
 
 

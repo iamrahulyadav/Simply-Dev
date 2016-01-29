@@ -28,19 +28,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.adapters.MainActivityAdapter;
 import com.builder.ibalance.messages.MinimumBalanceMessage;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
-import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.digits.sdk.android.Digits;
 import com.facebook.appevents.AppEventsLogger;
 import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.GoogleAnalytics;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.Kahuna;
 import com.parse.ConfigCallback;
 import com.parse.ParseConfig;
@@ -141,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else
             {
-                showingUpdateDialog = true;
+
                 final int APP_VERSION = BuildConfig.VERSION_CODE;
                 ParseConfig.getInBackground(new ConfigCallback()
                 {
@@ -162,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
                             //V16Log.d(tag,"NEW_PARSER_VERSION = "+NEW_PARSER_VERSION);
                             if (APP_VERSION <NEW_APP_VERSION)
                             {
+                                showingUpdateDialog = true;
                                 createUpdateDialog();
                             }
                         }
@@ -177,6 +173,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void createUpdateDialog()
     {
+        Helper.logGA("UPDATE","SHOWN");
+        Helper.logFlurry("UPDATE","ACTION","SHOWN");
         AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         View mView = inflater.inflate(R.layout.recharge_reminder, null);
@@ -195,11 +193,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
-                Tracker t = ((MyApplication) getApplication()).getTracker(
-                        TrackerName.APP_TRACKER);
-                t.send(new HitBuilders.EventBuilder().setCategory("UPDATE")
-                        .setAction(BuildConfig.VERSION_CODE+"").setLabel("").build());
-                FlurryAgent.logEvent("UPDATE");
+               Helper.logGA("UPDATE","CLICKED");
+               Helper.logFlurry("UPDATE","ACTION","CLICKED");
                 Uri uri = Uri.parse("market://details?id=" + MainActivity.this.getPackageName());
                 //Log.d(tag,"URI = "+ uri);
                 Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
@@ -240,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
         Kahuna.getInstance().start();
         FlurryAgent.logEvent("MainScreen", true);
         //Get an Analytics tracker to report app starts and uncaught exceptions etc.
-        GoogleAnalytics.getInstance(this).reportActivityStart(this);
+        //GoogleAnalytics.getInstance(this).reportActivityStart(this);
         super.onStart();
         // Your Code Here
     }
@@ -254,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
         Kahuna.getInstance().stop();
         FlurryAgent.endTimedEvent("MainScreen");
         //Stop the analytics tracking
-        GoogleAnalytics.getInstance(this).reportActivityStop(this);
+       // GoogleAnalytics.getInstance(this).reportActivityStop(this);
         super.onStop();
     }
 
@@ -276,11 +271,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+       /* SharedPreferences mSharedPreferences = getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
         if (mSharedPreferences.getBoolean("USER_VERIFIED", false)) {
             //menu.findItem().setTitle("Login");
             menu.removeItem(R.id.log);
-        }
+        }*/
 
 
         return true;
@@ -294,8 +289,6 @@ int i = 0;
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        Tracker t = ((MyApplication) getApplication()).getTracker(
-                TrackerName.APP_TRACKER);
         switch (id) {
             case R.id.share:
                 boolean isWhatsappInstalled = Helper.whatsappInstalledOrNot();
@@ -306,25 +299,16 @@ int i = 0;
                 if (isWhatsappInstalled) {
 
                     // Build and send an Event.
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("SHARE")
-                            .setAction("WhatsApp")
-                            .setLabel("")
-                            .build());
-
-                    FlurryAgent.logEvent("WhatsApp_Share");
+                    Helper.logGA("SHARE","WhatsApp");
+                    Helper.logFlurry("SHARE","SOURCE","APP");
                     //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"WhatsApp_Share","");
                     sendIntent.setPackage("com.whatsapp");
                     startActivity(sendIntent);
                 } else {
                     // Build and send an Event.
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("SHARE")
-                            .setAction("OTHER_SHARE")
-                            .setLabel("")
-                            .build());
+                    Helper.logGA("SHARE","OTHER_SHARE");
                     //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,"OTHER_SHARE","");
-                    FlurryAgent.logEvent("Other_Share");
+                    Helper.logFlurry("SHARE","SOURCE","APP");
                     startActivity(sendIntent);
                 }
                 break;
@@ -360,19 +344,16 @@ int i = 0;
                 //Log.d(tag, "contact_us selected");
                 startActivity(new Intent(this, ContactUs.class));
                 break;
-            case R.id.log:
+            /*case R.id.log:
                 //Log.d(tag, "contact_us selected");
-                verifyUser();
-                break;
+                //verifyUser();
+                break;*/
             case R.id.rate:
 
                 SharedPreferences userPrefs = MyApplication.context.getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,Context.MODE_PRIVATE);
                 userPrefs.edit().putBoolean("RATED",true).apply();
-                t.send(new HitBuilders.EventBuilder().setCategory("RATE")
-                        .setAction("Rate").setLabel("").build());
-                FlurryAgent.logEvent("Rate");
-                AppsFlyerLib.sendTrackingWithEvent(MyApplication.context,
-                        "Rate", "");
+                Helper.logGA("RATE","APP");
+                Helper.logGA("RATE","SOURCE","APP");
                 Uri uri = Uri.parse("market://details?id=" + this.getPackageName());
                 //Log.d(tag,"URI = "+ uri);
                 Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);

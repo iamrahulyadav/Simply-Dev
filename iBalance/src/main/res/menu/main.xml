@@ -33,10 +33,10 @@
         android:id="@+id/contact_us"
         android:orderInCategory="100"
         android:title="Contact-Us"/>
-    <item
+    <!--<item
         android:id="@+id/log"
         android:orderInCategory="100"
-        android:title="Login"/>
+        android:title="Login"/>-->
     
 
 </menu>

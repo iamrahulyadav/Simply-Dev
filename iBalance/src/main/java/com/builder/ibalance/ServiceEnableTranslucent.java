@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.builder.ibalance.util.ConstantsAndStatics;
-import com.flurry.android.FlurryAgent;
+import com.builder.ibalance.util.Helper;
 
 public class ServiceEnableTranslucent extends AppCompatActivity implements View.OnClickListener
 {
@@ -28,21 +28,19 @@ public class ServiceEnableTranslucent extends AppCompatActivity implements View.
         Button mButton = (Button) findViewById(R.id.got_it);
         imageView = (ImageView) findViewById(R.id.recorder_on_img);
 
-
-            if(!BuildConfig.DEBUG)
-            {
                 SharedPreferences userDataPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
                 firstTimeHint = userDataPref.getBoolean("FIRST_SERVICE_HINT",true);
 
                 if(firstTimeHint)
                 {
-                    FlurryAgent.logEvent("ONBOARD_HINT_SHOWN");
+                    Helper.logGA("ONBOARD","HINT_SHOWN");
+                    Helper.logFlurry("ONBOARD","ACTION","HINT_SHOWN");
                     userDataPref.edit().putBoolean("FIRST_SERVICE_HINT",false).apply();
                 }
                 else {
-                    FlurryAgent.logEvent("ONBOARD_REPEAT_HINT_SHOWN");
+                    Helper.logGA("ONBOARD_REPEAT","HINT_SHOWN");
+                    Helper.logFlurry("ONBOARD_REPEAT","ACTION","HINT_SHOWN");
                 }
-            }
         if(!Build.MANUFACTURER.toUpperCase().contains("XIAOMI")&& (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT || Build.MANUFACTURER.toUpperCase().contains("SAMSUNG") || Build.MANUFACTURER.toUpperCase().contains("LG")|| Build.MANUFACTURER.toUpperCase().contains("SONY") ))
         {
             imageView.setImageResource(R.drawable.service_enable_black);
@@ -63,19 +61,17 @@ public class ServiceEnableTranslucent extends AppCompatActivity implements View.
     @Override
     public void onClick(View v)
     {
-        if(!BuildConfig.DEBUG)
-        {
-
 
             if(firstTimeHint)
             {
-                FlurryAgent.logEvent("ONBOARD_HINT_CLICKED");
+                Helper.logGA("ONBOARD","HINT_CLICKED");
+                Helper.logFlurry("ONBOARD","ACTION","HINT_CLICKED");
             }
             else
             {
-                FlurryAgent.logEvent("ONBOARD_REPEAT_HINT_CLICKED");
+                Helper.logGA("ONBOARD_REPEAT","HINT_CLICKED");
+                Helper.logFlurry("ONBOARD_REPEAT","ACTION","HINT_CLICKED");
             }
-        }
         LayoutInflater inflater = getLayoutInflater();
 
         // Call toast.xml file for toast layout

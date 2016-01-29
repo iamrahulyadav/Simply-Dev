@@ -12,11 +12,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.builder.ibalance.util.Helper;
-import com.builder.ibalance.util.MyApplication;
 import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.kahuna.sdk.Kahuna;
 import com.parse.ParseObject;
 
 import java.util.HashMap;
@@ -33,6 +31,10 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
     TextView mobileNumberView,carrierCircleView,amountView;
     ImageButton paytmButton,mobiKwikButton,freeChargeButton;
     Button cancelButton;
+    String proceed = "CANCELLED";
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -72,83 +74,11 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
     {
 
         Intent intent = null;
-        Tracker t = ((MyApplication) MyApplication.context).getTracker(
-                MyApplication.TrackerName.APP_TRACKER);
-        ParseObject pObj = new ParseObject("SIMPLY_RECHARGE");
-        pObj.put("DEVICE_ID", Helper.getDeviceId());
-        try
-        {
-
-            pObj.put("NUMBER", number);
-            pObj.put("CARRIER", carrierExtra);
-            pObj.put("CIRCLE", circleExtra);
-            pObj.put("AMOUNT", amount);
-        }
-        catch (Exception e)
-        {
-            Crashlytics.logException(e);
-        }
-
-        Map<String, String> params = new HashMap<String, String>();
         switch (v.getId())
         {
 
             case R.id.recharge_cancel:
-                pObj.put("TYPE","CANCELLED");
-                pObj.saveEventually();
-                t.send(new HitBuilders.EventBuilder()
-                        .setCategory("RECHARGE")
-                        .setAction("CANCELLED")
-                        .setLabel("")
-                        .build());
-                FlurryAgent.logEvent("RECHARGE_CANCELLED");
-                finish();
-
-                break;
-            case R.id.paytm_recharge:
-                pObj.put("TYPE","PAYTM");
-                t.send(new HitBuilders.EventBuilder()
-                        .setCategory("RECHARGE")
-                        .setAction("PAYTM")
-                        .setLabel(amount+"")
-                        .build());
-                params.put("TYPE", "PAYTM");
-                params.put("AMOUNT", amount+"");
-
-                FlurryAgent.logEvent("RECHARGE",params);
-                break;
-            case R.id.mobikwik_recharge:
-                pObj.put("TYPE","MOBIKWIK");
-                t.send(new HitBuilders.EventBuilder()
-                        .setCategory("RECHARGE")
-                        .setAction("MOBIKWIK")
-                        .setLabel(amount+"")
-                        .build());
-                params.put("TYPE", "MOBIKWIK");
-                params.put("AMOUNT", amount+"");
-
-                FlurryAgent.logEvent("RECHARGE",params);
-                break;
-            case R.id.freecharge_recharge:
-                pObj.put("TYPE","FREECHARGE");
-                t.send(new HitBuilders.EventBuilder()
-                        .setCategory("RECHARGE")
-                        .setAction("FREECHARGE")
-                        .setLabel(amount+"")
-                        .build());
-                params.put("TYPE", "FREECHARGE");
-                params.put("AMOUNT", amount+"");
-
-                FlurryAgent.logEvent("RECHARGE",params);
-                break;
-        }
-        pObj.saveEventually();
-
-        switch (v.getId())
-        {
-
-            case R.id.recharge_cancel:
-                finish();
+                //finish it at the end
                 break;
             case R.id.paytm_recharge:
                 //Paytm
@@ -165,13 +95,8 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
 
                 } catch (Exception e)
                 {
-
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("REFERRAL")
-                            .setAction("PAYTM")
-                            .setLabel("")
-                            .build());
-                    FlurryAgent.logEvent("REFERRAL_PAYTM");
+                    Helper.logGA("REFERRAL","PAYTM");
+                    Helper.logFlurry("REFERRAL","PARTNER","PAYTM");
                     //Ask them to install the app
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=net.one97.paytm&referrer=utm_source=SimplyApp")));
                     Toast.makeText(this,"You must install/update Paytm before Recharge",Toast.LENGTH_LONG).show();
@@ -213,8 +138,8 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                     }
                     catch (Exception e1)
                     {
-                        t.send(new HitBuilders.EventBuilder().setCategory("REFERRAL").setAction("MOBIKWIK").setLabel("").build());
-                        FlurryAgent.logEvent("REFERRAL_MOBIKWIK");
+                        Helper.logGA("REFERRAL","MOBIKWIK");
+                        Helper.logFlurry("REFERRAL","PARTNER","MOBIKWIK");
                         //Ask them to install the app
                         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.mobikwik_new&referrer=utm_source=SimplyApp")));
                         Toast.makeText(this, "You must install/Update Mobikwik before Recharge", Toast.LENGTH_LONG).show();
@@ -249,13 +174,8 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                     startActivity(intent);
                 } catch (Exception e)
                 {
-                    Crashlytics.logException(e);
-                    t.send(new HitBuilders.EventBuilder()
-                            .setCategory("REFERRAL")
-                            .setAction("FREECHARGE")
-                            .setLabel("")
-                            .build());
-                    FlurryAgent.logEvent("REFERRAL_FREECHARGE");
+                    Helper.logGA("REFERRAL","FREECHARGE");
+                    Helper.logFlurry("REFERRAL","PARTNER","FREECHARGE");
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.freecharge.android&referrer=utm_source=SimplyApp")));
                     Toast.makeText(this,"You must install/update FreeCharge before Recharge",Toast.LENGTH_LONG).show();
                     Crashlytics.logException(e);
@@ -266,8 +186,46 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
                 break;
             default:
         }
+        finish();
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Kahuna.getInstance().start();
+        FlurryAgent.logEvent("RechargePopUp", true);
     }
 
+    @Override
+    protected void onStop() {
+        Kahuna.getInstance().stop();
+        FlurryAgent.endTimedEvent("RechargePopUp");
+        ParseObject pObj = new ParseObject("SIMPLY_RECHARGE");
+        pObj.put("DEVICE_ID", Helper.getDeviceId());
+        try
+        {
+
+            pObj.put("NUMBER", number);
+            pObj.put("CARRIER", carrierExtra);
+            pObj.put("CIRCLE", circleExtra);
+            pObj.put("AMOUNT", amount);
+        }
+        catch (Exception e)
+        {
+            Crashlytics.logException(e);
+        }
+        pObj.put("TYPE",proceed);
+        pObj.saveEventually();
+        Helper.logGA("RECHARGE",proceed,String.valueOf(amount));
+        HashMap<String,String> params = new HashMap<>();
+        params.put("PROCEED",proceed);
+        params.put("CARRIER",carrierExtra);
+        params.put("CIRCLE",circleExtra);
+        params.put("AMOUNT",amount+"");
+        FlurryAgent.logEvent("RECHARGE_CONFIRM",params);
+        super.onStop();
+        super.onStop();
+    }
     private void initializeMapForMobiKwik()
     {
         carriers.put("Aircel", 6);

@@ -31,7 +31,6 @@ import com.builder.ibalance.util.BarChartItem;
 import com.builder.ibalance.util.ChartItem;
 import com.builder.ibalance.util.LineChartItem;
 import com.builder.ibalance.util.MyApplication;
-import com.builder.ibalance.util.MyApplication.TrackerName;
 import com.builder.ibalance.util.PieChartItem;
 import com.builder.ibalance.util.Tuple;
 import com.flurry.android.FlurryAgent;
@@ -48,8 +47,6 @@ import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -224,19 +221,13 @@ public class CallPatternFragment extends Fragment implements
     {
         dummy = 0;
        //V10Log.d(TAG, "ONrESUME");
-        Tracker t = ((MyApplication) getActivity().getApplication()).getTracker(
-                TrackerName.APP_TRACKER);
-
-        // Set screen name.
-        t.setScreenName("CallPatternScreen");
 
         // Send a screen view.
-        t.send(new HitBuilders.ScreenViewBuilder().build());
         //dateSelector.setVisible(true);
 
         //Log the timed event when the user starts reading the article
         //setting the third param to true creates a timed event
-        FlurryAgent.logEvent("CallPatternScreen", true);
+        FlurryAgent.logEvent("CallPatternScreen",true);
        //V10AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "CallPatternScreen", "");
         // End the timed event, when the user navigates away from article
 

@@ -11,10 +11,8 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.appsflyer.AppsFlyerLib;
 import com.builder.ibalance.database.models.ContactDetailModel;
-import com.builder.ibalance.util.MyApplication;
-import com.builder.ibalance.util.MyApplication.TrackerName;
+import com.builder.ibalance.util.Helper;
 import com.flurry.android.FlurryAgent;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
@@ -24,8 +22,6 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.kahuna.sdk.Kahuna;
 import com.squareup.picasso.Picasso;
 
@@ -165,17 +161,15 @@ public class ContactDetailActivity extends AppCompatActivity implements OnChartV
 	}
 	 @Override
 	    protected void onStart() {
+		 super.onStart();
 
 		 Kahuna.getInstance().start();
-	  	AppsFlyerLib.sendTrackingWithEvent(MyApplication.context, "Contact Detail","");
-	  	FlurryAgent.logEvent("ContactDetailHelper", true);
-		 super.onStart();
+		 FlurryAgent.logEvent("ContactDetailHelper", true);
 	    }
 
 	    @Override
 	    protected void onStop() {
-
-			Kahuna.getInstance().start();
+			Kahuna.getInstance().stop();
 	        FlurryAgent.endTimedEvent("ContactDetailHelper");
 	  	 super.onStop();
 	    } 
@@ -215,21 +209,13 @@ public class ContactDetailActivity extends AppCompatActivity implements OnChartV
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		Tracker t = ((MyApplication) this.getApplication()).getTracker(
-			    TrackerName.APP_TRACKER);
 		switch (id) {
             case android.R.id.home:
                 onBackPressed();
                 break;
 		case R.id.call:
-			t.send(new HitBuilders.EventBuilder()
-					.setCategory("CALL")
-					.setAction("CONTACT_DETAIL")
-					.setLabel("")
-					.build());
-			//dummy comment
-
-	FlurryAgent.logEvent("CALL");
+			Helper.logGA("CALL","CONTACT_DETAIL");
+			Helper.logFlurry("CALL","SOURCE","CONTACT_DETAIL");
 			Intent intent = new Intent(Intent.ACTION_DIAL);
 			intent.setData(Uri.parse("tel:"+phnumber));
 			startActivity(intent); 
