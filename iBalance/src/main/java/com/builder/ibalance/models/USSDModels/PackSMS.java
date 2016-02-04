@@ -1,6 +1,11 @@
 package com.builder.ibalance.models.USSDModels;
 
+import android.util.Log;
+
 import com.builder.ibalance.messages.OutgoingSmsMessage;
+import com.builder.ibalance.util.Helper;
+import com.crashlytics.android.Crashlytics;
+import com.parse.ParseObject;
 
 /**
  * Created by Shabaz on 05-Jan-16.
@@ -28,6 +33,26 @@ public class PackSMS extends USSDBase
         this.rem_sms = rem_sms;
 
     }
+    public ParseObject logDetails()
+    {
+        ParseObject p = new ParseObject("PACK_SMS_VALID");
+        try
+        {
+            p.put("MESSAGE", this.original_message);
+            p.put("USED_SMS", this.used_sms);
+            p.put("REM_SMS", this.rem_sms);
+            p.put("MAIN_BAL", this.main_bal);
+            p.put("SLOT", this.sim_slot);
+            p.put("HASH", Helper.shift(this.ph_number));
+        }
+        catch (Exception e)
+        {
+            //This should not happen
+            Log.wtf("NORMAL_SMS","Apocalypse Arriving: The Details had a error");
+            Crashlytics.logException(e);
+        }
+        return p;
+    }
     public void eventDetails(String ph_number,long id,int sim_slot)
     {
         //This is as of now optional
@@ -37,7 +62,6 @@ public class PackSMS extends USSDBase
     }
     public void eventDetails(OutgoingSmsMessage mDetails)
     {
-        //This is as of now optional
         this.ph_number = mDetails.lastNumber;
         this.id = mDetails.id;
         this.sim_slot = mDetails.sim_slot;
@@ -67,4 +91,6 @@ public class PackSMS extends USSDBase
 
         return new NormalSMS(this);
     }
+
+
 }

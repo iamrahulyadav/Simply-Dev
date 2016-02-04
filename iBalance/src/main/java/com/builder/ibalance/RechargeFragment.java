@@ -571,7 +571,6 @@ public class RechargeFragment extends Fragment implements OnClickListener,Adapte
         {
             case R.id.conatact_select:
                 Helper.logGA("RECHARGE","CONTACT_PICKED");
-                //TODO have list with all params sent to flurry
                 FlurryAgent.logEvent("CONTACT_PICKED");
                 Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
                 startActivityForResult(i, PICK_CONTACT);

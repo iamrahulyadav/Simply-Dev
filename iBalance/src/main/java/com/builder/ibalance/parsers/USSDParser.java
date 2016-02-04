@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Log;
 
 import com.builder.ibalance.messages.BalanceRefreshMessage;
 import com.builder.ibalance.models.USSDModels.NormalCall;
@@ -15,6 +14,7 @@ import com.builder.ibalance.models.USSDModels.PackData;
 import com.builder.ibalance.models.USSDModels.PackSMS;
 import com.builder.ibalance.models.USSDModels.USSDBase;
 import com.builder.ibalance.util.ConstantsAndStatics;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.Loki;
 import com.builder.ibalance.util.MyApplication;
 import com.google.code.regexp.Matcher;
@@ -68,6 +68,15 @@ public class USSDParser
     }
     public boolean parseMessage(String message)
     {
+        message = message.trim()
+                .replace("\r", " ")
+                .replace("\n", " ")
+                .replace("\u0011"," ")
+                .replace("Â§"," ")
+                .replace("ยง"," ")
+                .replace('_',' ')
+                .replaceAll("\\s+"," ")
+                .toUpperCase();
        //V16Log.d(TAG, "Recent event = " + ConstantsAndStatics.RECENT_EVENT);
         try
         {
@@ -128,7 +137,13 @@ public class USSDParser
             //Disabling of flag will be handled in com.builder.ibalance.services.RecorderUpdaterService
             if(!ConstantsAndStatics.WAITING_FOR_REFRESH)
             {
-                return tryOldSchoolMethod(message);
+
+                if(tryOldSchoolMethod(message))
+                {
+                    Helper.logFlurry("OLD_SCHOOL","MESSAGE",message);
+                    return true;
+                }
+                else return false;
             }
         }
         return false;
@@ -241,6 +256,52 @@ public class USSDParser
     }
 
 
+
+    public boolean tryNonCallTypes(String message)
+    {
+       //V16Log.d(TAG, "Trying all Types");
+        if(message==null)
+            return false;
+        message = message.trim()
+                .replace("\r", " ")
+                .replace("\n", " ")
+                .replace("\u0011"," ")
+                .replace("Â§"," ")
+                .replace("ยง"," ")
+                .replace('_',' ')
+                .replaceAll("\\s+"," ")
+                .toUpperCase();
+        try
+        {
+            if (normalSMS(message))
+            {
+               //V16Log.d(TAG, "Normal SMS");
+                return true;
+            }
+            if (packSMS(message))
+            {
+               //V16Log.d(TAG, "Pack SMS");
+                return true;
+            }
+            if (packData(message))
+            {
+               //V16Log.d(TAG, "Pack data");
+                return true;
+            }
+            if (normalData(message))
+            {
+               //V16Log.d(TAG, "Normal DATA");
+                return true;
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+
+    }
+
+
     private boolean normalCall(String message) throws JSONException
     {
        //V16Log.d(TAG, "Trying Normal Call");
@@ -257,38 +318,46 @@ public class USSDParser
             //ptln("Cost = " + mMatcher.group("COST"));
             // ptln("Balance = " +);
             int duration = -1;
-            float cost = -1.0f;
+            float cost = -200.0f;
             try
             {
                 cost = Float.parseFloat(result.group("COST"));
             } catch (Exception e)
             {
-                cost = -1.0f;
+                cost = -200.0f;
             }
             try
             {
                 duration = Integer.parseInt(result.group("DURS"));
                 //ptln("Duration Secs = " + duration);
-            } catch (IndexOutOfBoundsException e0)
+            } catch (Exception e0)
             {
                 try
                 {
                     String clock = result.group("DURC");
                     if(clock==null)
-                        throw new IndexOutOfBoundsException();
+                        throw new Exception();
                     String sub[] = clock.split(":");
                     duration = Integer.parseInt(sub[0]) * 60 * 60;
                     duration += Integer.parseInt(sub[1]) * 60;
                     duration += Integer.parseInt(sub[2]);
                     //ptln("Duration Clock = " + duration);
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     try
                     {
-                        duration = Integer.parseInt(result.group("DURMIN")) * 60;
+                        try
+                        {
+
+                            duration = Integer.parseInt(result.group("DURMIN")) * 60;
+                        }
+                        catch (Exception e3)
+                        {
+                            duration = 0;
+                        }
                         duration += Integer.parseInt(result.group("DURSEC"));
                         //ptln("Duration Min:Secs = " + duration);
-                    } catch (IndexOutOfBoundsException e2)
+                    } catch (Exception e2)
                     {
                         duration = -1;
                         //ptln("No Duration Found A-Hole Telecos");
@@ -314,8 +383,8 @@ public class USSDParser
         if (result != null)
         {
           /*type(String/Unknown)- TYPE [types (3G,2G,-1,GPRS) (will be empty)or(Exception might be thrown assume 2G) ]
-            data used(Mb/-1.0f)	- DUSED
-            MB-KB split(Mb/-1.0f)  - DMBUSED , DKBUSED
+            data used(Mb/-200.0f)	- DUSED
+            MB-KB split(Mb/-200.0f)  - DMBUSED , DKBUSED
             data used Metric- DUSEDM[B KB MB GB  (KB,MB,K,empty (assume K))]
             data left		- DLEFT
             GB-MB-KB split - DGBLEFT, DMBLEFT, DKBLEFT
@@ -327,14 +396,14 @@ public class USSDParser
             try
             {
                 packType = result.group("TYPE");
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
-                packType = "Unknown";
+                packType = "Data Pack";
             }
             try
             {
                 usedMetric = result.group("DUSEDM");
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 usedMetric = "KB";
             }
@@ -357,7 +426,7 @@ public class USSDParser
                         dataUsed = dataUsed * 1000;
                         break;
                 }
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 //Can be a MB Kb Split
                 boolean found = false;
@@ -366,7 +435,7 @@ public class USSDParser
                 {
                     mb = Float.parseFloat(result.group("DMBUSED"));
                     found = true;
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     mb = 0.0f;
                 }
@@ -374,16 +443,17 @@ public class USSDParser
                 {
                     kb = Float.parseFloat(result.group("DKBUSED"));
                     found = true;
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     kb = 0.0f;
                 }
                 if (found)
                 {
-                    dataUsed = mb + (kb * 1000f);
+                    usedMetric = "MB";
+                    dataUsed = mb + (kb / 1000f);
                 } else
                 {
-                    dataUsed = -1.0f;
+                    dataUsed = -200.0f;
                 }
             }
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,7 +461,7 @@ public class USSDParser
             try
             {
                 leftMetric = result.group("DLEFTM");
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 leftMetric = "KB";
             }
@@ -413,16 +483,24 @@ public class USSDParser
                         dataLeft = dataLeft * 1000;
                         break;
                 }
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 //Can be a MB Kb Split
                 boolean found = false;
-                float mb, kb;
+                float gb, mb, kb;
+                try
+                {
+                    gb = Float.parseFloat(result.group("DGBLEFT"));
+                    found = true;
+                } catch (Exception e1)
+                {
+                    gb = 0.0f;
+                }
                 try
                 {
                     mb = Float.parseFloat(result.group("DMBLEFT"));
                     found = true;
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     mb = 0.0f;
                 }
@@ -430,23 +508,24 @@ public class USSDParser
                 {
                     kb = Float.parseFloat(result.group("DKBLEFT"));
                     found = true;
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     kb = 0.0f;
                 }
                 if (found)
                 {
-                    dataLeft = mb + (kb * 1000f);
+                    leftMetric = "MB";
+                    dataLeft = (gb* 1000f) + mb + (kb / 1000f);
                 } else
                 {
-                    dataLeft = -1.0f;
+                    dataLeft = -200.0f;
                 }
             }
             try
             {
                 validity = result.group("VAL");
                 //Have to convert it to machine understandable
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 validity = "N/A";
             }
@@ -458,9 +537,9 @@ public class USSDParser
                 //to take care of number like "20."
                 if (bal.charAt(bal.length() - 1) == '.') bal = bal.substring(0, bal.length() - 2);
                 mainBal = Float.parseFloat(bal);
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
-                mainBal = -1.0f;
+                mainBal = -200.0f;
             }
             ussdDetails = new PackData();
             ((PackData) ussdDetails).USSDDetails((new Date()).getTime(), ConstantsAndStatics.USSD_TYPES.PACK_DATA, mainBal, packType, validity, dataUsed, dataLeft, message);
@@ -494,21 +573,21 @@ public class USSDParser
             try
             {
                 deductedSMS = Integer.parseInt(result.group("DEDT"));
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 deductedSMS = -1;
             }
             try
             {
                 validity = result.group("VAL");
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 validity = null;
             }
             try
             {
                 packType = result.group("TYPE");
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 packType = null;
             }
@@ -520,12 +599,9 @@ public class USSDParser
                 //to take care of number like "20."
                 if (bal.charAt(bal.length() - 1) == '.') bal = bal.substring(0, bal.length() - 2);
                 mainBal = Float.parseFloat(bal);
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
-                mainBal = -1.0f;
-            } catch (NullPointerException e)
-            {
-                mainBal = -1.0f;
+                mainBal = -200.0f;
             }
             //ptln((i++)+")Deducted = "+deductedSMS+" Rem = "+remSMS+" main Bal = "+mainBal+" Val = "+validity+" Type = "+packType);
             ussdDetails = new PackSMS();
@@ -595,12 +671,12 @@ public class USSDParser
                 cost = Float.parseFloat(result.group("DCOST"));
             } catch (RuntimeException e)
             {
-                cost = -1.0f;
+                cost = -200.0f;
             }
             try
             {
                 usedMetric = result.group("DUSEDM");
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 usedMetric = "KB";
             }
@@ -625,7 +701,7 @@ public class USSDParser
                 normalTypeFound = true;
             } catch (RuntimeException e)
             {
-                dataUsed = -1.0f;
+                dataUsed = -200.0f;
             }
             if (!normalTypeFound)
             {
@@ -698,7 +774,7 @@ public class USSDParser
             There are two types of packs one giving free mins/secs and other giving a special balance with expiry data
             both are mutually exclusive
             */
-            float mainBal, packBal = -1.0f, packCost = -1.0f;
+            float mainBal, packBal = -200.0f, packCost = -200.0f;
             int usedSecs, leftSecs, durSec;
             String usedMetric = "SECS", leftMetric = null, validity, packType;
             boolean freeMinType = false;
@@ -786,13 +862,11 @@ public class USSDParser
                 {
                     //Clock Timing
                     String clock = result.group("DURC");
-                    if(clock==null)
-                        throw new IndexOutOfBoundsException();
                     String sub[] = clock.split(":");
                     durSec = Integer.parseInt(sub[0]) * 60 * 60;
                     durSec += Integer.parseInt(sub[1]) * 60;
                     durSec += Integer.parseInt(sub[2]);
-                } catch (RuntimeException e1)
+                } catch (Exception e1)
                 {
                     //Hr mim sec split
                     int hr = 0, min = 0, sec = 0;
@@ -887,21 +961,21 @@ public class USSDParser
                 mainBal = Float.parseFloat(result.group("MBAL"));
             } catch (RuntimeException e)
             {
-                mainBal = -1.0f;
+                mainBal = -200.0f;
             }
             try
             {
                 packCost = Float.parseFloat(result.group("PBUSED"));
             } catch (RuntimeException e)
             {
-                packCost = -1.0f;
+                packCost = -200.0f;
             }
             try
             {
                 packBal = Float.parseFloat(result.group("PBAL"));
             } catch (RuntimeException e)
             {
-                packBal = -1.0f;
+                packBal = -200.0f;
             }
 
 

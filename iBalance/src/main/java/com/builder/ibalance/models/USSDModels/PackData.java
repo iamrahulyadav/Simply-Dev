@@ -1,5 +1,11 @@
 package com.builder.ibalance.models.USSDModels;
 
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.crashlytics.android.Crashlytics;
+import com.parse.ParseObject;
+
 /**
  * Created by Shabaz on 05-Jan-16.
  */
@@ -26,7 +32,27 @@ public class PackData extends USSDBase
         this.pack_type = pack_type;
         this.validity = validity;
     }
-
+    public ParseObject logDetails()
+    {
+        ParseObject p = new ParseObject("NORMAL_DATA_VALID");
+        try
+        {
+            p.put("MESSAGE", this.original_message);
+            p.put("DATA_USED", this.data_used);
+            p.put("DATA_LEFT", this.data_left);
+            p.put("PACK_TYPE", TextUtils.isEmpty(this.pack_type)?"na":this.pack_type);
+            p.put("VALIDITY", TextUtils.isEmpty(this.validity)?"na":this.validity);
+            p.put("MAIN_BAL", this.main_bal);
+            p.put("SLOT", this.sim_slot);
+        }
+        catch (Exception e)
+        {
+            //This should not happen
+            Log.wtf("NORMAL_DATA_VALID","Apocalypse Arriving: The Details had a error");
+            Crashlytics.logException(e);
+        }
+        return p;
+    }
     public void eventDetails(int sim_slot)
     {
         this.sim_slot = sim_slot;
@@ -42,4 +68,5 @@ public class PackData extends USSDBase
                 ", pack_type='" + pack_type + '\'' +
                 "} " + super.toString();
     }
+
 }

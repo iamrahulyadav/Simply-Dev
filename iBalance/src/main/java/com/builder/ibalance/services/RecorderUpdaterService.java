@@ -11,8 +11,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -56,6 +56,7 @@ import com.builder.ibalance.models.USSDModels.PackData;
 import com.builder.ibalance.models.USSDModels.PackSMS;
 import com.builder.ibalance.models.USSDModels.USSDBase;
 import com.builder.ibalance.parsers.USSDParser;
+import com.builder.ibalance.test.TestMessage;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.GlobalData;
 import com.builder.ibalance.util.Helper;
@@ -70,6 +71,7 @@ import com.parse.ParseQuery;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -93,15 +95,23 @@ public class RecorderUpdaterService extends AccessibilityService
 
     void addToDatabase(USSDBase entryBase)
     {
+        /*//TODO Remove all of these
+        if(BuildConfig.DEBUG && ConstantsAndStatics.TEST)
+        {
+            ConstantsAndStatics.TEST = false;
+            return;
+        }*/
         SharedPreferences sharedPreferences = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,
             Context.MODE_PRIVATE);
-
         SharedPreferences.Editor mEditor = sharedPreferences.edit();
         int sim_slot = 0;
+        int slot = 0;
         switch (entryBase.getType())
         {
             case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
                 NormalCall callDetails = (NormalCall)entryBase;
+                slot = correctSimSlot(callDetails.main_bal,callDetails.call_cost,callDetails.sim_slot);
+                callDetails.sim_slot = slot;
                 BalanceHelper mBalanceHelper = new BalanceHelper();
                 checkForRecharge(entryBase);
                 mBalanceHelper.addEntry(callDetails);
@@ -110,6 +120,8 @@ public class RecorderUpdaterService extends AccessibilityService
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
                 PackCall mPackDetails = (PackCall) entryBase;
+                slot = correctSimSlot(mPackDetails.main_bal,0.0f,mPackDetails.sim_slot);
+                mPackDetails.sim_slot = slot;
                 sim_slot = mPackDetails.sim_slot;
                 BalanceHelper mBalanceHelper2 = new BalanceHelper();
                 mBalanceHelper2.addEntry(mPackDetails.getBaseCallDetails());
@@ -208,6 +220,64 @@ public class RecorderUpdaterService extends AccessibilityService
             default:
         }
         mEditor.commit();
+    }
+
+    private int correctSimSlot(float curr_main_bal,float call_cost, int slot)
+    {
+
+        float sim_0_bal = -100.f,sim_1_bal = -100.f;
+        if(GlobalData.globalSimList == null)
+        {
+            GlobalData.globalSimList =  new Helper.SharedPreferenceHelper().getDualSimDetails();
+        }
+        if(GlobalData.globalSimList.size()>1) // if dual sim
+        {
+            SharedPreferences sharedPreferences = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,
+                    Context.MODE_PRIVATE);
+            sim_0_bal = sharedPreferences.getFloat("CURRENT_BALANCE_0",-100.f);//8.72
+            sim_1_bal = sharedPreferences.getFloat("CURRENT_BALANCE_1",-100.f);//40.14 6.72
+        if(curr_main_bal<0.0f)
+            return slot;
+        if(slot == 0)
+        {
+            float bal_diff = sim_0_bal-curr_main_bal-call_cost;
+            if((bal_diff-0.0f)>2.0f)
+            {
+                bal_diff = sim_1_bal-curr_main_bal-call_cost;
+                if(Math.abs(bal_diff-0.0f)<0.5f)
+                {
+                    slot = 1;
+                    ParseObject parseObject = new ParseObject("SLOT_CHANGED");
+                    parseObject.put("CURR_MAIN_BALL",curr_main_bal);
+                    parseObject.put("SIM_0_BAL",sim_0_bal);
+                    parseObject.put("SIM_1_BAL",sim_1_bal);
+                    parseObject.put("CALL_COST",call_cost);
+                    parseObject.put("CHANGE","0->1");
+                    parseObject.saveEventually();
+                }
+            }
+        }
+        else
+        {
+            float bal_diff = sim_1_bal-curr_main_bal-call_cost;
+            if((bal_diff-0.0f)>2.0f)
+            {
+                bal_diff = sim_0_bal-curr_main_bal-call_cost;
+                if(Math.abs(bal_diff-0.0f)<0.5f)
+                {
+                    slot = 0;
+                    ParseObject parseObject = new ParseObject("SLOT_CHANGED");
+                    parseObject.put("CURR_MAIN_BALL",curr_main_bal);
+                    parseObject.put("SIM_0_BAL",sim_0_bal);
+                    parseObject.put("SIM_1_BAL",sim_1_bal);
+                    parseObject.put("CALL_COST",call_cost);
+                    parseObject.put("CHANGE","1->0");
+                    parseObject.saveEventually();
+                }
+            }
+        }
+        }
+        return slot;
     }
 
     private int guessSimSlot(float cost, float main_bal)
@@ -313,9 +383,7 @@ boolean cancelButtonFound = false;
 @DebugLog
     public void onAccessibilityEvent(AccessibilityEvent event)
     {
-       //V17Log.d(TAG,String.format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",
-                //getEventType(event), event.getClassName(),
-                //event.getPackageName(), event.getEventTime(), event.getText()));
+     //V20Log.d(TAG,String.format("onAccessibilityEvent: [type] %s [class] %s [package] %s [time] %s [text] %s",getEventType(event), event.getClassName(),event.getPackageName(), event.getEventTime(), event.getText()));
         if(event.getPackageName().toString().toUpperCase(Locale.US).contains("WHATSAPP"))
         {
          if(ConstantsAndStatics.PASTE_DEVICE_ID==true)
@@ -350,7 +418,7 @@ boolean cancelButtonFound = false;
         {
             if(text==null || text.isEmpty())
             {
-               //V17Log.d(TAG,"Returning bcoz: "+text);
+            //V20Log.d(TAG,"Returning bcoz: "+text);
                 return;
             }
             if(!ConstantsAndStatics.WAITING_FOR_REFRESH)
@@ -367,24 +435,17 @@ boolean cancelButtonFound = false;
            
             String original_message = text;
 
-            text = text.trim()
-                    .replace("\r", " ")
-                    .replace("\n", " ")
-                    .replace("\u0011"," ")
-                    .replace("Â§"," ")
-                    .replace("ยง"," ")
-                    .replace('_',' ')
-                    .replaceAll("\\s+"," ")
-                    .toUpperCase();
+
         try
         {
             USSDParser parser = new USSDParser();
             if (parser.parseMessage(text)==true) // if Valid
             {
-               //V16//V16Log.d(TAG,"Successful Parse");
+           //V20Log.d(TAG,"Successful Parse");
                 ///Original Message
                 if(ConstantsAndStatics.WAITING_FOR_REFRESH)
                 {
+                //V20Log.d(TAG,"WAITING_FOR_REFRESH");
                     //Switch off the flag
 
                     ConstantsAndStatics.WAITING_FOR_REFRESH = false;
@@ -392,6 +453,7 @@ boolean cancelButtonFound = false;
                 }
                 else
                 {
+                //V20Log.d(TAG,"NOT WAITING");
                     parser.getDetails().original_message = original_message;
                     processUSSD(parser);
                 }
@@ -399,7 +461,7 @@ boolean cancelButtonFound = false;
             }
             else
             {
-               //V16//V16Log.d(TAG,"UnSuccessful Parse");
+             //V20Log.d(TAG,"UnSuccessful Parse");
                 if(ConstantsAndStatics.WAITING_FOR_REFRESH ==true)
                 {
                     ConstantsAndStatics.WAITING_FOR_REFRESH = false;
@@ -424,6 +486,68 @@ boolean cancelButtonFound = false;
 
     }
 
+    public void onEvent(TestMessage message)
+    {
+        ConstantsAndStatics.TEST = true;
+
+        text = message.getText();
+        callEventDetailsReady = true;
+        tempCallEventDetails = new OutgoingCallMessage(4532L,0,10,"9972115447");
+      //V20Log.d(TAG,"Received Test USSD "+text);
+        if(text==null || text.isEmpty())
+        {
+          //V20Log.d(TAG, "Returning bcoz: " + text);
+            return;
+        }
+
+        String original_message = text;
+
+
+        try
+        {
+            USSDParser parser = new USSDParser();
+            if (parser.parseMessage(text)==true) // if Valid
+            {
+              //V20Log.d(TAG,"Successful Parse");
+                ///Original Message
+                if(ConstantsAndStatics.WAITING_FOR_REFRESH)
+                {
+                    //Switch off the flag
+
+                    ConstantsAndStatics.WAITING_FOR_REFRESH = false;
+                    processRefresh(parser,original_message);
+                }
+                else
+                {
+                    parser.getDetails().original_message = original_message;
+                    processUSSD(parser);
+                }
+
+            }
+            else
+            {
+              //V20Log.d(TAG,"UnSuccessful Parse");
+                if(ConstantsAndStatics.WAITING_FOR_REFRESH ==true)
+                {
+                    ConstantsAndStatics.WAITING_FOR_REFRESH = false;
+                    dissmissUSDD();
+                    EventBus.getDefault().post(new BalanceRefreshMessage(Float.MIN_VALUE,null,original_message));
+                }
+                logOnParse(text);
+                (new RegexUpdater()).check();
+            }
+
+        }
+        catch (Exception e)
+        {
+            Crashlytics.logException(e);
+            e.printStackTrace();
+            logOnParse(text);
+        }
+
+    ConstantsAndStatics.PASTE_DEVICE_ID = false;
+    text = "";
+    }
     private void processRefresh(USSDParser parser, String original_message)
     {
         //getRefresh must not be null because the REFRESH_WAITING flag was up
@@ -433,6 +557,7 @@ boolean cancelButtonFound = false;
         {
 
             message.setOriginalMessage(original_message);
+        //V20Log.d(TAG,"Posting Refresh");
             EventBus.getDefault().post(message);
         }
         else
@@ -499,36 +624,37 @@ boolean cancelButtonFound = false;
     @DebugLog
     private void processUSSD(USSDParser parser) throws Exception
     {
-        USSDBase ussDetails = parser.getDetails();
-       //V16//V16Log.d(TAG,ussDetails.toString());
+        final USSDBase ussDetails = parser.getDetails();
+     //V20Log.d(TAG,ussDetails.toString());
         switch (ussDetails.getType())
         {
             case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
-               //V16//V16Log.d(TAG,"Type Normal call");
+             //V20Log.d(TAG,"Type Normal call");
                 //reset callDbUpdate
                 //You have to wait for event details to show the pop up
+              //V20Log.d("SIMPLY_BUG","Got USSD Details");
                 processCallUSSD(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
-               //V16//V16Log.d(TAG,"Type Pack call");
+             //V20Log.d(TAG,"Type Pack call");
                 processCallUSSD(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_SMS:
-               //V16//V16Log.d(TAG,"Type Normal SMS");
+             //V20Log.d(TAG,"Type Normal SMS");
                 ///Need to fetch the number messaged to
                 processSMS(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_SMS:
-               //V16//V16Log.d(TAG,"Type Pack SMS");
+             //V20Log.d(TAG,"Type Pack SMS");
                 processSMS(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_DATA:
-               //V16//V16Log.d(TAG,"Type Normal Data");
+             //V20Log.d(TAG,"Type Normal Data");
                 //Just need to display the pop, no other data as of now
                 processData(ussDetails);
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
-               //V16//V16Log.d(TAG,"Type Pack Data");
+             //V20Log.d(TAG,"Type Pack Data");
                 processData(ussDetails);
                 break;
             }
@@ -538,87 +664,223 @@ boolean cancelButtonFound = false;
 
 
 
-    private void processCallEvent(Message msg) throws Exception
+    private void processCallEvent(OutgoingCallMessage msg) throws Exception
     {
-       //V16//V16Log.d(TAG,"processCallEvent");
+     //V20Log.d(TAG,"processCallEvent");
+      //V20Log.d("SIMPLY_BUG","processCallEvent");
         callEventDetailsReady = true;
-        tempCallEventDetails = (OutgoingCallMessage) msg.obj;
+        tempCallEventDetails =  msg;
         processAllCallDetails();
-        final ScheduledExecutorService exec = Executors.newScheduledThreadPool(1);
 
-        exec.schedule(new Runnable(){
-            @Override
-            public void run(){
-                //Reset all the race condition variables, If USSD message didn't arrive then insert an incomplete entry
-                finalizeCall();
-            }
-        }, 10, TimeUnit.SECONDS);
     }
 
     private void finalizeCall()
     {
         //TODO Insert incomplete call details
-       //V16//V16Log.d(TAG,"Resetting all Race Condition Variables");
+     //V20Log.d(TAG,"Resetting all Race Condition Variables");
+      //V20Log.d("SIMPLY_BUG","Finalizing Call");
+        lateUSSDFuture=null;
+        callEventTimeOut = null;
         callussdDetailsReady = false;
         callEventDetailsReady = false;
         tempCallEventDetails = null;
         tempCallUSSDDetails = null;
 
     }
-
+    Future callEventTimeOut = null;
+    Future lateUSSDFuture = null;
     private void processAllCallDetails() throws Exception
     {
-       //V16//V16Log.d(TAG,"processAllCallDetails ");
-       //V16//V16Log.d(TAG,"callussdDetailsReady "+callussdDetailsReady);
-       //V16//V16Log.d(TAG,"callEventDetailsReady "+callEventDetailsReady);
+     //V20Log.d(TAG,"processAllCallDetails ");
+      //V20Log.d("SIMPLY_BUG","processAllCallDetails");
+      //V20Log.d(TAG,"callussdDetailsReady "+callussdDetailsReady);
+      //V20Log.d(TAG,"callEventDetailsReady "+callEventDetailsReady);
+        final ScheduledExecutorService exec = Executors.newScheduledThreadPool(1);
 
-        if(callussdDetailsReady && callEventDetailsReady)
+
+        if(callEventDetailsReady && !callussdDetailsReady)
         {
-           //V16//V16Log.d(TAG,"Event details = "+ tempCallEventDetails.toString());
+            callEventTimeOut = exec.schedule(new Runnable(){
+                @Override
+                public void run(){
+                    //Reset all the race condition variables, If USSD message didn't arrive then insert an incomplete entry
+                  //V20Log.d("SIMPLY_BUG","Starting Call Event Time Out after 10 Secs");
+                    finalizeCall();
+                }
+            }, 10, TimeUnit.SECONDS);
 
-           //V16//V16Log.d(TAG,"Call Details = "+tempCallUSSDDetails.toString());
-            Intent popup_intent = new Intent(getApplicationContext(),
-                    UssdPopup.class);
-
-            ContactDetailModel userDetails = new ContactDetailHelper().getPopUpDetails(tempCallEventDetails.lastNumber);
-            if(tempCallUSSDDetails instanceof  NormalCall)
-            {
-                ((NormalCall)tempCallUSSDDetails).setEventDetails(tempCallEventDetails);
-                NormalCallPopup   mNormalCallDetails = new NormalCallPopup((NormalCall) tempCallUSSDDetails);
-                mNormalCallDetails.addUserDetails(userDetails);
-
-                popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
-                popup_intent.putExtra("DATA", mNormalCallDetails);
-               //V16//V16Log.d(TAG,"Call detail = "+mNormalCallDetails.toString());
-
-               //V16//V16Log.d(TAG,"Displaying pop_up");
-                dissmissUSDD();
-                showPopup(popup_intent);
-            }
-            else if(tempCallUSSDDetails instanceof  PackCall)
-            {
-                ((PackCall)tempCallUSSDDetails).setEventDetails(tempCallEventDetails);
-                PackCallPopup mPackCallPopupDetails = new PackCallPopup((PackCall) tempCallUSSDDetails);
-                mPackCallPopupDetails.addUserDetails(userDetails);
-
-                popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
-                popup_intent.putExtra("DATA", mPackCallPopupDetails);
-               //V16//V16Log.d(TAG,"Call detail = "+mPackCallPopupDetails.toString());
-                dissmissUSDD();
-                showPopup(popup_intent);
-            }
-
-
-           //V16//V16Log.d(TAG,"Adding to Db");
-            addToDatabase(tempCallUSSDDetails);
         }
-        //wait till both are filled otherwise reset them after 10 secs
+        else if(!callEventDetailsReady && callussdDetailsReady)
+        {
+            lateUSSDFuture = exec.schedule(new Runnable(){
+                @Override
+                public void run(){
+                    //USSD Came after 2 Seconds
+                    try
+                    {
+                      //V20Log.d("SIMPLY_BUG","Starting  USSD Process in 2 Secs");
+                        processLateUSSD();
+                    } catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            },2 , TimeUnit.SECONDS);
+        }
+        else if(callussdDetailsReady && callEventDetailsReady)
+        {
+            if(lateUSSDFuture!=null)
+            {
+              //V20Log.d("SIMPLY_BUG","Cancelling lateUSSDFuture");
+                lateUSSDFuture.cancel(true);
+                lateUSSDFuture = null;
+            }
+          //V20Log.d(TAG,"Event details = "+ tempCallEventDetails.toString());
+
+          //V20Log.d(TAG,"Call Details = "+tempCallUSSDDetails.toString());
+            //If its a normal call and the duration difference
+            if (!ConstantsAndStatics.TEST && (tempCallUSSDDetails instanceof NormalCall) && ((NormalCall) tempCallUSSDDetails).call_duration != -1 &&
+                    (((NormalCall) tempCallUSSDDetails).call_duration - tempCallEventDetails.duration) > 3)
+            {
+                NormalCall unMatchedUSSDDetails = new NormalCall((NormalCall) tempCallUSSDDetails);
+                callussdDetailsReady = false;
+                tempCallUSSDDetails = null;
+              //V20Log.d("SIMPLY_BUG","Duration Mis-Match Safe guard");
+                try
+                {
+                    ParseObject parseObject = new ParseObject("MISMATCHED_TIMING");
+                    parseObject.put("EVENT_DUR",tempCallEventDetails.duration);
+                    parseObject.put("USSD_DUR",unMatchedUSSDDetails.call_duration);
+                    parseObject.put("DETAILS",unMatchedUSSDDetails.toString());
+                    parseObject.saveEventually();
+                }
+                catch (Exception e)
+                {}
+                return;
+            } else
+            {
+                Intent popup_intent = new Intent(getApplicationContext(), UssdPopup.class);
+
+                ContactDetailModel userDetails = new ContactDetailHelper().getPopUpDetails(tempCallEventDetails.lastNumber);
+                if (tempCallUSSDDetails instanceof NormalCall)
+                {
+                    ((NormalCall) tempCallUSSDDetails).setEventDetails(tempCallEventDetails);
+                    NormalCallPopup mNormalCallDetails = new NormalCallPopup((NormalCall) tempCallUSSDDetails);
+                    mNormalCallDetails.addUserDetails(userDetails);
+
+                    popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
+                    popup_intent.putExtra("DATA", mNormalCallDetails);
+                  //V20Log.d(TAG,"Call detail = "+mNormalCallDetails.toString());
+
+                  //V20Log.d(TAG,"Displaying pop_up");
+                  //V20Log.d("SIMPLY_BUG","Synced Id = "+tempCallEventDetails.id);
+                    dissmissUSDD();
+                    showPopup(popup_intent);
+                    getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE).edit().putLong("SYNCED_ID",tempCallEventDetails.id).apply();
+                    logValidOnParse(tempCallUSSDDetails);
+                    if(callEventTimeOut!=null)
+                    {
+                      //V20Log.d("SIMPLY_BUG","Call Event Time Out is Still Running so Cancelling it");
+                        callEventTimeOut.cancel(true);
+                        callEventTimeOut = null;
+                    }
+
+                } else if (tempCallUSSDDetails instanceof PackCall)
+                {
+                    ((PackCall) tempCallUSSDDetails).setEventDetails(tempCallEventDetails);
+                    PackCallPopup mPackCallPopupDetails = new PackCallPopup((PackCall) tempCallUSSDDetails);
+                    mPackCallPopupDetails.addUserDetails(userDetails);
+
+                    popup_intent.putExtra("TYPE", tempCallUSSDDetails.getType());
+                    popup_intent.putExtra("DATA", mPackCallPopupDetails);
+                  //V20Log.d(TAG,"Call detail = "+mPackCallPopupDetails.toString());
+                    dissmissUSDD();
+                    showPopup(popup_intent);
+                    getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE).edit().putLong("SYNCED_ID",tempCallEventDetails.id).apply();
+                    logValidOnParse(tempCallUSSDDetails);
+                    if(callEventTimeOut!=null)
+                    {
+                        callEventTimeOut.cancel(true);
+                        callEventTimeOut = null;
+                    }
+                }
+
+
+              //V20Log.d(TAG,"Adding to Db");
+                addToDatabase(tempCallUSSDDetails);
+              //V20Log.d("SIMPLY_BUG","Finalizing Manually");
+                finalizeCall();
+            }
+        }
+        //wait till both are filled otherwise reset them after 10 secs This is called in ProcessCallEvent
     }
+
+    private void processLateUSSD() throws Exception
+    {
+      //V20Log.d("SIMPLY_BUG","Processing Late USSD");
+        SharedPreferences mSharedPreferences = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
+        //If this is success full then the we should get Event details via must Event Bus.
+        long lastSyncedID = mSharedPreferences.getLong("SYNCED_ID",mSharedPreferences.getLong("PREV_ID", -1l));
+      //V20Log.d("SIMPLY_BUG","Querying for Details with Id > than "+lastSyncedID);
+        long unSyncedID = CallLogObserver.sendEventDetails(lastSyncedID);
+        //If there was no unsynced Id then the USSD message might have been wrongly classified, so purge it
+        if(unSyncedID==lastSyncedID)
+        {
+          //V20Log.d("SIMPLY_BUG","There was no Unsynced call log so ignoring this valid but wrong classified one");
+           
+            if(tempCallUSSDDetails!=null)
+            {
+                USSDParser parser = new USSDParser();
+                if(parser.tryNonCallTypes(tempCallUSSDDetails.original_message))
+                {
+                    processUSSD(parser);
+                }
+            }
+            finalizeCall();
+        }
+    }
+
+
+    private void logValidOnParse(USSDBase USSDAndEventDetails)
+    {
+            if(USSDAndEventDetails instanceof NormalCall)
+            {
+              ((NormalCall)USSDAndEventDetails).logDetails().saveEventually();
+
+            }
+        else if(USSDAndEventDetails instanceof PackCall)
+            {
+                ((PackCall)USSDAndEventDetails).logDetails().saveEventually();
+            }
+        else if(USSDAndEventDetails instanceof NormalSMS)
+            {
+                ((NormalSMS)USSDAndEventDetails).logDetails().saveEventually();
+            }
+        else if(USSDAndEventDetails instanceof PackSMS)
+            {
+                ((PackSMS)USSDAndEventDetails).logDetails().saveEventually();
+
+            }
+        else if(USSDAndEventDetails instanceof NormalData)
+            {
+                ((NormalData)USSDAndEventDetails).logDetails().saveEventually();
+
+            }
+        else if(USSDAndEventDetails instanceof PackData)
+            {
+                ((PackData)USSDAndEventDetails).logDetails().saveEventually();
+
+            }
+    }
+
+
+
     void showPopup(Intent popup_intent) throws Exception
     {
 
-        Helper.logGA("POPUP",popup_intent.getStringExtra("TYPE"));
-        Helper.logFlurry("POPUP","TYPE",popup_intent.getStringExtra("TYPE"));
+
+        Helper.logGA("POPUP",Helper.getUSSDType(popup_intent.getIntExtra("TYPE",-1)));
+        Helper.logFlurry("POPUP","TYPE",Helper.getUSSDType(popup_intent.getIntExtra("TYPE",-1)));
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -626,7 +888,7 @@ boolean cancelButtonFound = false;
     }
     private void processCallUSSD(USSDBase ussDetails) throws Exception
     {
-       //V16//V16Log.d(TAG,"processCallUSSD ");
+     //V20Log.d(TAG,"processCallUSSD ");
         callussdDetailsReady  = true;
         if(tempCallUSSDDetails == null)
         {
@@ -658,11 +920,12 @@ boolean cancelButtonFound = false;
                 popup_intent.putExtra("TYPE", ussDetails.getType());
 
                 popup_intent.putExtra("DATA", smsPopupDetails);
-               //V16//V16Log.d(TAG,"Normal SMS detail = "+smsPopupDetails.toString());
+             //V20Log.d(TAG,"Normal SMS detail = "+smsPopupDetails.toString());
 
 
                 dissmissUSDD();
                 showPopup(popup_intent);
+                logValidOnParse(ussDetails);
             }
             else if(ussDetails instanceof PackSMS)
             {
@@ -671,19 +934,21 @@ boolean cancelButtonFound = false;
                 smsPopupDetails.addUserDetails(userDetails);
                 popup_intent.putExtra("TYPE", ussDetails.getType());
                 popup_intent.putExtra("DATA", smsPopupDetails);
-               //V16//V16Log.d(TAG,"SMS Pack detail = "+smsPopupDetails.toString());
+             //V20Log.d(TAG,"SMS Pack detail = "+smsPopupDetails.toString());
                 dissmissUSDD();
                 showPopup(popup_intent);
+
+                logValidOnParse(ussDetails);
             }
 
+          //V20Log.d(TAG,"Adding SMS to Db");
+            addToDatabase(ussDetails);
         }
         else
         {
-           //V16//V16Log.d(TAG,"Event Details Null");
+         //V20Log.d(TAG,"Event Details Null");
         }
 
-       //V16//V16Log.d(TAG,"Adding SMS to Db");
-        addToDatabase(ussDetails);
 
     }
 
@@ -699,11 +964,12 @@ boolean cancelButtonFound = false;
             popup_intent.putExtra("TYPE", ussDetails.getType());
 
             popup_intent.putExtra("DATA", normalDataDetails);
-           //V16//V16Log.d(TAG,"Normal Data detail = "+normalDataDetails.toString());
+         //V20Log.d(TAG,"Normal Data detail = "+normalDataDetails.toString());
 
             dissmissUSDD();
 
             showPopup(popup_intent);
+            logValidOnParse(ussDetails);
         }
         else if(ussDetails instanceof PackData)
         {
@@ -711,14 +977,15 @@ boolean cancelButtonFound = false;
             popup_intent.putExtra("TYPE", ussDetails.getType());
 
             popup_intent.putExtra("DATA", packDataDetails);
-           //V16//V16Log.d(TAG,"Pack Data detail = "+packDataDetails.toString());
+         //V20Log.d(TAG,"Pack Data detail = "+packDataDetails.toString());
 
             dissmissUSDD();
 
             showPopup(popup_intent);
+            logValidOnParse(ussDetails);
         }
 
-       //V16//V16Log.d(TAG,"Adding Data to Db");
+     //V20Log.d(TAG,"Adding Data to Db");
         addToDatabase(ussDetails);
     }
 
@@ -768,7 +1035,12 @@ boolean cancelButtonFound = false;
         ClipboardManager clipboard = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("Simply Text", textToShare);
         clipboard.setPrimaryClip(clip);
-        editTextField.performAction(AccessibilityNodeInfoCompat.ACTION_PASTE);
+        if(editTextField!=null)
+        {
+            editTextField.performAction(AccessibilityNodeInfoCompat.ACTION_PASTE);
+        }
+        clip = ClipData.newPlainText("", textToShare);
+        clipboard.setPrimaryClip(clip);
 
     }
     private OutgoingSmsMessage getSmsEventDetails() throws Exception
@@ -792,7 +1064,7 @@ boolean cancelButtonFound = false;
             mdetails = new OutgoingSmsMessage(id,number,0);
             mPreferences.edit().putLong("SMS_PREV_ID",id).apply();
         }
-       //V16//V16Log.d(TAG,"SMS Details: "+mdetails);
+     //V20Log.d(TAG,"SMS Details: "+mdetails);
         return mdetails;
     }
     /*public void onAccessibilityEvent(AccessibilityEvent event)
@@ -1214,14 +1486,24 @@ boolean cancelButtonFound = false;
     @Override
     public void onInterrupt()
     {
-       //V16//V16Log.d(TAG, "onInterrupt");
+     //V20Log.d(TAG, "onInterrupt");
     }
+    public void onEvent(OutgoingCallMessage callEventDetails)
+    {
 
+        try
+        {
+            processCallEvent(callEventDetails);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
     @Override
     protected void onServiceConnected()
     {
         super.onServiceConnected();
-
+        EventBus.getDefault().register(this);
         AccessibilityServiceInfo info = new AccessibilityServiceInfo();
 
         info.flags = AccessibilityServiceInfo.DEFAULT;
@@ -1229,8 +1511,8 @@ boolean cancelButtonFound = false;
         info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
         setServiceInfo(info);
-        Handler mHandler = new CallLogObserverHandler();
-        mCallLogObserver = new CallLogObserver(mHandler);
+
+        mCallLogObserver = new CallLogObserver(new Handler());
         getContentResolver().registerContentObserver(
                 android.provider.CallLog.Calls.CONTENT_URI, false,
                 mCallLogObserver);
@@ -1286,30 +1568,27 @@ boolean cancelButtonFound = false;
 
     }
 
+    /**
+     * Called by the system to notify a Service that it is no longer used and is being removed.  The
+     * service should clean up any resources it holds (threads, registered
+     * receivers, etc) at this point.  Upon return, there will be no more calls
+     * in to this Service object and it is effectively dead.  Do not call this method directly.
+     */
+    @Override
+    public void onDestroy()
+    {
+        EventBus.getDefault().unregister(this);
+        getContentResolver().unregisterContentObserver(mCallLogObserver);
+        Helper.logGA("SERVICE_DESTROYED", Build.MODEL);
+        Helper.logFlurry("SERVICE_DESTROYED","MODEL", Build.MODEL);
+        super.onDestroy();
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         return START_STICKY;
     }
 
-    private class CallLogObserverHandler extends Handler
-    {
 
-        @Override
-        public void handleMessage(Message msg)
-        {
-            super.handleMessage(msg);
-           //V10Log.d(tag + " handleMessage", "What = " + msg.what + "  Contents" + msg.obj.toString());
-            if (msg.what == 1729)
-            {
-                try {
-                    processCallEvent(msg);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                //displayPopUp();
-            }
-
-        }
-    }
 }

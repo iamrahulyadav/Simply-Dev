@@ -25,7 +25,7 @@ public class Choice
             ptln("3 --- Clean Files");
             ptln("4 --- Experiments");
             ptln("5 --- Tests");
-            ptln("6 --- Create Encrypted Regex");
+            ptln("6 --- Encrypt/Decrypt Regex");
             ptln("7 --- Sort JSON");
             ptln("8 --- USSDParser");
             ptln("9 --- Scratch Pad");

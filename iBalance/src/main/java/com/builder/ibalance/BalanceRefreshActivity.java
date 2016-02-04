@@ -55,9 +55,17 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
     @Override
     protected void onStop()
     {
+
+
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
         FlurryAgent.endTimedEvent("BalanceRefreshActivity");
         EventBus.getDefault().unregister(this);
-        super.onStop();
+        super.onDestroy();
     }
 
     @Override
@@ -232,10 +240,14 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
 
     public void onEvent(BalanceRefreshMessage message)
    {
+     //V20Log.d(TAG,"Got Refresh Message");
+
        SharedPreferences userDataPref = getSharedPreferences(ConstantsAndStatics.USER_PREF_KEY,MODE_PRIVATE);
        boolean firstRefresh = userDataPref.getBoolean("FIRST_REFRESH",true);
        if(message.isSuccessful())
        {
+         //V20Log.d(TAG,"Got Success");
+
            if(firstRefresh)
            {
 
@@ -250,6 +262,8 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
        }
        else
        {
+         //V20Log.d(TAG,"Got Failure");
+
            if(firstRefresh)
            {
                Helper.logGA("ONBOARD","REFRESH_FAIL");
@@ -420,7 +434,6 @@ public class BalanceRefreshActivity extends AppCompatActivity implements View.On
     @DebugLog
     private JSONObject getUssdCodes(String carrier)
     {
-        //TODO Update USSD number from dropbox
         JSONObject mJsonObject = null;
         if(TextUtils.isEmpty(carrier))
         {

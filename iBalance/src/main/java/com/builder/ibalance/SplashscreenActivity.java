@@ -8,12 +8,14 @@ import android.database.Cursor;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -31,9 +33,7 @@ import com.crashlytics.android.Crashlytics;
 import com.flurry.android.FlurryAgent;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -166,7 +166,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             }
             ParseObject parseObject = new ParseObject("APP_UPDATES");
             TelephonyManager manager = (TelephonyManager) (MyApplication.context.getSystemService(TELEPHONY_SERVICE));
-            parseObject.put("DEVICE_ID", manager.getDeviceId());
+            parseObject.put("DEVICE_ID", manager.getDeviceId()==null?"EMPTY ID":manager.getDeviceId());
             parseObject.put("FROM_VERSION", prevVersion);
             parseObject.put("TO_VERSION", BuildConfig.VERSION_CODE);
             parseObject.saveEventually();
@@ -256,7 +256,11 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
     {
         SharedPreferences deviceDetailsPreferences = MyApplication.context.getSharedPreferences("DEVICE_DETAILS", Context.MODE_PRIVATE);
         SharedPreferences.Editor mEditor = deviceDetailsPreferences.edit();
+        boolean isNetworkConnected() {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
+            return cm.getActiveNetworkInfo() != null;
+        }
         @Override
         protected ArrayList<SimModel> doInBackground(Void... voids)
         {
@@ -305,72 +309,7 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
             }
             //Log.d(TAG,GlobalData.globalSimList.toString());
             mSharedPreferenceHelper.saveDualSimDetails(GlobalData.globalSimList);
-            final SharedPreferences userDataPref = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-            boolean first_app_launch = userDataPref.getBoolean("FIRST_APP_LAUNCH", true);
-            if (first_app_launch)
-            {
 
-
-                final ParseQuery<ParseObject> query = ParseQuery
-                        .getQuery("SIMPLY_USERS");
-                query.whereEqualTo("DEVICE_ID", Helper.getDeviceId());
-                // Retrieve the object by Device id
-
-                query.addDescendingOrder("createdAt");
-
-                ParseObject pObj = null;
-                try
-                {
-                    pObj = query.getFirst();
-                    pObj.put("TYPE","RETURNING");
-                } catch (ParseException e)
-                {
-                    if(e.getCode() == ParseException.OBJECT_NOT_FOUND)
-                    {
-                        pObj = new ParseObject("SIMPLY_USERS");
-                        pObj.put("TYPE","NEW");
-                        pObj.put("MODEL", Build.MODEL);
-                        pObj.put("MANUFACTURER", Build.MANUFACTURER);
-                    }
-                    //e.printStackTrace();
-                }
-                TelephonyManager manager = (TelephonyManager) (MyApplication.context.getSystemService(TELEPHONY_SERVICE));
-                pObj.put("DEVICE_ID", manager.getDeviceId());
-                for (SimModel m : GlobalData.globalSimList)
-                {
-                    pObj.put("CARRIER_" + m.getSimslot(), m.getCarrier());
-                    pObj.put("CIRCLE_" + m.getSimslot(), m.getCircle());
-                }
-                String phNumber = manager.getLine1Number();
-                if (phNumber != null)
-                {
-                    pObj.put("NUMBER", phNumber);
-                }
-
-                pObj.put("ANDROID_VERSION", Build.VERSION.SDK_INT);
-                pObj.put("TWO_SLOTS", SimModel.isTwo_slots());
-                pObj.put("DUAL_SIM", !DualSimConstants.IS_SINGLE_SIM);
-                pObj.put("COLUMN_NAMES", SimModel.call_log_columns.toString());
-                                /*pObj.put("SAMPLE_CALLLOGS", getCallLogs());*/
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                Location loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                if(loc!=null)
-                {
-                    pObj.put("LOCATION", loc.toString());
-                }
-                pObj.put("APP_VERSION", BuildConfig.VERSION_CODE);
-
-                pObj.put("DUAL_SIM_LOGS", SimModel.debugInfo);
-                pObj.saveEventually();
-
-
-
-
-                SharedPreferences.Editor editor = userDataPref.edit();
-                editor.putInt("APP_VERSION", BuildConfig.VERSION_CODE);
-                editor.putBoolean("FIRST_APP_LAUNCH", false);
-                editor.commit();
-            }
 
             /*
             {
@@ -417,6 +356,12 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                     finish();
 
                 }*/
+
+                boolean first_app_launch = userDataPref.getBoolean("FIRST_APP_LAUNCH", true);
+                if (first_app_launch)
+                {
+                   logNewUser(sim_list);
+                }
                 DataInitializer mDataInitializer = new DataInitializer();
                 mDataInitializer.execute();
                 dual_sim_bar.setVisibility(View.GONE);
@@ -431,6 +376,64 @@ public class SplashscreenActivity extends AppCompatActivity implements View.OnCl
                 startActivity(new Intent(getApplicationContext(), MainActivity.class).putExtra("RECHARGE",recharge));
                 finish();
             }
+        }
+
+        private void logNewUser(ArrayList<SimModel> sim_list)
+        {
+            ParseObject pObj = null;
+            if(isNetworkConnected())
+            {
+                pObj = new ParseObject("SIMPLY_USERS");
+                pObj.put("TYPE", "NEW");
+                pObj.put("MODEL", Build.MODEL);
+                pObj.put("MANUFACTURER", Build.MANUFACTURER);
+
+                TelephonyManager manager = (TelephonyManager) (MyApplication.context.getSystemService(TELEPHONY_SERVICE));
+                pObj.put("DEVICE_ID", manager.getDeviceId());
+                for (SimModel m : GlobalData.globalSimList)
+                {
+                    pObj.put("CARRIER_" + m.getSimslot(), m.getCarrier());
+                    pObj.put("CIRCLE_" + m.getSimslot(), m.getCircle());
+                }
+                String phNumber = manager.getLine1Number();
+                if (phNumber != null)
+                {
+                    pObj.put("NUMBER", phNumber);
+                }
+                pObj.put("ANDROID_VERSION", Build.VERSION.SDK_INT);
+                pObj.put("TWO_SLOTS", SimModel.isTwo_slots());
+                pObj.put("DUAL_SIM", !DualSimConstants.IS_SINGLE_SIM);
+                pObj.put("COLUMN_NAMES", SimModel.call_log_columns.toString());
+                                /*pObj.put("SAMPLE_CALLLOGS", getCallLogs());*/
+                try
+                {
+                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    Location loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                    if (loc != null)
+                    {
+                        pObj.put("LOCATION", loc.toString());
+                    }
+                } catch (Exception e)
+                {
+                    pObj.put("LOCATION", "EXCEPTION");
+                }
+                pObj.put("APP_VERSION", BuildConfig.VERSION_CODE);
+
+                pObj.put("DUAL_SIM_LOGS", SimModel.debugInfo);
+               //V20 Log.d(TAG,"SAVING INFO");
+                pObj.saveEventually();
+
+
+                SharedPreferences.Editor editor = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE).edit();
+                editor.putInt("APP_VERSION", BuildConfig.VERSION_CODE);
+                editor.putBoolean("FIRST_APP_LAUNCH", false);
+                editor.commit();
+            }
+            else
+            {
+               //V20 Log.d(TAG,"No NET");
+            }
+
         }
 
     }

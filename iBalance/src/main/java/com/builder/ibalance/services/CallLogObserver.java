@@ -6,7 +6,6 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Message;
 import android.provider.CallLog;
 import android.text.TextUtils;
 
@@ -22,6 +21,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import de.greenrobot.event.EventBus;
+
 /**
  * Created by Shabaz on 25-Sep-15.
  */
@@ -30,7 +31,7 @@ public class CallLogObserver extends ContentObserver
 {
     final String tag = this.getClass().getSimpleName();
     Handler accessibiltyServiceHandler;
-    Cursor cursor;
+
     //EventBus eventBus;
     /**
      * Creates a content observer.
@@ -60,29 +61,31 @@ public class CallLogObserver extends ContentObserver
         exec.schedule(new Runnable(){
             @Override
             public void run(){
-                sendEventDetails();
+                SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+                long previous_id = mSharedPreferences.getLong("PREV_ID", -1l);
+                if(previous_id == -1l)
+                {
+                    previous_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
+                }
+                previous_id = sendEventDetails(previous_id);
+                mSharedPreferences.edit().putLong("PREV_ID", previous_id).commit();
             }
         }, 100, TimeUnit.MILLISECONDS);
 
 
 
     }
-
-    private void sendEventDetails()
+//This can be called directly by recorder updater service while USSD message came after the time out of CallEvent Message
+    public static long sendEventDetails(long previous_id)
     {
-        SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
-        long previous_id = mSharedPreferences.getLong("PREV_ID", -1l);
-        if(previous_id == -1l)
-        {
-            previous_id = mSharedPreferences.getLong("INDEXED_ID", -1l);
-        }
+
         //V10Log.d(tag,"NEW ID = "+previous_id);
 
-        cursor = MyApplication.context.getContentResolver().query(
+        Cursor cursor; cursor = MyApplication.context.getContentResolver().query(
                 CallLog.Calls.CONTENT_URI,
                 null,
-                CallLog.Calls._ID + ">?",
-                new String[]{String.valueOf(previous_id)}, CallLog.Calls._ID + " DESC LIMIT 1");
+                CallLog.Calls._ID + ">? AND "+CallLog.Calls.DURATION+">?",
+                new String[]{String.valueOf(previous_id),"0"}, CallLog.Calls._ID + " DESC LIMIT 1");
         try
         {
             if (cursor != null)
@@ -169,27 +172,32 @@ public class CallLogObserver extends ContentObserver
                             }
                             //V10Log.d(tag, "slot_id = " + slot_id);
                             String number = cursor.getString(number_index);
-                            Message msg = accessibiltyServiceHandler.obtainMessage();
+
+                            long call_id = cursor.getLong(id_idx);
+                            EventBus.getDefault().post(new OutgoingCallMessage(call_id,slot_id,duration,number));
+                            /*Message msg = accessibiltyServiceHandler.obtainMessage();
+                            if(slot_id>=10)
+                                slot_id-=10;
                             msg.arg1 = slot_id;
                             msg.what = 1729;
-                            long call_id = cursor.getLong(id_idx);
-                            msg.obj = new OutgoingCallMessage(call_id,slot_id,duration,number);
-                            accessibiltyServiceHandler.sendMessage(msg);
+                            msg.obj =
+                            accessibiltyServiceHandler.sendMessage(msg);*/
                         }
                     }
                     previous_id = cursor.getLong(id_idx);
                 }
                 cursor.close();
-                mSharedPreferences.edit().putLong("PREV_ID", previous_id).commit();
+
             }
         }
-        catch (NullPointerException e)
+        catch (Exception e)
         {
             Crashlytics.logException(e);
         }
+        return previous_id;
     }
 
-    private int getSlotIdforLG(String iccId)
+    private static int getSlotIdforLG(String iccId)
     {
         for (SimModel model: GlobalData.globalSimList)
         {
@@ -199,7 +207,7 @@ public class CallLogObserver extends ContentObserver
         return 0;
     }
 
-    private int getSlotIdforAsus(String sim_index)
+    private static int getSlotIdforAsus(String sim_index)
     {
         for (SimModel model: GlobalData.globalSimList)
         {
@@ -209,7 +217,7 @@ public class CallLogObserver extends ContentObserver
         return 0;
     }
 
-    private int getSlotIdforSub(String subid)
+    private static int getSlotIdforSub(String subid)
     {
 
         for (SimModel model: GlobalData.globalSimList)

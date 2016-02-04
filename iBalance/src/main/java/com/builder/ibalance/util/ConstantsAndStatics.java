@@ -17,6 +17,8 @@ public  class ConstantsAndStatics {
 	public static String USER_PREF_KEY = "USER_DATA";
 	//TODO ALWAYS turn it off, if for Demo Ok
 	public static final boolean DEMO = false;
+	//TODO ALWAYS turn it off, if for Test Ok
+	public static boolean TEST = false;
 	public static String accessibiltyID = "com.builder.ibalance/.services.RecorderUpdaterService";//to check if service is on
 
 	// name,InCount,InDur,OutCount,OutDur,MissCount,Provider,State,imageUuri

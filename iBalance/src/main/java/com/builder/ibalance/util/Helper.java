@@ -199,6 +199,43 @@ public  class Helper {
     {
         logGA( category, "");
     }
+    public static String getUSSDType(int i)
+    {
+        switch (i)
+        {
+            case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
+                //V16Log.d(TAG,"Type Normal call");
+                return"NORMAL_CALL";
+            case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
+                //V16Log.d(TAG,"Type Pack call");
+                return "PACK_CALL";
+            case ConstantsAndStatics.USSD_TYPES.NORMAL_SMS:
+                //V16Log.d(TAG,"Type Normal SMS");
+                return "NORMAL_SMS";
+            case ConstantsAndStatics.USSD_TYPES.PACK_SMS:
+                //V16Log.d(TAG,"Type Pack SMS");
+                return "PACK_SMS";
+            case ConstantsAndStatics.USSD_TYPES.NORMAL_DATA:
+                //V16Log.d(TAG,"Type Normal Data");
+                return "NORMAL_DATA";
+            case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
+                //V16Log.d(TAG,"Type Pack Data");
+                return "PACK_DATA";
+        }
+        return "UNKNOWN";
+    }
+
+    public static String shift(String ph_number)
+    {
+        StringBuilder sb = new StringBuilder();
+        int len = ph_number.length();
+        for (int i=0;i<len;i++)
+        {
+            sb.append(((ph_number.charAt(i))-'0'+'A'));
+        }
+        return sb.toString();
+    }
+
     public static class SharedPreferenceHelper
     {
         final String tag = this.getClass().getSimpleName();
@@ -221,7 +258,7 @@ public  class Helper {
 
             }
             SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-            mEditor.putString("DUAL_SIM", dual_sim_details).commit();
+            mEditor.putString("DUAL_SIM", dual_sim_details);
             mEditor.putInt("DUAL_SIM_TYPE", SimModel.getDual_type());
             mEditor.putBoolean("HAS_TWO_SLOTS", SimModel.isTwo_slots());
             mEditor.putString("CALL_LOG_COLUMNS", call_log_names);

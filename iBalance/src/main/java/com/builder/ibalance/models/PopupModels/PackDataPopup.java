@@ -16,6 +16,7 @@ public class PackDataPopup implements Parcelable
 
     public PackDataPopup()
     {
+        //Dummy Data to check Pop layout
         this.cost = 1.2f;
         this.data_used = 4.5f;
         this.main_bal = 200.45f;

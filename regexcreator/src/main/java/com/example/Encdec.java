@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -47,17 +48,19 @@ public class Encdec {
     private SecretKey key;
     private IvParameterSpec iv;
     String type = "MAIN_BALANCE_PATTERNS";//No need
-    File folder = new File("G:/SimplyV2/TextMining/json/V2");
+    File folder = new File("G:/SimplyV2/TextMining/json/V4");
     //File regexFile = new File("G:/SimplyV2/TextMining/json/"+type+".json");
     File encryptedRegexFile; //= new File("G:/SimplyV2/TextMining/json/"+type+"_ENCRYPTED.json");
     File decryptedRegexFile;// = new File("G:/SimplyV2/TextMining/json/"+type+"_DECRYPTED.json");
     FileInputStream mFileReader ;
     byte[] data;
-    public Encdec()  {
+    public Encdec() throws JSONException, IOException
+    {
         // not much use without a getter
 //      final KeyGenerator kgen = KeyGenerator.getInstance(KEY_TYPE);
 //      kgen.init(KEY_SIZE_BITS);
 //      key = kgen.generateKey();
+        ptln("Dir = "+folder.getName());
         try
         {
             cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
@@ -77,6 +80,92 @@ public class Encdec {
             case 2:
                 decryptJSON();
         }
+    }
+
+    void encryptJSON() throws JSONException, IOException
+    {
+        JSONObject miner = new JSONObject();
+        miner.put("DATA_BALANCE","");
+        miner.put("SMS_BALANCE","");
+        miner.put("CALL_PACK_BALANCE","");
+        for (final File regexFile : folder.listFiles())
+        {
+            if(regexFile.isDirectory())
+                continue;
+            File encryptedRegexFile = new File(folder.getPath()+"/ENCRYPTED/"+regexFile.getName().replaceFirst("[.][^.]+$", "")+"_ENCRYPTED.json");
+            try
+            {
+                String key = "0x000102030405060708090A0B0C0D0E0F";
+                String iv = "0x000102030405060708090A0B0C0D0E0F";
+                Encdec aes = this;
+                if (!encryptedRegexFile.exists())
+                {
+                    encryptedRegexFile.createNewFile();
+                }
+                aes.setKeyHex(key);
+                aes.setIVHex(iv);
+                mFileReader = new FileInputStream(regexFile);
+
+
+                data = new byte[(int) regexFile.length()];
+                mFileReader.read(data);
+                mFileReader.close();
+                String str = new String(data, "UTF-8");
+                JSONArray regexArray = null, encrypedRegexArray = new JSONArray(), callJson;
+                regexArray = new JSONArray(str);
+                int length = regexArray.length();
+                for (int i = 0; i < length; i++)
+                {
+                    JSONObject mRegexObj = regexArray.getJSONObject(i);
+                    String regex = mRegexObj.getString("REGEX");
+                    com.google.code.regexp.Pattern.compile(regex);
+                    regex = aes.encrypt(regex);
+                    mRegexObj.put("REGEX", regex);
+                    encrypedRegexArray.put(mRegexObj);
+                }
+                FileOutputStream mFileWriter = new FileOutputStream(encryptedRegexFile);
+                mFileWriter.write(encrypedRegexArray.toString().getBytes());
+                mFileWriter.close();
+                if(!regexFile.getName().equals("All.txt"))
+                 miner.put(regexFile.getName().replaceFirst("[.][^.]+$", ""),encrypedRegexArray.toString());
+
+            } catch (GeneralSecurityException e)
+            {
+                throw new IllegalStateException("Poison Ivy ", e);
+            } catch (java.io.IOException e)
+            {
+                // not always thrown even if decryption fails, add integrity check such as MAC
+                throw new IllegalStateException("Decryption and/or decoding plain text message failed", e);
+            } catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+            {
+            /*int l = array.length;
+            for(int i=0;i<l;i++ )
+
+            {
+                System.out.println("O: "+array[i]);
+           *//* String cipherHex = aes.encrypt(array[i]);
+            System.out.println("\""+cipherHex+"\",");*//*
+                String deciphered = aes.decrypt(enc[i]);
+                System.out.println("D: "+deciphered);
+                if(array[i].equals(deciphered))
+                    System.out.println("Match");
+                else
+                {
+                    System.out.println("No-Match");
+                }
+            }*/
+            }
+        }
+
+        File finalMinerFile = new File(folder.getPath()+"/ENCRYPTED/"+"MINER"+"_ENCRYPTED.json");
+        if(!finalMinerFile.exists())
+            finalMinerFile.createNewFile();
+        FileOutputStream mFileWriter = new FileOutputStream(finalMinerFile);
+        mFileWriter.write(miner.toString().getBytes());
+        mFileWriter.close();
     }
 
     private void decryptJSON()
@@ -135,76 +224,6 @@ public class Encdec {
         }
         return 100;
     }
-    void encryptJSON() {
-        for (final File regexFile : folder.listFiles())
-        {
-            if(regexFile.isDirectory())
-                return;
-            File encryptedRegexFile = new File("G:/SimplyV2/TextMining/json/"+regexFile.getName().replaceFirst("[.][^.]+$", "")+"_ENCRYPTED.json");
-            try
-            {
-                String key = "0x000102030405060708090A0B0C0D0E0F";
-                String iv = "0x000102030405060708090A0B0C0D0E0F";
-                Encdec aes = this;
-                if (!encryptedRegexFile.exists())
-                {
-                    encryptedRegexFile.createNewFile();
-                }
-                aes.setKeyHex(key);
-                aes.setIVHex(iv);
-                mFileReader = new FileInputStream(regexFile);
-
-
-                data = new byte[(int) regexFile.length()];
-                mFileReader.read(data);
-                mFileReader.close();
-                String str = new String(data, "UTF-8");
-                JSONArray regexArray = null, encrypedRegexArray = new JSONArray(), callJson;
-                regexArray = new JSONArray(str);
-                int length = regexArray.length();
-                for (int i = 0; i < length; i++)
-                {
-                    JSONObject mRegexObj = regexArray.getJSONObject(i);
-                    String regex = mRegexObj.getString("REGEX");
-                    regex = aes.encrypt(regex);
-                    mRegexObj.put("REGEX", regex);
-                    encrypedRegexArray.put(mRegexObj);
-                }
-                FileOutputStream mFileWriter = new FileOutputStream(encryptedRegexFile);
-                mFileWriter.write(encrypedRegexArray.toString().getBytes());
-
-            } catch (GeneralSecurityException e)
-            {
-                throw new IllegalStateException("Poison Ivy ", e);
-            } catch (java.io.IOException e)
-            {
-                // not always thrown even if decryption fails, add integrity check such as MAC
-                throw new IllegalStateException("Decryption and/or decoding plain text message failed", e);
-            } catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-            {
-            /*int l = array.length;
-            for(int i=0;i<l;i++ )
-
-            {
-                System.out.println("O: "+array[i]);
-           *//* String cipherHex = aes.encrypt(array[i]);
-            System.out.println("\""+cipherHex+"\",");*//*
-                String deciphered = aes.decrypt(enc[i]);
-                System.out.println("D: "+deciphered);
-                if(array[i].equals(deciphered))
-                    System.out.println("Match");
-                else
-                {
-                    System.out.println("No-Match");
-                }
-            }*/
-            }
-        }
-    }
-
 
     public void setKeyHex(String keyText) {
 

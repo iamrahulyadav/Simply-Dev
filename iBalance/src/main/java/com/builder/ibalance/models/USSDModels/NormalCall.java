@@ -1,9 +1,13 @@
 package com.builder.ibalance.models.USSDModels;
 
 import android.content.ContentValues;
+import android.util.Log;
 
 import com.builder.ibalance.database.helpers.IbalanceContract;
 import com.builder.ibalance.messages.OutgoingCallMessage;
+import com.builder.ibalance.util.Helper;
+import com.crashlytics.android.Crashlytics;
+import com.parse.ParseObject;
 
 /**
  * Created by Shabaz on 05-Jan-16.
@@ -11,14 +15,41 @@ import com.builder.ibalance.messages.OutgoingCallMessage;
 public class NormalCall extends USSDBase
 {
     public float call_cost;
-    public int call_duration,sim_slot;
+    public int call_duration,sim_slot,ussd_duration,call_log_duration;
     public String ph_number;
     public long id;
 
     public NormalCall()
     {
     }
-
+    public NormalCall(NormalCall copy)
+    {
+        baseDetails(copy.date,copy.USSD_TYPE, copy.main_bal,copy.original_message);
+        this.call_cost = copy.call_cost;
+        this.call_duration = copy.call_duration;
+    }
+    public ParseObject logDetails()
+    {
+        
+        ParseObject p = new ParseObject("NORMAL_CALL_VALID");
+        try
+        {
+            p.put("MESSAGE", this.original_message);
+            p.put("CALL_COST", this.call_cost);
+            p.put("USSD_DUR", this.ussd_duration);
+            p.put("CALL_LOG_DUR", this.call_log_duration);
+            p.put("MAIN_BAL", this.main_bal);
+            p.put("SLOT", this.sim_slot);
+            p.put("HASH", Helper.shift(this.ph_number));
+        }
+        catch (Exception e)
+        {
+            //This should not happen
+            Log.wtf("NORMAL_CALL","Apocalypse Arriving: The Details had a error");
+            Crashlytics.logException(e);
+        }
+        return p;
+    }
     public void USSDDetails(long date,int USSD_TYPE,float main_bal,float call_cost,int call_duration,String original_message)
     {
         baseDetails(date,USSD_TYPE, main_bal,original_message);
@@ -31,6 +62,7 @@ public class NormalCall extends USSDBase
         baseDetails(ussDetails.date,ussDetails.USSD_TYPE, ussDetails.main_bal,ussDetails.original_message);
         this.call_cost = ussDetails.call_cost;
         this.call_duration = ussDetails.call_duration;
+
     }
     public  NormalCall(PackCall packCallDetails)
     {
@@ -46,18 +78,15 @@ public class NormalCall extends USSDBase
         if(call_duration<=0)
             call_duration = packCallDetails.call_duration;
     }
-    public void setEventDetails(long id,String ph_number,int sim_slot)
-    {
-        this.id = id;
-        this.ph_number = ph_number;
-        this.sim_slot=sim_slot;
-    }
+
     public void setEventDetails(OutgoingCallMessage tempCallEventDetails)
     {
         this.id = tempCallEventDetails.id;
         this.ph_number = tempCallEventDetails.lastNumber;
         this.sim_slot= tempCallEventDetails.sim_slot;
         //If duration not available then use
+        ussd_duration=call_duration;
+        call_log_duration = tempCallEventDetails.duration;
         if(call_duration<=0)
             call_duration = tempCallEventDetails.duration;
     }
@@ -86,6 +115,7 @@ public class NormalCall extends USSDBase
                 ", id=" + id +
                 '}' + super.toString();
     }
+
 
 
 }

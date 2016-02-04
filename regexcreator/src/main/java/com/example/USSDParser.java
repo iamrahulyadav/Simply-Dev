@@ -24,7 +24,7 @@ import static com.example.Choice.ptln;
 public class USSDParser
 {
     final String TAG = USSDParser.class.getSimpleName();
-    final String DIR = "G:/SimplyV2/TextMining/json/V2/";
+    final String DIR = "G:/SimplyV2/TextMining/json/V4/";
     String s = null;
 
     public USSDParser()
@@ -41,11 +41,12 @@ public class USSDParser
             while((message = br.readLine())!=null)
             {
                 ptln("Working on : "+message);
-                if(!mainBalance(message.toUpperCase()))
+                if(!tryAllTypes(message.toUpperCase()))
                 {
                     ptln("Failed:\n"+message);
                 }
             }
+
         } catch (FileNotFoundException e)
         {
             e.printStackTrace();
@@ -103,12 +104,42 @@ public class USSDParser
     {
         //Log.d(TAG, "Trying all Types");
 
-            if (normalCall(message)) return true;
-            if (normalSMS(message)) return true;
-            if (packSMS(message)) return true;
-            if (packCall(message)) return true;
-            if (packData(message)) return true;
-            if (normalData(message)) return true;
+            if (normalCall(message)){
+                ptln("NORMAL CALL");
+                return true;
+            }
+            if (normalSMS(message)){
+                ptln("NORMAL SMS");
+                return true;
+            }
+            if (packSMS(message)) {
+                ptln("PACK SMS");
+                return true;
+            }
+            if (packCall(message)){
+                ptln("PACK CALL");
+                return true;
+            }
+            if (packData(message)){
+                ptln("PACK DATA");
+                return true;
+            }
+            if (normalData(message)){
+                ptln("NORMAL DATA");
+                return true;
+            }
+        return false;
+
+    }  private boolean tryAllTypesContinues(String message) throws JSONException
+    {
+        //Log.d(TAG, "Trying all Types");
+
+           normalCall(message);
+           normalSMS(message);
+           packSMS(message);
+           packCall(message);
+           packData(message);
+           normalData(message);
         return false;
 
     }
@@ -244,6 +275,7 @@ public class USSDParser
             try
             {
                 usedMetric = result.group("DUSEDM");
+
             } catch (IndexOutOfBoundsException e)
             {
                 usedMetric = "KB";
@@ -276,7 +308,7 @@ public class USSDParser
                 {
                     mb = Float.parseFloat(result.group("DMBUSED"));
                     found = true;
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     mb = 0.0f;
                 }
@@ -284,13 +316,14 @@ public class USSDParser
                 {
                     kb = Float.parseFloat(result.group("DKBUSED"));
                     found = true;
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     kb = 0.0f;
                 }
                 if (found)
                 {
-                    dataUsed = mb + (kb * 1000f);
+                    usedMetric = "MB";
+                    dataUsed = mb + (kb / 1000f);
                 } else
                 {
                     dataUsed = -1.0f;
@@ -327,12 +360,20 @@ public class USSDParser
             {
                 //Can be a MB Kb Split
                 boolean found = false;
-                float mb, kb;
+                float gb,mb, kb;
+                try
+                {
+                    gb = Float.parseFloat(result.group("DGBLEFT"));
+                    found = true;
+                } catch (Exception e1)
+                {
+                    gb = 0.0f;
+                }
                 try
                 {
                     mb = Float.parseFloat(result.group("DMBLEFT"));
                     found = true;
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     mb = 0.0f;
                 }
@@ -340,13 +381,14 @@ public class USSDParser
                 {
                     kb = Float.parseFloat(result.group("DKBLEFT"));
                     found = true;
-                } catch (IndexOutOfBoundsException e1)
+                } catch (Exception e1)
                 {
                     kb = 0.0f;
                 }
                 if (found)
                 {
-                    dataLeft = mb + (kb * 1000f);
+                    leftMetric = "MB";
+                    dataLeft = (gb*1000)+ mb + (kb / 1000f);
                 } else
                 {
                     dataLeft = -1.0f;
@@ -369,10 +411,11 @@ public class USSDParser
                 if(bal.charAt(bal.length()-1)=='.')
                     bal = bal.substring(0,bal.length()-2);
                 mainBal = Float.parseFloat(bal);
-            } catch (IndexOutOfBoundsException e)
+            } catch (Exception e)
             {
                 mainBal = -1.0f;
             }
+            ptln("Type: "+type+" Data Used: "+dataUsed+" "+usedMetric+" Left: "+dataLeft+" "+leftMetric+" Validity: "+validity+" Main Bal: "+mainBal);
             //this.type = USSDMessageType.DATA_PACK;
             //Long time, Float data_consumed,Float data_left,Float bal,String validity, String message
             //details = new DataPack((new Date()).getTime(), dataUsed, dataLeft, mainBal, validity, message);
@@ -875,27 +918,27 @@ public class USSDParser
     }
     private JSONArray getPackCallRegex()
     {
-        return getJSONArray(DIR+"PACK_CALL_PATTERNS.json");
+        return getJSONArray(DIR+"PACK_CALL.json");
     }
     private JSONArray getNormalCallRegex()
     {
-        return getJSONArray(DIR+"NORMAL_CALL_PATTERNS.json");
+        return getJSONArray(DIR+"NORMAL_CALL.json");
     }
     private JSONArray getNormalDataRegex()
     {
-        return getJSONArray(DIR+"NORMAL_DATA_PATTERNS.json");
+        return getJSONArray(DIR+"NORMAL_DATA.json");
     }
     private JSONArray getPackSMSRegex()
     {
-        return getJSONArray(DIR+"PACK_SMS_PATTERNS.json");
+        return getJSONArray(DIR+"PACK_SMS.json");
     }
     private JSONArray getNormalSMSRegex()
     {
-        return getJSONArray(DIR+"NORMAL_SMS_PATTERNS.json");
+        return getJSONArray(DIR+"NORMAL_SMS.json");
     }
     private JSONArray getPackDataRegex()
     {
-        return getJSONArray(DIR+"PACK_DATA_PATTERNS.json");
+        return getJSONArray(DIR+"PACK_DATA.json");
     }
     JSONArray getJSONArray(String fileName)
     {
@@ -967,7 +1010,7 @@ public class USSDParser
 
     public JSONArray getMainBalRegex()
     {
-        return getJSONArray(DIR+"MAIN_BALANCE_PATTERNS.json");
+        return getJSONArray(DIR+"MAIN_BALANCE.json");
     }
     /*private boolean parseForNomalSMS(String message)
     {

@@ -15,6 +15,7 @@ import android.text.SpannableStringBuilder;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -97,32 +98,32 @@ public class UssdPopup extends AppCompatActivity
         switch (mIntent.getIntExtra("TYPE", -1))
         {
             case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
-               //V16Log.d(TAG,"Type Normal call");
+              //V20 Log.d(TAG,"Type Normal call");
                 from = "NORMAL_CALL";
                 displayNormalCallPopUp((NormalCallPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_CALL:
-               //V16Log.d(TAG,"Type Pack call");
+              //V20 Log.d(TAG,"Type Pack call");
                 from = "PACK_CALL";
                 displayCallPackPopup((PackCallPopup) mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_SMS:
-               //V16Log.d(TAG,"Type Normal SMS");
+              //V20 Log.d(TAG,"Type Normal SMS");
                 from = "NORMAL_SMS";
                 displayNormalSMSPopup((NormalSmsPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_SMS:
-               //V16Log.d(TAG,"Type Pack SMS");
+              //V20 Log.d(TAG,"Type Pack SMS");
                 from = "PACK_SMS";
                 displaySMSPackPopup((PackSmsPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.NORMAL_DATA:
-               //V16Log.d(TAG,"Type Normal Data");
+              //V20 Log.d(TAG,"Type Normal Data");
                 from = "NORMAL_DATA";
                 displayNormalDataPopup((NormalDataPopup)mIntent.getParcelableExtra("DATA"));
                 break;
             case ConstantsAndStatics.USSD_TYPES.PACK_DATA:
-               //V16Log.d(TAG,"Type Pack Data");
+              //V20 Log.d(TAG,"Type Pack Data");
                 from = "PACK_DATA";
                 displayDataPackPopup((PackDataPopup)mIntent.getParcelableExtra("DATA"));
                 break;
@@ -469,6 +470,7 @@ public class UssdPopup extends AppCompatActivity
     @DebugLog
     private void displayNormalCallPopUp(final NormalCallPopup details)
     {
+       //V20 Log.d(TAG,details.toString());
         TextView plan_id = (TextView) findViewById(R.id.plan_id);
         plan_id.setText("Main Bal");
         TextView head_1 = (TextView) findViewById(R.id.head1);
@@ -505,7 +507,7 @@ public class UssdPopup extends AppCompatActivity
         }
         else if(!details.getName().matches("^\\+?[0-9]+$"))
         {
-            final SharedPreferences sharedContacts = MyApplication.context.getSharedPreferences("SHARED_CONTACTS",Context.MODE_PRIVATE);
+            final SharedPreferences sharedContacts = MyApplication.context.getSharedPreferences("SHARED_CONTfACTS",Context.MODE_PRIVATE);
             boolean sharedAlready  = sharedContacts.getBoolean(details.getNumber(),false);
             if(!sharedAlready)
             {
@@ -542,7 +544,6 @@ public class UssdPopup extends AppCompatActivity
                         sharedContacts.edit().putBoolean(details.getNumber(),true).apply();
                         if (Helper.whatsappInstalledOrNot())
                         {
-                            //TODO Add Tracking info
                             ConstantsAndStatics.PASTE_SHARE_APP = true;
                             startActivity(Helper.openWhatsApp(details.getNumber(), "To Track your prepaid Balance and know how much you spend on your contacts.\nTry out \"Simply\": http://bit.ly/getSimply "));
                         } else
@@ -630,6 +631,7 @@ public class UssdPopup extends AppCompatActivity
     }
 
     private void displayNormalSMSPopup(final NormalSmsPopup details) {
+       //V20 Log.d(TAG,details.toString());
         TextView plan_id = (TextView) findViewById(R.id.plan_id);
         plan_id.setText("SMS: Main Bal");
 
@@ -710,6 +712,7 @@ public class UssdPopup extends AppCompatActivity
     }
 
     private void displaySMSPackPopup(final PackSmsPopup details) {
+       //V20 Log.d(TAG,details.toString());
         TextView plan_id = (TextView) findViewById(R.id.plan_id);
         if(details.getPack_type()==null)
             plan_id.setText("SMS pack");
@@ -789,6 +792,7 @@ public class UssdPopup extends AppCompatActivity
     }
 
     private void displayNormalDataPopup(final NormalDataPopup details) {
+       //V20 Log.d(TAG,details.toString());
         TextView plan_id = (TextView) findViewById(R.id.plan_id);
         plan_id.setText("Data: Main Bal");
         TextView head_1 = (TextView) findViewById(R.id.head1);
@@ -864,6 +868,7 @@ public class UssdPopup extends AppCompatActivity
     }
 
     private void displayDataPackPopup(final PackDataPopup details) {
+       //V20 Log.d(TAG,details.toString());
         TextView plan_id = (TextView) findViewById(R.id.plan_id);
         if(details.getPack_type()==null)
             plan_id.setText("Data Pack");
@@ -891,12 +896,7 @@ public class UssdPopup extends AppCompatActivity
         {
             SharedPreferences mSharedPreferences = MyApplication.context.getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
             float minimum_bal = mSharedPreferences.getFloat("MINIMUM_BALANCE",10.0f);
-            int popUpCount = mSharedPreferences.getInt("POP_UP_COUNT",1);
-            mSharedPreferences.edit().putInt("POP_UP_COUNT",popUpCount+1);
-            if(popUpCount%10==0)
-            {
-                rate = true;
-            }
+
             if(details.getMain_bal() <= minimum_bal)
             {
                 field_2.setTextColor(Color.parseColor("#ff0000"));
@@ -905,7 +905,7 @@ public class UssdPopup extends AppCompatActivity
             field_2.setText(rupee_symbol + " " + details.main_bal);
         }
         TextView field_3 = (TextView) findViewById(R.id.field3);
-        if(details.getMain_bal()<0.0f)
+        if(details.getData_left()<0.0f)
             field_3.setText("N/A");
         else
             field_3.setText(details.getData_left()+" MB");
@@ -940,6 +940,7 @@ public class UssdPopup extends AppCompatActivity
     }
 
     private void CallPack_Type1(final PackCallPopup details) {
+       //V20 Log.d(TAG,"TYPE1 = "+details.toString());
         TextView plan_id = (TextView) findViewById(R.id.plan_id);
         if(details.getPack_name()!=null)
             plan_id.setText(details.getPack_name());
@@ -1018,6 +1019,7 @@ public class UssdPopup extends AppCompatActivity
     }
 
     private void CallPack_Type2(final PackCallPopup details) {
+       //V20 Log.d(TAG,"Type 2 "+details.toString());
         TextView plan_id = (TextView) findViewById(R.id.plan_id);
         if(details.getPack_name()!=null)
             plan_id.setText(details.getPack_name());

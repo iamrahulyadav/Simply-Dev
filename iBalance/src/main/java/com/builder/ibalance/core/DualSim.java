@@ -9,14 +9,17 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import com.builder.ibalance.database.helpers.IMSIHelper;
 import com.builder.ibalance.util.ConstantsAndStatics;
 import com.builder.ibalance.util.DualSimConstants;
+import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.Helper.SharedPreferenceHelper;
 import com.builder.ibalance.util.MyApplication;
 import com.builder.ibalance.util.ReflectionHelper;
 import com.crashlytics.android.Crashlytics;
+import com.flurry.android.FlurryAgent;
 import com.mediatek.telephony.TelephonyManagerEx;
 
 import java.io.PrintWriter;
@@ -2412,24 +2415,34 @@ public class DualSim
     {
         Cursor managedCursor = MyApplication.context.getContentResolver().query(
                 CallLog.Calls.CONTENT_URI, null, null, null, null);
-        SimModel.call_log_columns.clear();
-        //Helper.toastHelper("Checking Call Logs");
-        final String[] colPrefixList = {"subscription", "slot", "icc", "sim", "sub","phone","mode"};
-        final String[] colSuffixList = {"", "index", "indx", "idx", "id", "_index", "Slot", "_subscription", "_id", "num","type"};
-        int prefix_length = colPrefixList.length;
-        int suffix_length = colSuffixList.length;
         ArrayList<String> call_log_columns = new ArrayList<String>();
-        String dual_sim_column_name = ""; //fall back to logical categorization
-        for (int i = 0; i < prefix_length; i++)
-            for (int j = 0; j < suffix_length; j++)
-            {
-                dual_sim_column_name = colPrefixList[i] + colSuffixList[j];
-                if (managedCursor.getColumnIndex(dual_sim_column_name) != -1) //if it exists
+        if(managedCursor==null)
+        {
+            Toast.makeText(MyApplication.context,"Need Call Log Permission for Dual Sim Support",Toast.LENGTH_LONG);
+            Helper.logGA("CALL_LOG_PERMISSION_DENIED");
+            FlurryAgent.logEvent("CALL_LOG_PERMISSION_DENIED");
+        }
+        else
+        {
+            SimModel.call_log_columns.clear();
+            //Helper.toastHelper("Checking Call Logs");
+            final String[] colPrefixList = {"subscription", "slot", "icc", "sim", "sub", "phone", "mode"};
+            final String[] colSuffixList = {"", "index", "indx", "idx", "id", "_index", "Slot", "_subscription", "_id", "num", "type"};
+            int prefix_length = colPrefixList.length;
+            int suffix_length = colSuffixList.length;
+
+            String dual_sim_column_name = ""; //fall back to logical categorization
+            for (int i = 0; i < prefix_length; i++)
+                for (int j = 0; j < suffix_length; j++)
                 {
-                   // toastHelper("Found "+dual_sim_column_name);
-                    call_log_columns.add(dual_sim_column_name);
+                    dual_sim_column_name = colPrefixList[i] + colSuffixList[j];
+                    if (managedCursor.getColumnIndex(dual_sim_column_name) != -1) //if it exists
+                    {
+                        // toastHelper("Found "+dual_sim_column_name);
+                        call_log_columns.add(dual_sim_column_name);
+                    }
                 }
-            }
+        }
        // toastHelper("found  "+SimModel.call_log_columns.toString());
         return call_log_columns; //fall back to logical categorization
     }

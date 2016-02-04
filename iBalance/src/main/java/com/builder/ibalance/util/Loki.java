@@ -36,7 +36,8 @@ public class Loki
     private static Charset PLAIN_TEXT_ENCODING = Charset.forName("UTF-8");
     private static String CIPHER_TRANSFORMATION = "AES/CTR/NoPadding";
     private static String KEY_TYPE = "AES";
-    private static final int VERSION = 2;
+    //TODO Change this if you updated the Miner
+    private static final int VERSION = 4;
     // 192 and 256 bits may not be available
     private static int KEY_SIZE_BITS = 128;
     private SharedPreferences parserPreferences;
