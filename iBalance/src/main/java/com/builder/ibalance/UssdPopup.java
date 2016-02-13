@@ -15,7 +15,6 @@ import android.text.SpannableStringBuilder;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -95,6 +94,8 @@ public class UssdPopup extends AppCompatActivity
         rupee_symbol = getResources().getString(R.string.rupee_symbol);
         originalMessage = (TextView) findViewById(R.id.originalMessage);
         expand = (ImageButton) findViewById(R.id.expandOriginalMessage);
+        Helper.logGA("POPUP",Helper.getUSSDType(mIntent.getIntExtra("TYPE",-1)));
+        Helper.logFlurry("POPUP","TYPE",Helper.getUSSDType(mIntent.getIntExtra("TYPE",-1)));
         switch (mIntent.getIntExtra("TYPE", -1))
         {
             case ConstantsAndStatics.USSD_TYPES.NORMAL_CALL:
@@ -132,6 +133,8 @@ public class UssdPopup extends AppCompatActivity
 
 		if(recharge)
 		{
+            FlurryAgent.logEvent("RECHARGE_POPUP_ALERT");
+            Helper.logGA("RECHARGE_POPUP_ALERT");
             TextView infoText = ((TextView)findViewById(R.id.ussd_share_info));
             infoText.setVisibility(View.VISIBLE);
             infoText.setText("Your Balance Low Recharge to stay connected");

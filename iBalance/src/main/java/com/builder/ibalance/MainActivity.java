@@ -35,7 +35,6 @@ import com.builder.ibalance.util.Helper;
 import com.builder.ibalance.util.MyApplication;
 import com.digits.sdk.android.Digits;
 import com.facebook.appevents.AppEventsLogger;
-import com.flurry.android.FlurryAgent;
 import com.kahuna.sdk.Kahuna;
 import com.parse.ConfigCallback;
 import com.parse.ParseConfig;
@@ -233,7 +232,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         //V10Log.d(tag, "onStart Main Activity");
         Kahuna.getInstance().start();
-        FlurryAgent.logEvent("MainScreen", true);
         //Get an Analytics tracker to report app starts and uncaught exceptions etc.
         //GoogleAnalytics.getInstance(this).reportActivityStart(this);
         super.onStart();
@@ -247,7 +245,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         Kahuna.getInstance().stop();
-        FlurryAgent.endTimedEvent("MainScreen");
         //Stop the analytics tracking
        // GoogleAnalytics.getInstance(this).reportActivityStop(this);
         super.onStop();

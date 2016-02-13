@@ -224,7 +224,6 @@ public class RechargePopup extends AppCompatActivity implements View.OnClickList
         params.put("AMOUNT",amount+"");
         FlurryAgent.logEvent("RECHARGE_CONFIRM",params);
         super.onStop();
-        super.onStop();
     }
     private void initializeMapForMobiKwik()
     {

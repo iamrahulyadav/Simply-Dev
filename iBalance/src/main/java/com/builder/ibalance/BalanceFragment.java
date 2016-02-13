@@ -261,7 +261,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
     public void onLoadFinished(Loader<Cursor> loader, Cursor data)
     {
 
-        RecentListRecycleAdapter mRecentListAdapter = new RecentListRecycleAdapter(getActivity().getBaseContext(), data, false);
+        RecentListRecycleAdapter mRecentListAdapter = new RecentListRecycleAdapter(getActivity(), data, false);
         ScaleInAnimationAdapter animPlanAdapter =  new ScaleInAnimationAdapter(mRecentListAdapter);
         mListView.setAdapter(animPlanAdapter);
 
@@ -352,7 +352,7 @@ public class BalanceFragment extends Fragment implements LoaderManager.LoaderCal
             rootView.findViewById(R.id.nobal).setVisibility(View.GONE);
             mListView = (RecyclerView) rootView.findViewById(R.id.recents_list);
             mListView.setVisibility(View.VISIBLE);
-            mLineChart.setVisibility(View.VISIBLE);
+            //mLineChart.setVisibility(View.VISIBLE);
             if (mLineChart == null)
             {
 
