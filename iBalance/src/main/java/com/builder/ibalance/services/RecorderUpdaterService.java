@@ -879,8 +879,7 @@ boolean cancelButtonFound = false;
     {
 
 
-        Helper.logGA("POPUP",Helper.getUSSDType(popup_intent.getIntExtra("TYPE",-1)));
-        Helper.logFlurry("POPUP","TYPE",Helper.getUSSDType(popup_intent.getIntExtra("TYPE",-1)));
+
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         popup_intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
